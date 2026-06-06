@@ -2,7 +2,7 @@
 
 import { Fragment, useState } from 'react';
 import type { QualificationResult, ScoringResult, ProspectionResult } from '@/types';
-import { SECTORS, type SectorId } from '@/lib/sectors';
+import { SECTORS } from '@/lib/sectors';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -225,23 +225,9 @@ export default function Home() {
       <header className="bg-white border-b border-slate-200 sticky top-0 z-20">
         <div className="max-w-2xl mx-auto px-5 h-13 flex items-center justify-between py-3">
           <div className="flex items-center gap-3">
-            <span className="font-semibold text-slate-900 tracking-tight">BankKey</span>
+            <a href="/" className="font-semibold text-slate-900 tracking-tight">BankKey</a>
             <span className="text-slate-200 select-none">|</span>
-            <nav className="flex items-center gap-0.5">
-              {(Object.values(SECTORS)).map(s => (
-                <button
-                  key={s.id}
-                  onClick={() => switchSector(s.id)}
-                  className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
-                    sector === s.id
-                      ? 'bg-slate-900 text-white'
-                      : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
-                  }`}
-                >
-                  {s.label}
-                </button>
-              ))}
-            </nav>
+            <span className="text-xs font-medium text-slate-500">Démo crédit immobilier</span>
           </div>
           <span className="text-[10px] font-mono text-slate-400">v0.1</span>
         </div>
