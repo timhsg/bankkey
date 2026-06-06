@@ -76,7 +76,7 @@ export default function CredifyLanding() {
               <h3 className="text-2xl font-bold text-slate-900">La solution Credify</h3>
               <div className="space-y-3">
                 {[
-                  "Chaque email analysé en < 60 secondes",
+                  "Chaque email analysé en &lt; 60 secondes",
                   "Score de bancabilité automatique (0-100)",
                   "Pré-dossier structuré (10 champs clés)",
                   "Réponse email prête à envoyer",

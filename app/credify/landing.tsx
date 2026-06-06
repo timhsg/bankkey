@@ -84,7 +84,7 @@ export default function CredifyLanding() {
               <ul className="space-y-2 text-sm text-slate-700">
                 <li className="flex items-start gap-2">
                   <span className="text-emerald-600 font-bold">✓</span>
-                  <span>Réponse en < 60 secondes</span>
+                  <span>Réponse en &lt; 60 secondes</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-emerald-600 font-bold">✓</span>
