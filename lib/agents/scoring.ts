@@ -30,25 +30,10 @@ Maximum possible                                                    100
 
 Rappel températures : 0-30 = cold | 31-60 = warm | 61-100 = hot`;
 
-const BAREME_ESTHETIQUE = `
-═══ PATIENT / PROSPECT ESTHÉTIQUE ════════════════════════════════════
-Critère                                                          Points
-─────────────────────────────────────────────────────────────────────
-propertyType ou description mentionne un soin précis               +25
-price (budget estimé) non null                                      +20
-description ou urgencySignals mentionne disponibilité précise      +15
-urgencySignals mentionne délai court (< 1 mois)                    +20
-email OU phone non null                                             +10
-description indique première consultation (nouvelle patiente)      +10
-─────────────────────────────────────────────────────────────────────
-Maximum possible                                                    100
-
-Rappel températures : 0-30 = cold | 31-60 = warm | 61-100 = hot`;
-
-function buildPrompt(q: QualificationResult, sector: SectorId = 'immobilier'): string {
-  // Pour les secteurs non-immobilier, retourner un prompt simplifié avec le bon barème
-  if (sector === 'credit' || sector === 'esthetique') {
-    const bareme = sector === 'credit' ? BAREME_CREDIT : BAREME_ESTHETIQUE;
+function buildPrompt(q: QualificationResult, sector: SectorId = 'credit'): string {
+  // Secteur 'credit' uniquement pour le MVP
+  if (sector === 'credit') {
+    const bareme = BAREME_CREDIT;
     return `Données du contact :
 ${JSON.stringify(q)}
 
@@ -154,7 +139,7 @@ function parseJSON<T>(text: string): T {
 
 export async function runScoringAgent(
   qualification: QualificationResult,
-  sector: SectorId = 'immobilier',
+  sector: SectorId = 'credit',
 ): Promise<ScoringResult> {
   const message = await client.messages.create({
     model: 'claude-haiku-4-5',

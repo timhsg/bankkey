@@ -5,18 +5,8 @@ import type { SectorId } from '@/lib/sectors';
 const client = new Anthropic();
 
 const SYSTEM_PROMPT_BY_SECTOR: Record<SectorId, string> = {
-  immobilier: `Tu es un expert en prospection immobilière pour une agence professionnelle française.
-Tu génères des outils de prospection personnalisés, humains et efficaces.
-Tu n'inventes jamais d'informations absentes du profil fourni.
-Réponds UNIQUEMENT avec un objet JSON valide, sans aucun texte avant ou après, sans balises markdown.`,
-
   credit: `Tu es un expert en prospection pour un cabinet de courtage en crédit immobilier.
 Ton ton est rassurant, précis et orienté solution. Tu mets en avant l'expertise bancaire et le gain de temps.
-Tu n'inventes jamais d'informations absentes du profil fourni.
-Réponds UNIQUEMENT avec un objet JSON valide, sans aucun texte avant ou après, sans balises markdown.`,
-
-  esthetique: `Tu es un expert en prospection pour une clinique de médecine esthétique haut de gamme.
-Ton ton est chaleureux, discret et professionnel. Tu mets en avant l'expertise médicale et la sécurité des soins.
 Tu n'inventes jamais d'informations absentes du profil fourni.
 Réponds UNIQUEMENT avec un objet JSON valide, sans aucun texte avant ou après, sans balises markdown.`,
 };
@@ -116,7 +106,7 @@ function parseJSON<T>(text: string): T {
 export async function runProspectionAgent(
   qualification: QualificationResult,
   scoring: ScoringResult,
-  sector: SectorId = 'immobilier',
+  sector: SectorId = 'credit',
 ): Promise<ProspectionResult> {
   const message = await client.messages.create({
     model: 'claude-sonnet-4-5',

@@ -105,7 +105,7 @@ function parseJSON<T>(text: string): T {
 
 export async function runQualificationAgent(
   listing: string,
-  sector: SectorId = 'immobilier',
+  sector: SectorId = 'credit',
 ): Promise<QualificationResult> {
   const message = await client.messages.create({
     model: 'claude-haiku-4-5',

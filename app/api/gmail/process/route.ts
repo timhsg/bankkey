@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
         profile.id,
         profile.gmail_access_token,
         profile.gmail_refresh_token,
-        (profile.sector as SectorId) ?? 'immobilier',
+        (profile.sector as SectorId) ?? 'credit',
       )
       totalProcessed += processed
 
