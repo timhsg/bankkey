@@ -7,7 +7,7 @@ import type { SectorId } from '@/lib/sectors';
 export async function POST(request: NextRequest) {
   const body = await request.json() as { listing?: string; sector?: SectorId };
   const listing = body.listing?.trim();
-  const sector = body.sector ?? 'immobilier';
+  const sector: SectorId = 'credit';
 
   if (!listing || listing.length < 20) {
     return new Response(
