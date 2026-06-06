@@ -1,481 +1,216 @@
-'use client';
+'use client'
 
-import { Fragment, useState } from 'react';
-import type { QualificationResult, ScoringResult, ProspectionResult } from '@/types';
-import { SECTORS, type SectorId } from '@/lib/sectors';
-
-// ── Types ──────────────────────────────────────────────────────────────────────
-
-type PipelineStep = 'idle' | 'reading' | 'scoring' | 'writing' | 'done';
-
-// ── Helpers ────────────────────────────────────────────────────────────────────
-
-const TEMP_CONFIG = {
-  cold: { label: 'Non prioritaire', dot: 'bg-slate-400',    badge: 'bg-slate-100 text-slate-600 border-slate-200',   ring: '#94a3b8' },
-  warm: { label: 'À qualifier',     dot: 'bg-amber-400',    badge: 'bg-amber-50 text-amber-700 border-amber-200',    ring: '#fbbf24' },
-  hot:  { label: 'Prioritaire',     dot: 'bg-emerald-500',  badge: 'bg-emerald-50 text-emerald-700 border-emerald-200', ring: '#34d399' },
-} as const;
-
-const TIMELINE_LABEL: Record<string, string> = {
-  less_3_months:   '< 3 mois',
-  '3_to_6_months': '3 – 6 mois',
-  more_6_months:   '> 6 mois',
-};
-
-const FINANCING_LABEL: Record<string, string> = {
-  obtained:    'Obtenu',
-  in_progress: 'En cours',
-  none:        'Non démarré',
-};
-
-const STEP_ORDER: Record<PipelineStep, number> = {
-  idle: -1, reading: 0, scoring: 1, writing: 2, done: 3,
-};
-
-// ── Sub-components ─────────────────────────────────────────────────────────────
-
-function ScoreRing({ score, temperature }: { score: number; temperature: 'cold' | 'warm' | 'hot' }) {
-  const r = 40;
-  const circ = 2 * Math.PI * r;
-  const offset = circ * (1 - score / 100);
-  const color = TEMP_CONFIG[temperature].ring;
-
+export default function BankKeyLanding() {
   return (
-    <div className="relative w-28 h-28 shrink-0">
-      <svg className="w-full h-full" viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r={r} fill="none" stroke="#f1f5f9" strokeWidth="9" />
-        <circle
-          cx="50" cy="50" r={r}
-          fill="none"
-          stroke={color}
-          strokeWidth="9"
-          strokeLinecap="round"
-          strokeDasharray={circ}
-          strokeDashoffset={offset}
-          transform="rotate(-90 50 50)"
-          style={{ transition: 'stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1)' }}
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-3xl font-black text-slate-900 leading-none">{score}</span>
-        <span className="text-[10px] font-medium text-slate-400 mt-0.5">/ 100</span>
-      </div>
-    </div>
-  );
-}
-
-function Field({ label, value }: { label: string; value: string | number | null | undefined }) {
-  if (value === null || value === undefined || value === '') return null;
-  return (
-    <div className="flex flex-col gap-0.5">
-      <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">{label}</span>
-      <span className="text-sm font-medium text-slate-700">{value}</span>
-    </div>
-  );
-}
-
-function PipelineProgress({ step }: { step: PipelineStep }) {
-  const steps = [
-    { key: 'reading', label: 'Lecture',   order: 0 },
-    { key: 'scoring', label: 'Scoring',   order: 1 },
-    { key: 'writing', label: 'Rédaction', order: 2 },
-  ];
-  const current = STEP_ORDER[step];
-
-  return (
-    <div className="bg-white border border-slate-200 rounded-xl p-5">
-      <div className="flex items-center max-w-xs mx-auto">
-        {steps.map((s, i) => {
-          const status = current > s.order ? 'done' : current === s.order ? 'active' : 'pending';
-          return (
-            <Fragment key={s.key}>
-              {i > 0 && (
-                <div className={`flex-1 h-px mx-3 transition-colors duration-500 ${current > i - 1 ? 'bg-slate-300' : 'bg-slate-100'}`} />
-              )}
-              <div className="flex flex-col items-center gap-1.5 shrink-0">
-                <div className={`w-5 h-5 rounded-full flex items-center justify-center transition-all duration-300 ${
-                  status === 'done'   ? 'bg-slate-800' :
-                  status === 'active' ? 'border-2 border-slate-800 bg-white' :
-                                        'border-2 border-slate-200 bg-white'
-                }`}>
-                  {status === 'done'   && <span className="text-white text-[9px] font-bold">✓</span>}
-                  {status === 'active' && <span className="w-1.5 h-1.5 rounded-full bg-slate-800 animate-pulse" />}
-                </div>
-                <span className={`text-[10px] font-medium ${status === 'pending' ? 'text-slate-300' : 'text-slate-500'}`}>
-                  {s.label}
-                </span>
-              </div>
-            </Fragment>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// ── Main page ──────────────────────────────────────────────────────────────────
-
-export default function Home() {
-  const sector = 'credit' as const;
-  const [listing,      setListing]      = useState('');
-  const [step,         setStep]         = useState<PipelineStep>('idle');
-  const [qualification, setQualification] = useState<QualificationResult | null>(null);
-  const [scoring,      setScoring]      = useState<ScoringResult | null>(null);
-  const [prospection,  setProspection]  = useState<ProspectionResult | null>(null);
-  const [error,        setError]        = useState<string | null>(null);
-  const [tab,          setTab]          = useState<'email' | 'call'>('email');
-  const [copied,       setCopied]       = useState(false);
-
-  const isLoading  = step !== 'idle' && step !== 'done';
-  const hasResults = !!(qualification && scoring && prospection);
-  const config     = SECTORS[sector];
-
-  function reset() {
-    setStep('idle');
-    setQualification(null);
-    setScoring(null);
-    setProspection(null);
-    setError(null);
-    setListing('');
-    setTab('email');
-  }
-
-
-  async function analyze() {
-    if (!listing.trim() || isLoading) return;
-
-    setStep('reading');
-    setQualification(null);
-    setScoring(null);
-    setProspection(null);
-    setError(null);
-    setTab('email');
-
-    try {
-      const res = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ listing, sector }),
-      });
-
-      if (!res.ok || !res.body) {
-        const err = await res.json().catch(() => ({ error: 'Erreur serveur' })) as { error?: string };
-        throw new Error(err.error ?? 'Erreur serveur');
-      }
-
-      const reader  = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() ?? '';
-
-        for (const line of lines) {
-          if (!line.startsWith('data: ')) continue;
-          const event = JSON.parse(line.slice(6)) as {
-            step: string; data?: unknown; message?: string;
-          };
-
-          switch (event.step) {
-            case 'qualification':
-              setQualification(event.data as QualificationResult);
-              setStep('scoring');
-              break;
-            case 'scoring':
-              setScoring(event.data as ScoringResult);
-              setStep('writing');
-              break;
-            case 'prospection':
-              setProspection(event.data as ProspectionResult);
-              break;
-            case 'done':
-              setStep('done');
-              break;
-            case 'error':
-              throw new Error(event.message ?? 'Erreur interne');
-          }
-        }
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur inconnue');
-      setStep('idle');
-    }
-  }
-
-  function copyEmail() {
-    if (!prospection) return;
-    const text = `Objet : ${prospection.email.subject}\n\n${prospection.email.body}`;
-    navigator.clipboard.writeText(text).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  }
-
-  const tempCfg = scoring ? TEMP_CONFIG[scoring.temperature] : null;
-
-  return (
-    <div className="min-h-screen bg-slate-50">
-
-      {/* ── Header ── */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-20">
-        <div className="max-w-2xl mx-auto px-5 h-13 flex items-center justify-between py-3">
-          <div className="flex items-center gap-3">
-            <span className="font-semibold text-slate-900 tracking-tight">BankKey</span>
-            <span className="text-slate-200 select-none">|</span>
-            <nav className="flex items-center gap-0.5">
-              {(Object.values(SECTORS)).map(s => (
-                <button
-                  key={s.id}
-                  onClick={() => switchSector(s.id)}
-                  className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
-                    sector === s.id
-                      ? 'bg-slate-900 text-white'
-                      : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
-                  }`}
-                >
-                  {s.label}
-                </button>
-              ))}
-            </nav>
+    <div className="min-h-screen bg-white">
+      {/* Sticky Header */}
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-slate-100">
+        <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
+          <div className="font-bold text-xl text-slate-900">BankKey</div>
+          <div className="flex items-center gap-4">
+            <a href="#features" className="text-sm text-slate-600 hover:text-slate-900 font-medium">Fonctionnalités</a>
+            <a href="#pricing" className="text-sm text-slate-600 hover:text-slate-900 font-medium">Tarifs</a>
+            <a href="/pro/login" className="text-sm bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+              Connexion
+            </a>
           </div>
-          <span className="text-[10px] font-mono text-slate-400">v0.1</span>
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-5 py-8 space-y-4">
+      {/* Hero */}
+      <section className="max-w-5xl mx-auto px-5 py-32 text-center space-y-8">
+        <div className="inline-block">
+          <span className="text-xs font-bold uppercase tracking-widest text-emerald-600 bg-emerald-50 px-4 py-2 rounded-full">
+            Pour courtiers en crédit immobilier
+          </span>
+        </div>
 
-        {/* ── Input ── */}
-        {step === 'idle' && (
-          <div className="bg-white rounded-xl border border-slate-200 p-5 animate-fade-up">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-medium text-slate-600">{config.emoji} {config.label}</span>
-              <button
-                onClick={() => setListing(config.example)}
-                className="text-xs text-slate-400 hover:text-slate-600 transition-colors"
-              >
-                Exemple
-              </button>
+        <h1 className="text-6xl font-bold text-slate-900 leading-tight">
+          Qualifiez <span className="text-emerald-600">TOUS</span> vos dossiers<br />en moins d'une minute
+        </h1>
+
+        <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
+          Chaque heure où vous tardez, un lead va chez le concurrent. BankKey qualifie, score et prépare votre réponse automatiquement.
+        </p>
+
+        <div className="flex items-center justify-center gap-4 pt-4">
+          <a href="/pro/login" className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-8 py-4 rounded-lg transition-colors text-lg">
+            Essai gratuit 30 jours
+            <span className="text-xl">→</span>
+          </a>
+          <a href="/demo" className="inline-flex items-center gap-2 border-2 border-slate-300 hover:border-slate-400 text-slate-700 font-bold px-8 py-3.5 rounded-lg transition-colors text-lg">
+            Voir une démo
+          </a>
+        </div>
+
+        <p className="text-sm text-slate-500">
+          Aucune carte bancaire requise. Accès immédiat.
+        </p>
+      </section>
+
+      {/* Problem + Solution */}
+      <section className="bg-slate-50 py-24">
+        <div className="max-w-5xl mx-auto px-5">
+          <div className="grid md:grid-cols-2 gap-16 items-center mb-16">
+            <div className="space-y-6">
+              <h2 className="text-4xl font-bold text-slate-900">Votre problème réel</h2>
+              <div className="space-y-4">
+                {[
+                  "Vous recevez 60-120 demandes par semaine sur email",
+                  "Chacune demande 15-20 min de qualification",
+                  "Vous en ratez 30-50% parce que vous n'avez pas le temps",
+                  "Chaque dossier perdu = 1 500 € de commission",
+                ].map((item, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <span className="text-red-500 font-bold text-xl mt-1">✕</span>
+                    <p className="text-slate-700 text-lg">{item}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="text-3xl font-bold text-red-600 pt-4">
+                -5 000 € / mois en revenus perdus
+              </p>
             </div>
-            <textarea
-              value={listing}
-              onChange={e => setListing(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) analyze(); }}
-              placeholder={config.placeholder}
-              rows={6}
-              className="w-full text-sm text-slate-700 placeholder-slate-300 border border-slate-200
-                         rounded-lg px-3.5 py-3 resize-none focus:outline-none focus:ring-2
-                         focus:ring-slate-900 focus:border-transparent leading-relaxed"
-            />
-            <div className="mt-3 flex items-center justify-between">
-              <span className="text-[11px] text-slate-400">
-                {listing.length > 0 ? `${listing.length} car.` : '⌘ Entrée pour analyser'}
-              </span>
-              <button
-                onClick={analyze}
-                disabled={!listing.trim()}
-                className="flex items-center gap-2 bg-slate-900 hover:bg-slate-700
-                           disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed
-                           text-white text-sm font-medium px-5 py-2 rounded-lg transition-colors"
-              >
-                Analyser →
-              </button>
+
+            <div className="bg-emerald-50 rounded-2xl p-8 border-2 border-emerald-300 space-y-6">
+              <h3 className="text-2xl font-bold text-slate-900">La solution BankKey</h3>
+              <div className="space-y-3">
+                {[
+                  "Chaque email analysé en < 60 secondes",
+                  "Score de bancabilité automatique (0-100)",
+                  "Pré-dossier structuré (10 champs clés)",
+                  "Réponse email prête à envoyer",
+                  "Briefing appel : contexte + question clé",
+                  "Synchronisation auto toutes les 5 min",
+                ].map((item, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <span className="text-emerald-600 font-bold text-xl">✓</span>
+                    <p className="text-slate-700 text-base">{item}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="bg-white rounded-xl p-4 border border-emerald-200 mt-6">
+                <p className="text-xs text-slate-500 mb-1 font-medium uppercase tracking-wider">Gain économique réel</p>
+                <p className="text-3xl font-bold text-emerald-600">+2 000 € / mois</p>
+                <p className="text-xs text-slate-600 mt-2">Avec juste 2 dossiers sauvés de plus par mois</p>
+              </div>
             </div>
           </div>
-        )}
+        </div>
+      </section>
 
-        {/* ── Error ── */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-600 animate-fade-up">
-            {error}
-          </div>
-        )}
+      {/* Features */}
+      <section id="features" className="max-w-5xl mx-auto px-5 py-24">
+        <h2 className="text-4xl font-bold text-slate-900 text-center mb-16">
+          Fonctionnalités
+        </h2>
 
-        {/* ── Pipeline progress ── */}
-        {isLoading && <PipelineProgress step={step} />}
+        <div className="grid md:grid-cols-3 gap-8">
+          {[
+            { icon: '🔗', title: 'Connexion Gmail', desc: 'Connectez en 1 clic. BankKey lit vos demandes et analyse automatiquement.' },
+            { icon: '📊', title: 'Score de bancabilité', desc: 'Chaque lead reçoit un score 0-100. Identifiez les bons dossiers instantanément.' },
+            { icon: '📋', title: 'Pré-dossier', desc: 'Revenus, apport, situation pro, urgence. Tout est structuré et prêt.' },
+            { icon: '✉️', title: 'Réponse email', desc: 'Message professionnel, personnalisé, prêt à envoyer en un clic.' },
+            { icon: '📞', title: 'Briefing appel', desc: 'Contexte du dossier + question critique à poser en premier.' },
+            { icon: '🔄', title: 'Sync automatique', desc: 'Vérification toutes les 5 minutes. Zéro configuration.' },
+          ].map((f, i) => (
+            <div key={i} className="space-y-4">
+              <span className="text-4xl">{f.icon}</span>
+              <h3 className="text-lg font-bold text-slate-900">{f.title}</h3>
+              <p className="text-slate-600 text-sm leading-relaxed">{f.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
 
-        {/* ── Results card ── */}
-        {(qualification || scoring || prospection) && (
-          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden animate-fade-up">
+      {/* Pricing */}
+      <section id="pricing" className="bg-slate-50 py-24">
+        <div className="max-w-5xl mx-auto px-5">
+          <h2 className="text-4xl font-bold text-slate-900 text-center mb-16">
+            Tarification simple
+          </h2>
 
-            {/* Score section */}
-            {scoring && tempCfg && (
-              <div className="p-5 border-b border-slate-100">
-                <div className="flex items-start gap-5">
-                  <ScoreRing score={scoring.score} temperature={scoring.temperature} />
-                  <div className="flex-1 min-w-0 pt-1">
-                    <div className="flex flex-wrap items-center gap-2 mb-2">
-                      {qualification?.firstName && (
-                        <span className="font-semibold text-slate-900">
-                          {qualification.firstName}
-                          {qualification.lastName ? ` ${qualification.lastName}` : ''}
-                        </span>
-                      )}
-                      <span className={`inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded-full border font-medium ${tempCfg.badge}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${tempCfg.dot}`} />
-                        {tempCfg.label}
-                      </span>
-                    </div>
-                    <p className="text-sm text-slate-500 leading-relaxed mb-3">{scoring.explanation}</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {scoring.keyFactors.map((f, i) => (
-                        <span key={i} className="text-xs bg-slate-50 text-slate-600 border border-slate-200 px-2 py-0.5 rounded-md font-medium">
-                          +{f.points} {f.factor}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Contact data */}
-            {qualification && (
-              <div className="p-5 border-b border-slate-100">
-                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-3">
-                  Profil
-                </p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-3">
-                  <Field label="Email"         value={qualification.email} />
-                  <Field label="Téléphone"     value={qualification.phone} />
-                  <Field label="Type de bien"  value={qualification.propertyType} />
-                  <Field label="Adresse"       value={qualification.address} />
-                  <Field label="Surface"       value={qualification.surface ? `${qualification.surface} m²` : null} />
-                  <Field label="Pièces"        value={qualification.rooms} />
-                  <Field label="Prix / Budget" value={qualification.price ? `${qualification.price.toLocaleString('fr-FR')} €` : null} />
-                  <Field label="Délai de vente"
-                    value={qualification.sell_timeline ? TIMELINE_LABEL[qualification.sell_timeline] : null} />
-                  <Field label="Délai d'achat"
-                    value={qualification.purchase_timeline ? TIMELINE_LABEL[qualification.purchase_timeline] : null} />
-                  <Field label="Financement"
-                    value={qualification.financing_status ? FINANCING_LABEL[qualification.financing_status] : null} />
-                </div>
-
-                {qualification.description && (
-                  <p className="mt-4 text-sm text-slate-500 italic leading-relaxed">
-                    {qualification.description}
-                  </p>
-                )}
-
-                {qualification.urgencySignals.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    {qualification.urgencySignals.map((s, i) => (
-                      <span key={i} className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-md">
-                        {s}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Prospection tools */}
-            {prospection && (
-              <div>
-                {/* Tabs */}
-                <div className="flex border-b border-slate-100">
-                  {(['email', 'call'] as const).map(t => (
-                    <button
-                      key={t}
-                      onClick={() => setTab(t)}
-                      className={`flex-1 py-3 text-xs font-semibold uppercase tracking-wide transition-colors ${
-                        tab === t
-                          ? 'text-slate-900 border-b-2 border-slate-900'
-                          : 'text-slate-400 hover:text-slate-600'
-                      }`}
-                    >
-                      {t === 'email' ? 'Email' : 'Guide d\'appel'}
-                    </button>
+          <div className="grid md:grid-cols-2 gap-8">
+            {[
+              {
+                name: 'Essai gratuit',
+                price: '0 CHF',
+                period: '30 jours',
+                features: ['Gmail connecté', 'Analyse automatique', 'Score + briefing', 'Réponses email', 'Support'],
+                cta: 'Commencer maintenant',
+                highlight: false,
+              },
+              {
+                name: 'Pro',
+                price: '399 CHF',
+                period: 'par mois',
+                features: ['Tout de l\'essai', 'Intégrations Slack', 'Export de données', 'API webhook', 'Support prioritaire', 'SLA 99.5%'],
+                cta: 'Passer à Pro',
+                highlight: true,
+              },
+            ].map((plan, i) => (
+              <div key={i} className={`rounded-2xl p-8 border-2 ${
+                plan.highlight
+                  ? 'bg-emerald-50 border-emerald-300'
+                  : 'bg-white border-slate-200'
+              }`}>
+                <h3 className="text-xl font-bold text-slate-900">{plan.name}</h3>
+                <p className="text-4xl font-bold text-slate-900 mt-4">{plan.price}</p>
+                <p className="text-sm text-slate-600 mb-8">{plan.period}</p>
+                <ul className="space-y-3 mb-8">
+                  {plan.features.map((f, j) => (
+                    <li key={j} className="text-sm text-slate-700 flex items-center gap-2">
+                      <span className="text-emerald-600 font-bold">✓</span> {f}
+                    </li>
                   ))}
-                </div>
-
-                <div className="p-5">
-
-                  {/* Email tab */}
-                  {tab === 'email' && (
-                    <div>
-                      <div className="border border-slate-200 rounded-xl overflow-hidden">
-                        <div className="bg-slate-50 border-b border-slate-200 px-4 py-2.5 flex items-baseline gap-2">
-                          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide w-10 shrink-0">Objet</span>
-                          <span className="text-sm font-medium text-slate-800">{prospection.email.subject}</span>
-                        </div>
-                        <div className="px-4 py-4">
-                          <pre className="text-sm text-slate-700 whitespace-pre-wrap font-sans leading-relaxed">
-                            {prospection.email.body}
-                          </pre>
-                        </div>
-                      </div>
-                      <div className="mt-2.5 flex justify-end">
-                        <button
-                          onClick={copyEmail}
-                          className="text-xs text-slate-400 hover:text-slate-600 transition-colors"
-                        >
-                          {copied ? '✓ Copié' : 'Copier'}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Call briefing tab */}
-                  {tab === 'call' && (
-                    <div className="space-y-3">
-                      <div className="border border-slate-200 rounded-xl overflow-hidden">
-                        <div className="bg-slate-50 border-b border-slate-200 px-4 py-2">
-                          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Contexte</span>
-                        </div>
-                        <div className="px-4 py-3">
-                          <p className="text-sm font-medium text-slate-800 leading-relaxed">
-                            {prospection.callScript.briefing}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="border border-slate-200 rounded-xl overflow-hidden">
-                        <div className="bg-slate-50 border-b border-slate-200 px-4 py-2">
-                          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Ce qu'il veut</span>
-                        </div>
-                        <div className="px-4 py-3">
-                          <p className="text-sm text-slate-700 leading-relaxed">
-                            {prospection.callScript.need}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="border border-emerald-200 rounded-xl overflow-hidden">
-                        <div className="bg-emerald-50 border-b border-emerald-200 px-4 py-2">
-                          <span className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wide">Question clé à poser en premier</span>
-                        </div>
-                        <div className="px-4 py-3">
-                          <p className="text-sm text-slate-700 leading-relaxed italic">
-                            « {prospection.callScript.keyQuestion} »
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                </ul>
+                <button className={`w-full py-3 font-bold rounded-lg transition-colors text-base ${
+                  plan.highlight
+                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                    : 'border-2 border-slate-300 hover:border-slate-400 text-slate-900'
+                }`}>
+                  {plan.cta}
+                </button>
               </div>
-            )}
+            ))}
           </div>
-        )}
 
-        {/* ── Reset ── */}
-        {step === 'done' && (
-          <div className="flex justify-center pt-2 animate-fade-up">
-            <button
-              onClick={reset}
-              className="text-xs text-slate-400 hover:text-slate-600 transition-colors"
-            >
-              ← Nouvelle analyse
-            </button>
+          <p className="text-center text-sm text-slate-600 mt-12">
+            Un seul dossier sauvé par mois paie la subscription. La plupart sauvent 3-5 dossiers.
+          </p>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="max-w-4xl mx-auto px-5 py-24 text-center space-y-8">
+        <h2 className="text-4xl font-bold text-slate-900">
+          Récupérez vos leads perdus dès aujourd'hui
+        </h2>
+        <p className="text-lg text-slate-600">
+          30 jours gratuits. Pas de carte bancaire requise.
+        </p>
+        <a href="/pro/login" className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-8 py-4 rounded-lg text-lg transition-colors">
+          Commencer l'essai
+          <span>→</span>
+        </a>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-slate-900 text-slate-400 py-12">
+        <div className="max-w-6xl mx-auto px-5">
+          <div className="flex items-center justify-between mb-8">
+            <span className="font-bold text-white text-lg">BankKey</span>
+            <div className="flex items-center gap-6">
+              <a href="#" className="text-sm hover:text-white">Conditions</a>
+              <a href="#" className="text-sm hover:text-white">Confidentialité</a>
+              <a href="mailto:support@bankkey.ch" className="text-sm hover:text-white">Support</a>
+            </div>
           </div>
-        )}
-
-      </main>
+          <p className="text-sm text-slate-500">
+            BankKey © 2025 — Qualification IA pour courtiers crédit
+          </p>
+        </div>
+      </footer>
     </div>
-  );
+  )
 }
