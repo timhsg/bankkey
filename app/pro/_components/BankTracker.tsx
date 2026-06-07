@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { logActivity, activityBankAdded, activityBankStatusChanged } from '@/lib/activity'
+import OutcomeModal from './OutcomeModal'
+import type { QualificationResult } from '@/types'
 
 interface BankSubmission {
   name: string
@@ -15,6 +17,7 @@ interface BankSubmission {
 interface Props {
   prospectId: string
   initialBanks: BankSubmission[] | null
+  qualification?: QualificationResult | null
 }
 
 const STATUS_OPTIONS: Array<{ value: BankSubmission['status']; label: string; color: string }> = [
@@ -27,12 +30,13 @@ const STATUS_OPTIONS: Array<{ value: BankSubmission['status']; label: string; co
 /**
  * Suivi des soumissions bancaires pour un dossier
  */
-export default function BankTracker({ prospectId, initialBanks }: Props) {
+export default function BankTracker({ prospectId, initialBanks, qualification }: Props) {
   const supabase = createClient()
   const [banks, setBanks] = useState<BankSubmission[]>(initialBanks ?? [])
   const [adding, setAdding] = useState(false)
   const [newBankName, setNewBankName] = useState('')
   const [saving, setSaving] = useState(false)
+  const [outcomeFor, setOutcomeFor] = useState<{ bankName: string; status: 'accepted' | 'rejected' | 'counter'; rate?: number } | null>(null)
 
   async function persist(updated: BankSubmission[]) {
     setSaving(true)
@@ -70,6 +74,15 @@ export default function BankTracker({ prospectId, initialBanks }: Props) {
         supabase, prospectId,
         activityBankStatusChanged(previous.name, patch.status, patch.rate ?? previous.rate),
       )
+
+      // Ouvrir la modal outcome pour les statuts finaux
+      if (patch.status === 'accepted' || patch.status === 'rejected' || patch.status === 'counter') {
+        setOutcomeFor({
+          bankName: previous.name,
+          status: patch.status,
+          rate: patch.rate ?? previous.rate,
+        })
+      }
     }
   }
 
@@ -151,6 +164,19 @@ export default function BankTracker({ prospectId, initialBanks }: Props) {
             + Ajouter une banque
           </button>
         </div>
+      )}
+
+      {/* Modal de capture d'outcome */}
+      {outcomeFor && (
+        <OutcomeModal
+          open={!!outcomeFor}
+          onClose={() => setOutcomeFor(null)}
+          prospectId={prospectId}
+          qualification={qualification ?? null}
+          bankName={outcomeFor.bankName}
+          initialStatus={outcomeFor.status}
+          initialRate={outcomeFor.rate}
+        />
       )}
     </div>
   )

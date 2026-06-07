@@ -404,7 +404,7 @@ export default function LeadDetailPage() {
         <NotesEditor prospectId={prospect.id} initialNotes={prospect.broker_notes} />
 
         {/* ── Banques sollicitées ── */}
-        <BankTracker prospectId={prospect.id} initialBanks={prospect.bank_submitted} />
+        <BankTracker prospectId={prospect.id} initialBanks={prospect.bank_submitted} qualification={prospect.qualification} />
 
         {/* ── Timeline d'activité ── */}
         <ActivityTimeline activity={prospect.activity} createdAt={prospect.created_at} />
