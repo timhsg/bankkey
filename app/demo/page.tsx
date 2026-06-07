@@ -1,75 +1,76 @@
 'use client';
 
 import { Fragment, useState } from 'react';
-import type { QualificationResult, ScoringResult, ProspectionResult } from '@/types';
+import type {
+  QualificationResult,
+  ScoringResult,
+  ProspectionResult,
+  DocumentChecklistResult,
+} from '@/types';
 import { SECTORS } from '@/lib/sectors';
 
-// ── Types ──────────────────────────────────────────────────────────────────────
+// ── Types ──────────────────────────────────────────────────────────────────
 
 type PipelineStep = 'idle' | 'reading' | 'scoring' | 'writing' | 'done';
+type Tab = 'email' | 'call' | 'documents';
 
-// ── Helpers ────────────────────────────────────────────────────────────────────
+// ── Config ─────────────────────────────────────────────────────────────────
 
 const TEMP_CONFIG = {
-  cold: { label: 'Non prioritaire', dot: 'bg-slate-400',    badge: 'bg-slate-100 text-slate-600 border-slate-200',   ring: '#94a3b8' },
-  warm: { label: 'À qualifier',     dot: 'bg-amber-400',    badge: 'bg-amber-50 text-amber-700 border-amber-200',    ring: '#fbbf24' },
-  hot:  { label: 'Prioritaire',     dot: 'bg-emerald-500',  badge: 'bg-emerald-50 text-emerald-700 border-emerald-200', ring: '#34d399' },
+  cold: { label: 'Non prioritaire', badge: 'bg-slate-100 text-slate-600',   ring: '#94a3b8', accent: 'text-slate-500'   },
+  warm: { label: 'À qualifier',     badge: 'bg-amber-50 text-amber-700',    ring: '#f59e0b', accent: 'text-amber-700'   },
+  hot:  { label: 'Prioritaire',     badge: 'bg-emerald-50 text-emerald-700', ring: '#10b981', accent: 'text-emerald-700' },
 } as const;
 
 const TIMELINE_LABEL: Record<string, string> = {
-  less_3_months:   '< 3 mois',
-  '3_to_6_months': '3 – 6 mois',
-  more_6_months:   '> 6 mois',
+  less_3_months:   'Moins de 3 mois',
+  '3_to_6_months': '3 à 6 mois',
+  more_6_months:   'Plus de 6 mois',
 };
 
 const FINANCING_LABEL: Record<string, string> = {
-  obtained:    'Obtenu',
+  obtained:    'Accord obtenu',
   in_progress: 'En cours',
   none:        'Non démarré',
+};
+
+const JURISDICTION_LABEL: Record<string, string> = {
+  FR: 'France',
+  CH: 'Suisse',
+  unknown: 'À préciser',
 };
 
 const STEP_ORDER: Record<PipelineStep, number> = {
   idle: -1, reading: 0, scoring: 1, writing: 2, done: 3,
 };
 
-// ── Sub-components ─────────────────────────────────────────────────────────────
+// ── Sub-components ─────────────────────────────────────────────────────────
 
 function ScoreRing({ score, temperature }: { score: number; temperature: 'cold' | 'warm' | 'hot' }) {
-  const r = 40;
+  const r = 32;
   const circ = 2 * Math.PI * r;
   const offset = circ * (1 - score / 100);
   const color = TEMP_CONFIG[temperature].ring;
 
   return (
-    <div className="relative w-28 h-28 shrink-0">
-      <svg className="w-full h-full" viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r={r} fill="none" stroke="#f1f5f9" strokeWidth="9" />
+    <div className="relative w-20 h-20 shrink-0">
+      <svg className="w-full h-full -rotate-90" viewBox="0 0 80 80">
+        <circle cx="40" cy="40" r={r} fill="none" stroke="#f1f5f9" strokeWidth="6" />
         <circle
-          cx="50" cy="50" r={r}
+          cx="40" cy="40" r={r}
           fill="none"
           stroke={color}
-          strokeWidth="9"
+          strokeWidth="6"
           strokeLinecap="round"
           strokeDasharray={circ}
           strokeDashoffset={offset}
-          transform="rotate(-90 50 50)"
           style={{ transition: 'stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1)' }}
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-3xl font-black text-slate-900 leading-none">{score}</span>
-        <span className="text-[10px] font-medium text-slate-400 mt-0.5">/ 100</span>
+        <span className="text-2xl font-semibold text-slate-900 leading-none tracking-tight">{score}</span>
+        <span className="text-[9px] font-medium text-slate-400 mt-0.5 uppercase tracking-wider">/ 100</span>
       </div>
-    </div>
-  );
-}
-
-function Field({ label, value }: { label: string; value: string | number | null | undefined }) {
-  if (value === null || value === undefined || value === '') return null;
-  return (
-    <div className="flex flex-col gap-0.5">
-      <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">{label}</span>
-      <span className="text-sm font-medium text-slate-700">{value}</span>
     </div>
   );
 }
@@ -94,14 +95,14 @@ function PipelineProgress({ step }: { step: PipelineStep }) {
               )}
               <div className="flex flex-col items-center gap-1.5 shrink-0">
                 <div className={`w-5 h-5 rounded-full flex items-center justify-center transition-all duration-300 ${
-                  status === 'done'   ? 'bg-slate-800' :
-                  status === 'active' ? 'border-2 border-slate-800 bg-white' :
+                  status === 'done'   ? 'bg-slate-900' :
+                  status === 'active' ? 'border-2 border-slate-900 bg-white' :
                                         'border-2 border-slate-200 bg-white'
                 }`}>
-                  {status === 'done'   && <span className="text-white text-[9px] font-bold">✓</span>}
-                  {status === 'active' && <span className="w-1.5 h-1.5 rounded-full bg-slate-800 animate-pulse" />}
+                  {status === 'done'   && <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
+                  {status === 'active' && <span className="w-1.5 h-1.5 rounded-full bg-slate-900 animate-pulse" />}
                 </div>
-                <span className={`text-[10px] font-medium ${status === 'pending' ? 'text-slate-300' : 'text-slate-500'}`}>
+                <span className={`text-[10px] font-medium ${status === 'pending' ? 'text-slate-300' : 'text-slate-600'}`}>
                   {s.label}
                 </span>
               </div>
@@ -113,26 +114,136 @@ function PipelineProgress({ step }: { step: PipelineStep }) {
   );
 }
 
-// ── Main page ──────────────────────────────────────────────────────────────────
+// Petite icône SVG inline
+const I = {
+  Phone: () => <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.33 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z" /></svg>,
+  Mail: () => <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>,
+  MapPin: () => <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>,
+  Spark: () => <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg>,
+  Check: () => <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>,
+  Circle: () => <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9" /></svg>,
+  Copy: () => <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></svg>,
+};
 
-export default function Home() {
+function ClientCard({ q, s }: { q: QualificationResult; s: ScoringResult }) {
+  const tempCfg = TEMP_CONFIG[s.temperature];
+  const fullName = [q.firstName, q.lastName].filter(Boolean).join(' ') || 'Prospect';
+  const cityFromAddress = q.address?.split(',')[0]?.trim();
+
+  return (
+    <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+
+      {/* Header */}
+      <div className="px-6 pt-6 pb-5 border-b border-slate-100">
+        <div className="flex items-start gap-5">
+          <ScoreRing score={s.score} temperature={s.temperature} />
+
+          <div className="flex-1 min-w-0 pt-0.5">
+            <div className="flex flex-wrap items-center gap-2 mb-1.5">
+              <h2 className="text-xl font-semibold text-slate-900 tracking-tight">{fullName}</h2>
+              <span className={`inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${tempCfg.badge}`}>
+                {tempCfg.label}
+              </span>
+            </div>
+            <p className="text-sm text-slate-500">
+              Emprunteur · {cityFromAddress ?? q.address ?? 'Localisation à préciser'}
+            </p>
+            <p className="text-sm text-slate-600 leading-relaxed mt-3">{s.explanation}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Contact */}
+      {(q.email || q.phone) && (
+        <div className="px-6 py-3 bg-slate-50/50 border-b border-slate-100 flex items-center gap-5 text-xs">
+          {q.phone && (
+            <a href={`tel:${q.phone.replace(/\s/g, '')}`} className="flex items-center gap-1.5 text-slate-700 hover:text-slate-900 font-medium transition-colors">
+              <I.Phone />
+              {q.phone}
+            </a>
+          )}
+          {q.email && (
+            <a href={`mailto:${q.email}`} className="flex items-center gap-1.5 text-slate-700 hover:text-slate-900 font-medium transition-colors">
+              <I.Mail />
+              {q.email}
+            </a>
+          )}
+        </div>
+      )}
+
+      {/* Profile fields */}
+      <div className="px-6 py-5 border-b border-slate-100">
+        <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-4">Profil emprunteur</p>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4">
+          {[
+            { label: 'Bien ciblé', value: q.propertyType },
+            { label: 'Localisation', value: q.address },
+            { label: 'Surface', value: q.surface ? `${q.surface} m²` : null },
+            { label: 'Pièces', value: q.rooms },
+            { label: 'Budget / Prix', value: q.price ? q.price.toLocaleString('fr-FR') + (q.address?.toLowerCase().includes('genève') || q.address?.toLowerCase().includes('lausanne') ? ' CHF' : ' €') : null },
+            { label: 'Délai d\'achat', value: q.purchase_timeline ? TIMELINE_LABEL[q.purchase_timeline] : null },
+            { label: 'Délai de vente', value: q.sell_timeline ? TIMELINE_LABEL[q.sell_timeline] : null },
+            { label: 'Financement', value: q.financing_status ? FINANCING_LABEL[q.financing_status] : null },
+          ].filter(f => f.value !== null && f.value !== undefined && f.value !== '').map((f, i) => (
+            <div key={i}>
+              <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider mb-1">{f.label}</p>
+              <p className="text-sm font-medium text-slate-900">{f.value}</p>
+            </div>
+          ))}
+        </div>
+
+        {q.urgencySignals.length > 0 && (
+          <div className="mt-5 pt-4 border-t border-slate-100">
+            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-2">Signaux d'urgence</p>
+            <div className="flex flex-wrap gap-1.5">
+              {q.urgencySignals.map((sig, i) => (
+                <span key={i} className="text-xs bg-amber-50 text-amber-700 px-2 py-0.5 rounded-md border border-amber-200">
+                  {sig}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Key factors */}
+      {s.keyFactors.length > 0 && (
+        <div className="px-6 py-4 bg-slate-50/30 border-b border-slate-100">
+          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-2.5">Facteurs de scoring</p>
+          <div className="flex flex-wrap gap-1.5">
+            {s.keyFactors.map((f, i) => (
+              <span key={i} className="text-xs bg-white text-slate-600 border border-slate-200 px-2 py-0.5 rounded-md font-medium">
+                +{f.points} · {f.factor}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Main page ──────────────────────────────────────────────────────────────
+
+export default function DemoPage() {
   const sector = 'credit' as const;
-  const [listing,      setListing]      = useState('');
-  const [step,         setStep]         = useState<PipelineStep>('idle');
+  const [listing,       setListing]       = useState('');
+  const [step,          setStep]          = useState<PipelineStep>('idle');
   const [qualification, setQualification] = useState<QualificationResult | null>(null);
-  const [scoring,      setScoring]      = useState<ScoringResult | null>(null);
-  const [prospection,  setProspection]  = useState<ProspectionResult | null>(null);
-  const [error,        setError]        = useState<string | null>(null);
-  const [tab,          setTab]          = useState<'email' | 'call'>('email');
-  const [copied,       setCopied]       = useState(false);
+  const [documents,     setDocuments]     = useState<DocumentChecklistResult | null>(null);
+  const [scoring,       setScoring]       = useState<ScoringResult | null>(null);
+  const [prospection,   setProspection]   = useState<ProspectionResult | null>(null);
+  const [error,         setError]         = useState<string | null>(null);
+  const [tab,           setTab]           = useState<Tab>('email');
+  const [copied,        setCopied]        = useState(false);
 
   const isLoading  = step !== 'idle' && step !== 'done';
-  const hasResults = !!(qualification && scoring && prospection);
   const config     = SECTORS[sector];
 
   function reset() {
     setStep('idle');
     setQualification(null);
+    setDocuments(null);
     setScoring(null);
     setProspection(null);
     setError(null);
@@ -140,12 +251,12 @@ export default function Home() {
     setTab('email');
   }
 
-
   async function analyze() {
     if (!listing.trim() || isLoading) return;
 
     setStep('reading');
     setQualification(null);
+    setDocuments(null);
     setScoring(null);
     setProspection(null);
     setError(null);
@@ -186,6 +297,9 @@ export default function Home() {
               setQualification(event.data as QualificationResult);
               setStep('scoring');
               break;
+            case 'documents':
+              setDocuments(event.data as DocumentChecklistResult);
+              break;
             case 'scoring':
               setScoring(event.data as ScoringResult);
               setStep('writing');
@@ -216,14 +330,12 @@ export default function Home() {
     });
   }
 
-  const tempCfg = scoring ? TEMP_CONFIG[scoring.temperature] : null;
-
   return (
     <div className="min-h-screen bg-slate-50">
 
       {/* ── Header ── */}
-      <header className="bg-white border-b border-slate-100 sticky top-0 z-20 backdrop-blur-md bg-white/80">
-        <div className="max-w-2xl mx-auto px-5 h-14 flex items-center justify-between">
+      <header className="bg-white/80 backdrop-blur-md border-b border-slate-100 sticky top-0 z-20">
+        <div className="max-w-3xl mx-auto px-5 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <a href="/" className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-md bg-slate-900 flex items-center justify-center">
@@ -235,12 +347,12 @@ export default function Home() {
             <span className="text-xs font-medium text-slate-500">Démo</span>
           </div>
           <a href="/pro/login" className="text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors">
-            Démarrer l'essai →
+            Démarrer l&apos;essai →
           </a>
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-5 py-8 space-y-4">
+      <main className="max-w-3xl mx-auto px-5 py-8 space-y-5">
 
         {/* ── Intro ── */}
         {step === 'idle' && (
@@ -249,7 +361,7 @@ export default function Home() {
               Collez une demande de financement
             </h1>
             <p className="text-sm text-slate-500 max-w-md mx-auto">
-              Email d'un prospect, message reçu, formulaire de contact — BankKey extrait le profil, calcule le score et prépare votre réponse.
+              Email d&apos;un prospect, message reçu, formulaire de contact — BankKey extrait le profil, calcule le score, prépare la réponse et liste les documents à demander.
             </p>
           </div>
         )}
@@ -306,168 +418,170 @@ export default function Home() {
         {/* ── Pipeline progress ── */}
         {isLoading && <PipelineProgress step={step} />}
 
-        {/* ── Results card ── */}
-        {(qualification || scoring || prospection) && (
+        {/* ── Client card ── */}
+        {qualification && scoring && (
+          <div className="animate-fade-up">
+            <ClientCard q={qualification} s={scoring} />
+          </div>
+        )}
+
+        {/* ── Tabs : Email / Appel / Documents ── */}
+        {(prospection || documents) && (
           <div className="bg-white rounded-xl border border-slate-200 overflow-hidden animate-fade-up">
 
-            {/* Score section */}
-            {scoring && tempCfg && (
-              <div className="p-5 border-b border-slate-100">
-                <div className="flex items-start gap-5">
-                  <ScoreRing score={scoring.score} temperature={scoring.temperature} />
-                  <div className="flex-1 min-w-0 pt-1">
-                    <div className="flex flex-wrap items-center gap-2 mb-2">
-                      {qualification?.firstName && (
-                        <span className="font-semibold text-slate-900">
-                          {qualification.firstName}
-                          {qualification.lastName ? ` ${qualification.lastName}` : ''}
+            <div className="flex border-b border-slate-100">
+              {([
+                { id: 'email' as const,     label: 'Réponse email',  enabled: !!prospection, badge: undefined as string | undefined },
+                { id: 'call' as const,      label: 'Briefing appel', enabled: !!prospection, badge: undefined as string | undefined },
+                { id: 'documents' as const, label: 'Documents',      enabled: !!documents,   badge: documents?.urgency === 'urgent' ? 'Urgent' : undefined },
+              ]).map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => t.enabled && setTab(t.id as Tab)}
+                  disabled={!t.enabled}
+                  className={`flex-1 py-3 text-xs font-semibold uppercase tracking-wide transition-colors flex items-center justify-center gap-2 ${
+                    tab === t.id
+                      ? 'text-slate-900 border-b-2 border-slate-900'
+                      : t.enabled
+                        ? 'text-slate-400 hover:text-slate-600'
+                        : 'text-slate-200 cursor-not-allowed'
+                  }`}
+                >
+                  {t.label}
+                  {t.badge && (
+                    <span className="text-[9px] font-bold uppercase tracking-wider bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">
+                      {t.badge}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            <div className="p-5">
+
+              {/* Email */}
+              {tab === 'email' && prospection && (
+                <div>
+                  <div className="border border-slate-200 rounded-xl overflow-hidden">
+                    <div className="bg-slate-50 border-b border-slate-200 px-4 py-2.5 flex items-baseline gap-2">
+                      <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide w-10 shrink-0">Objet</span>
+                      <span className="text-sm font-medium text-slate-800">{prospection.email.subject}</span>
+                    </div>
+                    <div className="px-4 py-4">
+                      <pre className="text-sm text-slate-700 whitespace-pre-wrap font-sans leading-relaxed">
+                        {prospection.email.body}
+                      </pre>
+                    </div>
+                  </div>
+                  <div className="mt-2.5 flex justify-end">
+                    <button
+                      onClick={copyEmail}
+                      className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600 transition-colors"
+                    >
+                      <I.Copy />
+                      {copied ? 'Copié' : 'Copier'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Call briefing */}
+              {tab === 'call' && prospection && (
+                <div className="space-y-3">
+                  <div className="border border-slate-200 rounded-xl overflow-hidden">
+                    <div className="bg-slate-50 border-b border-slate-200 px-4 py-2">
+                      <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Contexte</span>
+                    </div>
+                    <div className="px-4 py-3">
+                      <p className="text-sm font-medium text-slate-800 leading-relaxed">
+                        {prospection.callScript.briefing}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="border border-slate-200 rounded-xl overflow-hidden">
+                    <div className="bg-slate-50 border-b border-slate-200 px-4 py-2">
+                      <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Besoin du prospect</span>
+                    </div>
+                    <div className="px-4 py-3">
+                      <p className="text-sm text-slate-700 leading-relaxed">
+                        {prospection.callScript.need}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="border border-emerald-200 rounded-xl overflow-hidden">
+                    <div className="bg-emerald-50 border-b border-emerald-200 px-4 py-2">
+                      <span className="text-[10px] font-semibold text-emerald-700 uppercase tracking-wide">Question clé à poser en premier</span>
+                    </div>
+                    <div className="px-4 py-3">
+                      <p className="text-sm text-slate-700 leading-relaxed italic">
+                        « {prospection.callScript.keyQuestion} »
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Documents */}
+              {tab === 'documents' && documents && (
+                <div className="space-y-4">
+
+                  {/* Header info */}
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-3">
+                      <span className="flex items-center gap-1.5 text-slate-600">
+                        <I.MapPin />
+                        Juridiction : <span className="font-medium text-slate-900">{JURISDICTION_LABEL[documents.jurisdiction]}</span>
+                      </span>
+                      {documents.urgency === 'urgent' && (
+                        <span className="flex items-center gap-1 text-amber-700 font-medium">
+                          <I.Spark />
+                          Compromis signé — priorité haute
                         </span>
                       )}
-                      <span className={`inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded-full border font-medium ${tempCfg.badge}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${tempCfg.dot}`} />
-                        {tempCfg.label}
-                      </span>
                     </div>
-                    <p className="text-sm text-slate-500 leading-relaxed mb-3">{scoring.explanation}</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {scoring.keyFactors.map((f, i) => (
-                        <span key={i} className="text-xs bg-slate-50 text-slate-600 border border-slate-200 px-2 py-0.5 rounded-md font-medium">
-                          +{f.points} {f.factor}
-                        </span>
-                      ))}
+                    <span className="text-slate-400">
+                      Profil rempli à <span className="font-semibold text-slate-700">{documents.estimatedCompleteness}%</span>
+                    </span>
+                  </div>
+
+                  {/* Groups */}
+                  {documents.groups.map((group, gi) => (
+                    <div key={gi} className="border border-slate-200 rounded-xl overflow-hidden">
+                      <div className="bg-slate-50 border-b border-slate-200 px-4 py-2">
+                        <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">{group.category}</span>
+                      </div>
+                      <ul className="divide-y divide-slate-100">
+                        {group.items.map((item, ii) => (
+                          <li key={ii} className="px-4 py-3 flex items-start gap-3">
+                            <span className={`mt-0.5 shrink-0 ${item.required ? 'text-slate-400' : 'text-slate-300'}`}>
+                              {item.required ? <I.Circle /> : <I.Circle />}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-baseline gap-2 flex-wrap">
+                                <p className="text-sm text-slate-800 leading-snug">{item.name}</p>
+                                {!item.required && (
+                                  <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">Optionnel</span>
+                                )}
+                              </div>
+                              {item.hint && (
+                                <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{item.hint}</p>
+                              )}
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Contact data */}
-            {qualification && (
-              <div className="p-5 border-b border-slate-100">
-                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-3">
-                  Profil
-                </p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-3">
-                  <Field label="Email"         value={qualification.email} />
-                  <Field label="Téléphone"     value={qualification.phone} />
-                  <Field label="Type de bien"  value={qualification.propertyType} />
-                  <Field label="Adresse"       value={qualification.address} />
-                  <Field label="Surface"       value={qualification.surface ? `${qualification.surface} m²` : null} />
-                  <Field label="Pièces"        value={qualification.rooms} />
-                  <Field label="Prix / Budget" value={qualification.price ? `${qualification.price.toLocaleString('fr-FR')} €` : null} />
-                  <Field label="Délai de vente"
-                    value={qualification.sell_timeline ? TIMELINE_LABEL[qualification.sell_timeline] : null} />
-                  <Field label="Délai d'achat"
-                    value={qualification.purchase_timeline ? TIMELINE_LABEL[qualification.purchase_timeline] : null} />
-                  <Field label="Financement"
-                    value={qualification.financing_status ? FINANCING_LABEL[qualification.financing_status] : null} />
-                </div>
-
-                {qualification.description && (
-                  <p className="mt-4 text-sm text-slate-500 italic leading-relaxed">
-                    {qualification.description}
-                  </p>
-                )}
-
-                {qualification.urgencySignals.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    {qualification.urgencySignals.map((s, i) => (
-                      <span key={i} className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-md">
-                        {s}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Prospection tools */}
-            {prospection && (
-              <div>
-                {/* Tabs */}
-                <div className="flex border-b border-slate-100">
-                  {(['email', 'call'] as const).map(t => (
-                    <button
-                      key={t}
-                      onClick={() => setTab(t)}
-                      className={`flex-1 py-3 text-xs font-semibold uppercase tracking-wide transition-colors ${
-                        tab === t
-                          ? 'text-slate-900 border-b-2 border-slate-900'
-                          : 'text-slate-400 hover:text-slate-600'
-                      }`}
-                    >
-                      {t === 'email' ? 'Email' : 'Guide d\'appel'}
-                    </button>
                   ))}
+
+                  <p className="text-[11px] text-slate-400 text-center pt-2">
+                    Checklist générée selon le profil détecté ({JURISDICTION_LABEL[documents.jurisdiction]}). Adaptez selon votre cabinet.
+                  </p>
                 </div>
+              )}
 
-                <div className="p-5">
-
-                  {/* Email tab */}
-                  {tab === 'email' && (
-                    <div>
-                      <div className="border border-slate-200 rounded-xl overflow-hidden">
-                        <div className="bg-slate-50 border-b border-slate-200 px-4 py-2.5 flex items-baseline gap-2">
-                          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide w-10 shrink-0">Objet</span>
-                          <span className="text-sm font-medium text-slate-800">{prospection.email.subject}</span>
-                        </div>
-                        <div className="px-4 py-4">
-                          <pre className="text-sm text-slate-700 whitespace-pre-wrap font-sans leading-relaxed">
-                            {prospection.email.body}
-                          </pre>
-                        </div>
-                      </div>
-                      <div className="mt-2.5 flex justify-end">
-                        <button
-                          onClick={copyEmail}
-                          className="text-xs text-slate-400 hover:text-slate-600 transition-colors"
-                        >
-                          {copied ? '✓ Copié' : 'Copier'}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Call briefing tab */}
-                  {tab === 'call' && (
-                    <div className="space-y-3">
-                      <div className="border border-slate-200 rounded-xl overflow-hidden">
-                        <div className="bg-slate-50 border-b border-slate-200 px-4 py-2">
-                          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Contexte</span>
-                        </div>
-                        <div className="px-4 py-3">
-                          <p className="text-sm font-medium text-slate-800 leading-relaxed">
-                            {prospection.callScript.briefing}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="border border-slate-200 rounded-xl overflow-hidden">
-                        <div className="bg-slate-50 border-b border-slate-200 px-4 py-2">
-                          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Ce qu'il veut</span>
-                        </div>
-                        <div className="px-4 py-3">
-                          <p className="text-sm text-slate-700 leading-relaxed">
-                            {prospection.callScript.need}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="border border-emerald-200 rounded-xl overflow-hidden">
-                        <div className="bg-emerald-50 border-b border-emerald-200 px-4 py-2">
-                          <span className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wide">Question clé à poser en premier</span>
-                        </div>
-                        <div className="px-4 py-3">
-                          <p className="text-sm text-slate-700 leading-relaxed italic">
-                            « {prospection.callScript.keyQuestion} »
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
+            </div>
           </div>
         )}
 

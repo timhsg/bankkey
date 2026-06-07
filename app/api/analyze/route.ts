@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { runQualificationAgent } from '@/lib/agents/qualification';
 import { runScoringAgent } from '@/lib/agents/scoring';
 import { runProspectionAgent } from '@/lib/agents/prospection';
+import { generateDocumentChecklist } from '@/lib/documents/checklist';
 import type { SectorId } from '@/lib/sectors';
 
 export async function POST(request: NextRequest) {
@@ -26,6 +27,10 @@ export async function POST(request: NextRequest) {
       try {
         const qualification = await runQualificationAgent(listing, sector);
         send({ step: 'qualification', data: qualification });
+
+        // Checklist documents — déterministe, instantanée (pas de LLM)
+        const documents = generateDocumentChecklist(qualification);
+        send({ step: 'documents', data: documents });
 
         const scoring = await runScoringAgent(qualification, sector);
         send({ step: 'scoring', data: scoring });

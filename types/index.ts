@@ -46,8 +46,30 @@ export interface ProspectionResult {
   };
 }
 
+// ── Documents à demander au prospect ─────────────────────────────────────
+// Généré par règles déterministes (pas de LLM) en fonction du profil
+
+export interface DocumentItem {
+  name: string;
+  required: boolean;
+  hint?: string;
+}
+
+export interface DocumentGroup {
+  category: string;
+  items: DocumentItem[];
+}
+
+export interface DocumentChecklistResult {
+  jurisdiction: 'FR' | 'CH' | 'unknown';
+  urgency: 'urgent' | 'normal';
+  groups: DocumentGroup[];
+  estimatedCompleteness: number; // 0-100, basé sur les infos déjà connues
+}
+
 export interface AnalysisResult {
   qualification: QualificationResult;
   scoring: ScoringResult;
   prospection: ProspectionResult;
+  documents: DocumentChecklistResult;
 }
