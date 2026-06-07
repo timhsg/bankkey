@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import ProShell from './_components/ProShell'
 
 export const metadata: Metadata = {
   title: 'BankKey',
@@ -6,5 +7,5 @@ export const metadata: Metadata = {
 }
 
 export default function ProLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>
+  return <ProShell>{children}</ProShell>
 }

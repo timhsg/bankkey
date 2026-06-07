@@ -92,26 +92,21 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen">
 
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-slate-100 sticky top-0 z-20">
-        <div className="max-w-3xl mx-auto px-5 h-14 flex items-center justify-between">
-          <Link href="/pro" className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 transition-colors">
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="m12 19-7-7 7-7" /><path d="M19 12H5" />
-            </svg>
-            Tableau de bord
-          </Link>
+      {/* Header avec actions */}
+      <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
+        <div className="max-w-3xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
+          <h1 className="text-base font-semibold text-slate-900 tracking-tight pl-12 lg:pl-0">Mon profil</h1>
           <button
             onClick={save}
             disabled={saving}
             className="text-xs bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white px-4 py-1.5 rounded-lg transition-colors font-medium"
           >
-            {saving ? 'Sauvegarde...' : saved ? '✓ Sauvegardé' : 'Sauvegarder'}
+            {saving ? 'Sauvegarde...' : saved ? 'Sauvegardé' : 'Sauvegarder'}
           </button>
         </div>
-      </header>
+      </div>
 
       <main className="max-w-3xl mx-auto px-5 py-10 space-y-6">
 

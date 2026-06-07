@@ -5,6 +5,16 @@ import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { generateDocumentChecklist } from '@/lib/documents/checklist'
 import type { QualificationResult, ScoringResult, ProspectionResult, DocumentChecklistResult } from '@/types'
+import NotesEditor from '../../_components/NotesEditor'
+import BankTracker from '../../_components/BankTracker'
+
+interface BankSubmission {
+  name: string
+  submitted_at?: string
+  status?: 'pending' | 'accepted' | 'rejected' | 'counter'
+  rate?: number
+  notes?: string
+}
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -21,6 +31,8 @@ interface ProspectFull {
   qualification: QualificationResult | null
   scoring: ScoringResult | null
   prospection: ProspectionResult | null
+  broker_notes: string | null
+  bank_submitted: BankSubmission[] | null
 }
 
 type Tab = 'email' | 'call' | 'documents'
@@ -199,18 +211,18 @@ export default function LeadDetailPage() {
     : null
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen">
 
-      {/* ── Header ── */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-slate-100 sticky top-0 z-20">
-        <div className="max-w-3xl mx-auto px-5 h-14 flex items-center justify-between">
-          <button onClick={() => router.push('/pro')} className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 transition-colors">
+      {/* ── Header avec breadcrumb + actions ── */}
+      <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
+          <button onClick={() => router.push('/pro/prospects')} className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 transition-colors pl-12 lg:pl-0">
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="m12 19-7-7 7-7" /><path d="M19 12H5" />
             </svg>
-            Tableau de bord
+            Prospects
           </button>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {prospect.status === 'replied' ? (
               <span className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full font-medium">
                 Répondu
@@ -229,9 +241,9 @@ export default function LeadDetailPage() {
             </button>
           </div>
         </div>
-      </header>
+      </div>
 
-      <main className="max-w-3xl mx-auto px-5 py-8 space-y-4">
+      <main className="max-w-4xl mx-auto px-6 py-6 space-y-4">
 
         {/* ── Client card ── */}
         {q && s && temp && (
@@ -374,6 +386,12 @@ export default function LeadDetailPage() {
             )}
           </div>
         )}
+
+        {/* ── Notes internes ── */}
+        <NotesEditor prospectId={prospect.id} initialNotes={prospect.broker_notes} />
+
+        {/* ── Banques sollicitées ── */}
+        <BankTracker prospectId={prospect.id} initialBanks={prospect.bank_submitted} />
 
         {/* ── Tabs ── */}
         {(p || documents) && (
