@@ -2,19 +2,167 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer utilities {
-  .animate-fade-up {
-    animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+/* ════════════════════════════════════════════════════════════════════════
+   Design system : tokens de motion
+   Inspiré par Stripe, Linear et Vercel — easing naturel cubic-bezier
+   ════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --ease-out:   cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in:    cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-fast:    150ms;
+  --duration-base:    200ms;
+  --duration-slow:    350ms;
+  --duration-slower:  500ms;
+}
+
+/* Toutes les transitions par défaut héritent d'un easing naturel */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Focus ring premium */
+  *:focus-visible {
+    outline: 2px solid #0f172a;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Selection */
+  ::selection {
+    background-color: rgba(15, 23, 42, 0.1);
+    color: #0f172a;
   }
 }
 
-@keyframes fadeUp {
-  0% {
-    opacity: 0;
-    transform: translateY(8px);
+@layer utilities {
+
+  /* ── Fade up — entrée standard ─────────────────────────────── */
+  .animate-fade-up {
+    animation: fadeUp 0.5s var(--ease-out);
   }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
+
+  @keyframes fadeUp {
+    0%   { opacity: 0; transform: translateY(8px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Fade in simple ─────────────────────────────────────────── */
+  .animate-fade-in {
+    animation: fadeIn 0.4s var(--ease-out);
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  /* ── Scale up subtle (cards) ────────────────────────────────── */
+  .animate-scale-in {
+    animation: scaleIn 0.3s var(--ease-out);
+  }
+
+  @keyframes scaleIn {
+    0%   { opacity: 0; transform: scale(0.97); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+
+  /* ── Slide from right (drawer) ──────────────────────────────── */
+  .animate-slide-in-right {
+    animation: slideInRight 0.35s var(--ease-out);
+  }
+
+  @keyframes slideInRight {
+    0%   { opacity: 0; transform: translateX(20px); }
+    100% { opacity: 1; transform: translateX(0); }
+  }
+
+  /* ── Soft pulse (loading, indicateurs) ─────────────────────── */
+  .animate-soft-pulse {
+    animation: softPulse 2s var(--ease-inout) infinite;
+  }
+
+  @keyframes softPulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.6; }
+  }
+
+  /* ── Hover lift — utiliser sur les cards ───────────────────── */
+  .hover-lift {
+    transition:
+      transform var(--duration-base) var(--ease-out),
+      box-shadow var(--duration-base) var(--ease-out);
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.08), 0 4px 8px -2px rgba(15, 23, 42, 0.04);
+  }
+
+  /* ── Transitions par défaut sur tout ce qui hover ───────── */
+  /* Override : si une classe a 'transition-', utiliser les durations smooth */
+  .transition-base { transition-duration: var(--duration-base); transition-timing-function: var(--ease-out); }
+  .transition-fast { transition-duration: var(--duration-fast); transition-timing-function: var(--ease-out); }
+  .transition-slow { transition-duration: var(--duration-slow); transition-timing-function: var(--ease-out); }
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   Améliorations transitions par défaut Tailwind
+   On override pour utiliser le easing naturel partout
+   ════════════════════════════════════════════════════════════════════════ */
+
+.transition-all,
+.transition-colors,
+.transition-opacity,
+.transition-transform,
+.transition-shadow {
+  transition-timing-function: var(--ease-out);
+}
+
+/* Si pas de durée explicite, défaut 200ms naturel au lieu de 150ms */
+.transition-all:not([class*="duration-"]),
+.transition-colors:not([class*="duration-"]),
+.transition-opacity:not([class*="duration-"]),
+.transition-transform:not([class*="duration-"]),
+.transition-shadow:not([class*="duration-"]) {
+  transition-duration: var(--duration-base);
+}
+
+/* ── Scroll bar subtle (style macOS / Linear) ─────────────────── */
+@media (pointer: fine) {
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(15, 23, 42, 0.15);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(15, 23, 42, 0.3);
+    background-clip: padding-box;
+  }
+}
+
+/* ── Reduced motion : respect des préférences utilisateur ──── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

@@ -7,6 +7,7 @@ import { generateDocumentChecklist } from '@/lib/documents/checklist'
 import type { QualificationResult, ScoringResult, ProspectionResult, DocumentChecklistResult } from '@/types'
 import NotesEditor from '../../_components/NotesEditor'
 import BankTracker from '../../_components/BankTracker'
+import ActivityTimeline from '../../_components/ActivityTimeline'
 
 interface BankSubmission {
   name: string
@@ -392,6 +393,9 @@ export default function LeadDetailPage() {
 
         {/* ── Banques sollicitées ── */}
         <BankTracker prospectId={prospect.id} initialBanks={prospect.bank_submitted} />
+
+        {/* ── Activité du dossier ── */}
+        <ActivityTimeline prospect={prospect} />
 
         {/* ── Tabs ── */}
         {(p || documents) && (

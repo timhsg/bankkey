@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
+import { rateLimit, getClientIp } from '@/lib/rate-limit'
 
 interface BookingPayload {
   firstName: string
@@ -14,6 +15,16 @@ interface BookingPayload {
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit : 5 réservations / IP / 10 minutes
+    const ip = getClientIp(request.headers)
+    const limit = rateLimit(`book:${ip}`, 5, 10 * 60_000)
+    if (!limit.ok) {
+      return NextResponse.json(
+        { error: 'Trop de réservations — réessayez plus tard.' },
+        { status: 429, headers: { 'Retry-After': '600' } },
+      )
+    }
+
     const body = await request.json() as BookingPayload
 
     // Validation minimale

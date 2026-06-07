@@ -4,6 +4,7 @@ import { getUnreadEmails, markAsRead } from '@/lib/gmail'
 import { runQualificationAgent } from '@/lib/agents/qualification'
 import { runScoringAgent } from '@/lib/agents/scoring'
 import { runProspectionAgent } from '@/lib/agents/prospection'
+import { classifyRelevance } from '@/lib/agents/relevance'
 import type { SectorId } from '@/lib/sectors'
 
 /**
@@ -111,7 +112,33 @@ async function processUserEmails(
     if (!email.body.trim() || email.body.trim().length < 30) continue
 
     try {
-      // Pipeline des 3 agents
+      // 0. Pré-filtrage : éviter spam, newsletter, perso, auto-reply
+      const relevance = await classifyRelevance(
+        email.fromEmail ?? '',
+        email.subject ?? '',
+        email.body,
+      )
+
+      // Si non pertinent, on stocke quand même avec un statut "filtré" pour traçabilité
+      if (!relevance.relevant) {
+        await supabase.from('prospects').insert({
+          user_id:           userId,
+          source:            'gmail',
+          gmail_message_id:  email.id,
+          gmail_thread_id:   email.threadId,
+          email_from_name:   email.fromName,
+          email_from:        email.fromEmail,
+          email_subject:     email.subject,
+          email_body:        email.body,
+          sector,
+          status:            'filtered',
+          relevance:         relevance,  // jsonb
+          received_at:       email.receivedAt,
+        })
+        continue  // Ne pas lancer la pipeline IA
+      }
+
+      // 1-3. Pipeline des 3 agents si pertinent
       const qualification = await runQualificationAgent(email.body, sector)
       const scoring       = await runScoringAgent(qualification, sector)
       const prospection   = await runProspectionAgent(qualification, scoring, sector, brokerMemory)

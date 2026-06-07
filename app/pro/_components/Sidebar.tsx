@@ -60,6 +60,12 @@ const Icons = {
       <line x1="3" y1="18" x2="21" y2="18" />
     </svg>
   ),
+  Inbox: () => (
+    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
+      <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
+    </svg>
+  ),
   Close: () => (
     <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <line x1="18" y1="6" x2="6" y2="18" />
@@ -79,6 +85,7 @@ const PRIMARY_NAV: NavItem[] = [
   { href: '/pro',           label: 'Aujourd\'hui',   icon: Icons.Home, matchExact: true },
   { href: '/pro/prospects', label: 'Prospects',      icon: Icons.Users },
   { href: '/pro/banks',     label: 'Banques',        icon: Icons.Bank },
+  { href: '/pro/sources',   label: 'Sources',        icon: Icons.Inbox },
 ]
 
 const SECONDARY_NAV: NavItem[] = [

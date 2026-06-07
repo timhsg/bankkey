@@ -3,9 +3,20 @@ import { runQualificationAgent } from '@/lib/agents/qualification';
 import { runScoringAgent } from '@/lib/agents/scoring';
 import { runProspectionAgent } from '@/lib/agents/prospection';
 import { generateDocumentChecklist } from '@/lib/documents/checklist';
+import { rateLimit, getClientIp } from '@/lib/rate-limit';
 import type { SectorId } from '@/lib/sectors';
 
 export async function POST(request: NextRequest) {
+  // Rate limit : 10 analyses par IP par minute (anti-abus démo publique)
+  const ip = getClientIp(request.headers);
+  const limit = rateLimit(`analyze:${ip}`, 10, 60_000);
+  if (!limit.ok) {
+    return new Response(
+      JSON.stringify({ error: 'Trop de requêtes — réessayez dans une minute.' }),
+      { status: 429, headers: { 'Content-Type': 'application/json', 'Retry-After': '60' } },
+    );
+  }
+
   const body = await request.json() as { listing?: string; sector?: SectorId };
   const listing = body.listing?.trim();
   const sector: SectorId = 'credit';
