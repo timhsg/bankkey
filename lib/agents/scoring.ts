@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
-import type { QualificationResult, ScoringResult } from '@/types';
+import type { QualificationResult, ScoringResult, BrokerMemory } from '@/types';
 import type { SectorId } from '@/lib/sectors';
+import { buildScoringWeights } from '@/lib/broker/memory';
 
 const client = new Anthropic();
 
@@ -165,11 +166,15 @@ function parseJSON<T>(text: string): T {
 export async function runScoringAgent(
   qualification: QualificationResult,
   sector: SectorId = 'credit',
+  brokerMemory?: BrokerMemory | null,
 ): Promise<ScoringResult> {
+  const customWeights = buildScoringWeights(brokerMemory);
+  const systemPrompt = SYSTEM_PROMPT + customWeights;
+
   const message = await client.messages.create({
     model: 'claude-haiku-4-5',
     max_tokens: 1024,
-    system: SYSTEM_PROMPT,
+    system: systemPrompt,
     messages: [{ role: 'user', content: buildPrompt(qualification, sector) }],
   });
 

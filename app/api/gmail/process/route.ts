@@ -140,7 +140,7 @@ async function processUserEmails(
 
       // 1-3. Pipeline des 3 agents si pertinent
       const qualification = await runQualificationAgent(email.body, sector)
-      const scoring       = await runScoringAgent(qualification, sector)
+      const scoring       = await runScoringAgent(qualification, sector, brokerMemory)
       const prospection   = await runProspectionAgent(qualification, scoring, sector, brokerMemory)
 
       // Stocker dans Supabase

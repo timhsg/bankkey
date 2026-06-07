@@ -4,6 +4,7 @@ import PricingSection from './_components/PricingSection'
 import HeroPreview from './_components/HeroPreview'
 import IntegrationsBar from './_components/IntegrationsBar'
 import WorkflowSteps from './_components/WorkflowSteps'
+import ForWhoSection from './_components/ForWhoSection'
 import { CurrencyToggle } from './_components/CurrencyContext'
 
 // ── Inline icons (Lucide-style) ───────────────────────────────────────────
@@ -320,8 +321,11 @@ export default function LandingPage() {
         </p>
       </section>
 
+      {/* ───── Pour qui ───── */}
+      <ForWhoSection />
+
       {/* ───── Pilot program (remplace les fake testimonials) ───── */}
-      <section className="bg-slate-50 border-y border-slate-100 py-24">
+      <section className="border-y border-slate-100 py-24 bg-white">
         <div className="max-w-3xl mx-auto px-6 text-center">
           <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Programme pilote 2026</p>
           <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-slate-900 mb-5">
@@ -448,24 +452,42 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ───── Final CTA ───── */}
-      <section className="border-t border-slate-100 bg-slate-50">
-        <div className="max-w-3xl mx-auto px-6 py-20 text-center">
-          <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-slate-900 mb-4">
-            Répondez en premier, dès demain matin.
+      {/* ───── Final CTA — chaude, gradient ───── */}
+      <section className="relative border-t border-slate-100 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white overflow-hidden">
+
+        {/* Ambiance gradient + grain subtil */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-1/4 w-[500px] h-[300px] bg-emerald-500/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-1/4 w-[400px] h-[300px] bg-amber-500/10 rounded-full blur-3xl" />
+        </div>
+
+        <div className="relative max-w-4xl mx-auto px-6 py-24 text-center">
+          <div className="inline-flex items-center gap-2 text-xs font-medium text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-full mb-6">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-soft-pulse" />
+            Programme pilote ouvert — places limitées
+          </div>
+
+          <h2 className="text-3xl md:text-5xl font-semibold tracking-tight mb-4 leading-tight">
+            Répondez en premier,<br />
+            <span className="text-slate-400">dès demain matin.</span>
           </h2>
-          <p className="text-slate-600 mb-8 leading-relaxed">
-            30 jours d'essai. Sans carte bancaire. Configuration en moins de 10 minutes.
+          <p className="text-slate-300 text-lg mb-10 leading-relaxed max-w-xl mx-auto">
+            Chaque jour qui passe, vos concurrents répondent peut-être plus vite. Reprenez l&apos;avantage en moins de 10 minutes.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link href="/book" className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-medium px-6 py-3 rounded-lg transition-colors w-full sm:w-auto">
-              Réserver une démo
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6">
+            <Link href="/book" className="inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-100 text-slate-900 font-medium px-7 py-3.5 rounded-lg transition-base hover-lift w-full sm:w-auto">
+              Réserver une démo personnalisée
               <Icons.ArrowRight />
             </Link>
-            <Link href="/pro/login" className="inline-flex items-center justify-center gap-2 text-slate-700 hover:text-slate-900 font-medium px-6 py-3 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors w-full sm:w-auto">
-              Démarrer l&apos;essai 30 jours
+            <Link href="/pro/login" className="inline-flex items-center justify-center gap-2 text-slate-300 hover:text-white font-medium px-6 py-3 rounded-lg border border-slate-700 hover:border-slate-600 transition-base w-full sm:w-auto">
+              Essai gratuit 30 jours
             </Link>
           </div>
+
+          <p className="text-xs text-slate-400">
+            Sans carte bancaire · Configuration en moins de 10 minutes · Annulable à tout moment
+          </p>
         </div>
       </section>
 

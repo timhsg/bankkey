@@ -118,6 +118,15 @@ export interface BrokerMemory {
   // Notes libres
   notes?: string;               // Champ libre pour notes / instructions spéciales
 
+  // Pondération scoring personnalisée (0-100, défaut = défini par BankKey)
+  scoring_weights?: {
+    employment_situation?: number;  // Importance situation pro (défaut 25)
+    down_payment?: number;          // Importance apport (défaut 25)
+    debt_ratio?: number;            // Importance endettement (défaut 20)
+    project_maturity?: number;      // Importance maturité (compromis, financing_status) (défaut 20)
+    contact_completeness?: number;  // Importance qualité contact (défaut 10)
+  };
+
   // Méta
   updatedAt?: string;           // ISO date dernière màj
 }

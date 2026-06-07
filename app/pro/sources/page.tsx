@@ -10,6 +10,7 @@ import {
   type SourceCategory,
   type SourceDefinition,
 } from '@/lib/sources/catalog'
+import { SOURCE_ICONS } from '@/lib/sources/icons'
 
 interface Profile {
   forwarding_address: string | null
@@ -155,10 +156,15 @@ function SourceCard({ source, connected, onConnect }: {
           : 'border-slate-200 hover:border-slate-300 hover:-translate-y-0.5 hover:shadow-sm'
     }`}>
       <div className="flex items-start gap-3 mb-3">
-        <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
-          <span className="text-[11px] font-bold text-slate-700">
-            {source.name.slice(0, 2).toUpperCase()}
-          </span>
+        <div className="w-9 h-9 rounded-lg bg-white border border-slate-100 flex items-center justify-center shrink-0">
+          {(() => {
+            const Icon = SOURCE_ICONS[source.id]
+            return Icon ? <Icon className="w-6 h-6" /> : (
+              <span className="text-[11px] font-bold text-slate-700">
+                {source.name.slice(0, 2).toUpperCase()}
+              </span>
+            )
+          })()}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 mb-0.5">

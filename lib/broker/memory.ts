@@ -110,6 +110,36 @@ export function applyBrokerMemoryToEmail(
 }
 
 /**
+ * Construit la grille de scoring personnalisée pour injection dans le prompt
+ */
+export function buildScoringWeights(memory: BrokerMemory | null | undefined): string {
+  const w = memory?.scoring_weights
+  if (!w) return ''
+
+  const defaults = {
+    employment_situation: 25,
+    down_payment: 25,
+    debt_ratio: 20,
+    project_maturity: 20,
+    contact_completeness: 10,
+  }
+
+  const final = { ...defaults, ...w }
+  const total = Object.values(final).reduce((s, v) => s + v, 0)
+
+  return `\n═══ PONDÉRATION PERSONNALISÉE DU CABINET ═══
+Le courtier a paramétré ses propres priorités. Adapte le score sur 100 selon ces poids :
+- Situation pro (CDI, fonctionnaire, indépendant) : ${final.employment_situation} pts max
+- Apport personnel (en % du prix) : ${final.down_payment} pts max
+- Taux d'endettement (charges/revenus) : ${final.debt_ratio} pts max
+- Maturité du projet (compromis signé, financing) : ${final.project_maturity} pts max
+- Complétude du contact (email + tél) : ${final.contact_completeness} pts max
+
+Total maximum : ${total} pts (normalise à 100 si différent)
+══════════════════════════════════════════\n`
+}
+
+/**
  * Vérifie si la mémoire courtier est suffisamment remplie pour personnaliser.
  * Sert à afficher un onboarding "complétez votre profil" dans le dashboard.
  */

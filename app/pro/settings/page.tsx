@@ -224,6 +224,64 @@ export default function SettingsPage() {
           </div>
         </Section>
 
+        {/* ── Section: Pondération scoring ── */}
+        <Section title="Vos critères de scoring" desc="Pondérez chaque critère selon vos priorités. Total libre — BankKey normalise sur 100.">
+          {(() => {
+            const weights = memory.scoring_weights ?? {}
+            const defaults = {
+              employment_situation: 25,
+              down_payment: 25,
+              debt_ratio: 20,
+              project_maturity: 20,
+              contact_completeness: 10,
+            }
+            const items = [
+              { key: 'employment_situation' as const, label: 'Situation professionnelle', desc: 'CDI, fonctionnaire, indépendant…' },
+              { key: 'down_payment'         as const, label: 'Apport personnel',          desc: 'En % du prix du bien' },
+              { key: 'debt_ratio'           as const, label: 'Taux d\'endettement',        desc: 'Charges existantes / revenus' },
+              { key: 'project_maturity'     as const, label: 'Maturité du projet',         desc: 'Compromis signé, financing obtenu' },
+              { key: 'contact_completeness' as const, label: 'Qualité du contact',         desc: 'Email + téléphone disponibles' },
+            ]
+            return (
+              <div className="space-y-4">
+                {items.map(item => {
+                  const value = weights[item.key] ?? defaults[item.key]
+                  return (
+                    <div key={item.key}>
+                      <div className="flex items-baseline justify-between mb-1.5">
+                        <div>
+                          <span className="text-sm font-medium text-slate-700">{item.label}</span>
+                          <span className="text-xs text-slate-400 ml-2">{item.desc}</span>
+                        </div>
+                        <span className="text-sm font-semibold text-slate-900 tracking-tight tabular-nums">{value} pts</span>
+                      </div>
+                      <input
+                        type="range"
+                        min={0}
+                        max={50}
+                        step={5}
+                        value={value}
+                        onChange={(e) => update('scoring_weights', { ...weights, [item.key]: Number(e.target.value) })}
+                        className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer
+                                   [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4
+                                   [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full
+                                   [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2
+                                   [&::-webkit-slider-thumb]:border-slate-900 [&::-webkit-slider-thumb]:cursor-pointer"
+                      />
+                    </div>
+                  )
+                })}
+                <button
+                  onClick={() => update('scoring_weights', undefined)}
+                  className="text-[11px] text-slate-500 hover:text-slate-900 transition-colors"
+                >
+                  Réinitialiser aux valeurs par défaut
+                </button>
+              </div>
+            )
+          })()}
+        </Section>
+
         {/* ── Section: Règles métier ── */}
         <Section title="Règles métier (optionnel)" desc="Aide l'IA à filtrer les dossiers hors périmètre">
           <div className="grid md:grid-cols-2 gap-4">
