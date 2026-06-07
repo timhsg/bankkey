@@ -1,6 +1,9 @@
 import Link from 'next/link'
 import ROICalculator from './_components/ROICalculator'
 import PricingSection from './_components/PricingSection'
+import HeroPreview from './_components/HeroPreview'
+import IntegrationsBar from './_components/IntegrationsBar'
+import WorkflowSteps from './_components/WorkflowSteps'
 import { CurrencyToggle } from './_components/CurrencyContext'
 
 // ── Inline icons (Lucide-style) ───────────────────────────────────────────
@@ -135,83 +138,96 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* ───── Hero ───── */}
-      <section className="max-w-5xl mx-auto px-6 pt-24 pb-16 text-center">
-        <h1 className="text-5xl md:text-6xl font-semibold tracking-tight leading-[1.05] mb-6 text-slate-900">
-          Répondez en premier<br />
-          <span className="text-slate-500">à chaque demande de financement.</span>
-        </h1>
+      {/* ───── Hero avec mockup à droite ───── */}
+      <section className="relative overflow-hidden">
 
-        <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed mb-10">
-          BankKey lit vos emails, qualifie chaque emprunteur, calcule un score de bancabilité
-          et rédige votre réponse — avant que le prospect n&apos;ait le temps d&apos;appeler un concurrent.
-        </p>
-
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-          <Link href="/book" className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-medium px-7 py-3.5 rounded-lg transition-colors w-full sm:w-auto">
-            Réserver une démo de 20 minutes
-            <Icons.ArrowRight />
-          </Link>
+        {/* Ambiance fond — gradient subtil */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[600px] bg-gradient-to-br from-emerald-50/40 via-blue-50/30 to-amber-50/20 rounded-full blur-3xl" />
         </div>
 
-        <Link href="/demo" className="inline-block text-sm text-slate-500 hover:text-slate-900 transition-colors mt-5 underline-offset-4 hover:underline">
-          Voir la démo en autonomie →
-        </Link>
-      </section>
+        <div className="relative max-w-7xl mx-auto px-6 pt-20 pb-20">
+          <div className="grid lg:grid-cols-12 gap-12 items-center">
 
-      {/* ───── Trust bar ───── */}
-      <section className="border-y border-slate-100 bg-slate-50/50">
-        <div className="max-w-6xl mx-auto px-6 py-5">
-          <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-3 text-xs font-medium text-slate-500">
-            <span className="flex items-center gap-2"><Icons.Shield /> Conforme RGPD</span>
-            <span className="flex items-center gap-2"><Icons.Database /> Données hébergées dans l'UE</span>
-            <span className="flex items-center gap-2"><Icons.Lock /> Chiffrement de bout en bout</span>
-            <span className="flex items-center gap-2"><Icons.Bolt /> Mise en service en 10 minutes</span>
+            {/* Colonne gauche : titre + sub + CTA */}
+            <div className="lg:col-span-5 text-center lg:text-left">
+
+              {/* Mini-badge avec accent chaud */}
+              <div className="inline-flex items-center gap-2 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-full mb-6">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                Pour cabinets de courtage en crédit immobilier
+              </div>
+
+              <h1 className="text-4xl md:text-5xl lg:text-[3.5rem] font-semibold tracking-tight leading-[1.05] mb-6 text-slate-900">
+                Répondez en premier
+                <span className="block text-slate-500">à chaque demande de financement.</span>
+              </h1>
+
+              <p className="text-lg text-slate-600 leading-relaxed mb-8">
+                BankKey lit vos emails, qualifie chaque emprunteur, calcule un score de bancabilité et rédige votre réponse — avant que le prospect n&apos;ait le temps d&apos;appeler un concurrent.
+              </p>
+
+              <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-3 mb-5">
+                <Link href="/book" className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-medium px-6 py-3 rounded-lg transition-base hover-lift w-full sm:w-auto">
+                  Réserver une démo
+                  <Icons.ArrowRight />
+                </Link>
+                <Link href="/demo" className="inline-flex items-center justify-center gap-2 text-slate-700 hover:text-slate-900 font-medium px-6 py-3 rounded-lg border border-slate-200 hover:border-slate-300 transition-base w-full sm:w-auto">
+                  Voir la démo
+                </Link>
+              </div>
+
+              {/* Mini stats / proof */}
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-2 text-xs text-slate-500">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-1 h-1 rounded-full bg-emerald-500" />
+                  60 secondes par lead
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-1 h-1 rounded-full bg-emerald-500" />
+                  Setup en 10 min
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-1 h-1 rounded-full bg-emerald-500" />
+                  30 jours gratuits
+                </span>
+              </div>
+            </div>
+
+            {/* Colonne droite : mockup produit */}
+            <div className="lg:col-span-7 relative">
+              <HeroPreview />
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ───── How it works ───── */}
-      <section id="process" className="max-w-5xl mx-auto px-6 py-24">
-        <div className="text-center mb-16">
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Le processus</p>
-          <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-slate-900">Du email entrant à la réponse personnalisée</h2>
-          <p className="text-slate-600 mt-4 max-w-xl mx-auto">Aucun changement dans votre quotidien. BankKey travaille en parallèle de votre boîte mail.</p>
-        </div>
+      {/* Bar logos plateformes compatibles */}
+      <IntegrationsBar />
 
-        <div className="grid md:grid-cols-3 gap-8">
-          {[
-            {
-              n: '01',
-              title: 'Connexion Gmail',
-              desc: 'Connectez votre boîte professionnelle en lecture seule. Aucun email envoyé sans votre validation.',
-            },
-            {
-              n: '02',
-              title: 'Analyse en temps réel',
-              desc: 'Chaque demande entrante est lue, structurée et scorée selon vos critères bancaires.',
-            },
-            {
-              n: '03',
-              title: 'Tableau de bord',
-              desc: 'Vos prospects classés par priorité, avec pré-dossier, réponse rédigée et briefing d\'appel.',
-            },
-          ].map((step) => (
-            <div key={step.n} className="relative">
-              <div className="text-[11px] font-mono text-slate-400 mb-3">{step.n}</div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">{step.title}</h3>
-              <p className="text-sm text-slate-600 leading-relaxed">{step.desc}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-14 text-center">
-          <Link href="/demo" className="inline-flex items-center gap-2 text-sm font-medium text-slate-900 hover:text-slate-600 transition-colors">
-            Tester maintenant avec un email réel
-            <Icons.ArrowRight />
-          </Link>
+      {/* ───── Trust bar (avec icônes colorées chaudes) ───── */}
+      <section className="border-y border-slate-100 bg-gradient-to-r from-slate-50 via-white to-slate-50">
+        <div className="max-w-6xl mx-auto px-6 py-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {[
+              { icon: <Icons.Shield />,   label: 'Conforme RGPD',         color: 'text-emerald-600 bg-emerald-50' },
+              { icon: <Icons.Database />, label: 'Hébergé dans l\'UE',     color: 'text-blue-600 bg-blue-50' },
+              { icon: <Icons.Lock />,     label: 'Chiffrement TLS + AES', color: 'text-purple-600 bg-purple-50' },
+              { icon: <Icons.Bolt />,     label: 'Mise en service 10 min', color: 'text-amber-600 bg-amber-50' },
+            ].map((item, i) => (
+              <div key={i} className="flex items-center gap-3 justify-center md:justify-start">
+                <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${item.color}`}>
+                  {item.icon}
+                </div>
+                <span className="text-sm font-medium text-slate-700">{item.label}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
+
+      {/* ───── Workflow visuel (3 mini-mockups) ───── */}
+      <WorkflowSteps />
 
       {/* ───── ROI Calculator ───── */}
       <div id="calculator">
