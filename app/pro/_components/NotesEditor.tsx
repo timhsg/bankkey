@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { logActivity, activityNoteAdded } from '@/lib/activity'
 
 interface Props {
   prospectId: string
@@ -28,6 +29,11 @@ export default function NotesEditor({ prospectId, initialNotes }: Props) {
     setSaving(false)
     setSavedNotes(value)
     setSavedAt(new Date())
+
+    // Log activity (non bloquant, ignore les saves vides)
+    if (value.trim().length > 0) {
+      void logActivity(supabase, prospectId, activityNoteAdded(value))
+    }
   }, [supabase, prospectId])
 
   useEffect(() => {

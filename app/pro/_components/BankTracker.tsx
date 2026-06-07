@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { logActivity, activityBankAdded, activityBankStatusChanged } from '@/lib/activity'
 
 interface BankSubmission {
   name: string
@@ -41,10 +42,11 @@ export default function BankTracker({ prospectId, initialBanks }: Props) {
 
   function addBank() {
     if (!newBankName.trim()) return
+    const bankName = newBankName.trim()
     const next: BankSubmission[] = [
       ...banks,
       {
-        name: newBankName.trim(),
+        name: bankName,
         submitted_at: new Date().toISOString(),
         status: 'pending',
       },
@@ -53,12 +55,22 @@ export default function BankTracker({ prospectId, initialBanks }: Props) {
     setNewBankName('')
     setAdding(false)
     void persist(next)
+    void logActivity(supabase, prospectId, activityBankAdded(bankName))
   }
 
   function updateBank(index: number, patch: Partial<BankSubmission>) {
+    const previous = banks[index]
     const next = banks.map((b, i) => i === index ? { ...b, ...patch } : b)
     setBanks(next)
     void persist(next)
+
+    // Log si le statut change
+    if (patch.status && patch.status !== previous.status) {
+      void logActivity(
+        supabase, prospectId,
+        activityBankStatusChanged(previous.name, patch.status, patch.rate ?? previous.rate),
+      )
+    }
   }
 
   function removeBank(index: number) {

@@ -6,6 +6,7 @@ import { runScoringAgent } from '@/lib/agents/scoring'
 import { runProspectionAgent } from '@/lib/agents/prospection'
 import { classifyRelevance } from '@/lib/agents/relevance'
 import { detectSource } from '@/lib/sources/detection'
+import { activityEmailReceived, activityFiltered, activityQualified } from '@/lib/activity'
 import type { SectorId } from '@/lib/sectors'
 
 /**
@@ -140,11 +141,15 @@ async function processUserEmails(
           email_body:        email.body,
           sector,
           status:            'filtered',
-          relevance:         relevance,    // jsonb
-          detected_source:   detected,     // jsonb
+          relevance:         relevance,
+          detected_source:   detected,
           received_at:       email.receivedAt,
+          activity:          [
+            activityEmailReceived(detected.sourceName),
+            activityFiltered(relevance.reason ?? 'Email non pertinent'),
+          ],
         })
-        continue  // Ne pas lancer la pipeline IA
+        continue
       }
 
       // 1-3. Pipeline des 3 agents si pertinent
@@ -152,7 +157,7 @@ async function processUserEmails(
       const scoring       = await runScoringAgent(qualification, sector, brokerMemory)
       const prospection   = await runProspectionAgent(qualification, scoring, sector, brokerMemory)
 
-      // Stocker dans Supabase
+      // Stocker dans Supabase avec activité initiale
       await supabase.from('prospects').insert({
         user_id:           userId,
         source:            'gmail',
@@ -166,10 +171,14 @@ async function processUserEmails(
         qualification,
         scoring,
         prospection,
-        detected_source:   detected,                       // jsonb
-        relevance:         relevance,                      // jsonb
+        detected_source:   detected,
+        relevance:         relevance,
         status:            'new',
         received_at:       email.receivedAt.toISOString(),
+        activity:          [
+          activityEmailReceived(detected.sourceName),
+          activityQualified(scoring.score, scoring.temperature),
+        ],
       })
 
       // Marquer comme lu pour ne pas le retraiter

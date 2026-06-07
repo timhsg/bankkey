@@ -8,6 +8,7 @@ import type { QualificationResult, ScoringResult, ProspectionResult, DocumentChe
 import NotesEditor from '../../_components/NotesEditor'
 import BankTracker from '../../_components/BankTracker'
 import ActivityTimeline from '../../_components/ActivityTimeline'
+import { logActivity, activityViewed, type Activity } from '@/lib/activity'
 
 interface BankSubmission {
   name: string
@@ -34,6 +35,7 @@ interface ProspectFull {
   prospection: ProspectionResult | null
   broker_notes: string | null
   bank_submitted: BankSubmission[] | null
+  activity: Activity[] | null
 }
 
 type Tab = 'email' | 'call' | 'documents'
@@ -132,6 +134,16 @@ export default function LeadDetailPage() {
 
       if (p?.status === 'new') {
         await supabase.from('prospects').update({ status: 'viewed' }).eq('id', params.id)
+      }
+
+      // Log view activity (1 fois par jour max — éviter le spam)
+      const lastViewLog = (p?.activity as Activity[] | undefined)
+        ?.filter(a => a.type === 'viewed')
+        .pop()
+      const lastViewTime = lastViewLog ? new Date(lastViewLog.at).getTime() : 0
+      const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000
+      if (lastViewTime < oneDayAgo) {
+        void logActivity(supabase, params.id, activityViewed())
       }
 
       setLoading(false)
@@ -394,8 +406,8 @@ export default function LeadDetailPage() {
         {/* ── Banques sollicitées ── */}
         <BankTracker prospectId={prospect.id} initialBanks={prospect.bank_submitted} />
 
-        {/* ── Activité du dossier ── */}
-        <ActivityTimeline prospect={prospect} />
+        {/* ── Timeline d'activité ── */}
+        <ActivityTimeline activity={prospect.activity} createdAt={prospect.created_at} />
 
         {/* ── Tabs ── */}
         {(p || documents) && (
