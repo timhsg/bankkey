@@ -186,6 +186,9 @@ function DashboardContent() {
             <a href="/pro/settings" className="text-xs text-slate-500 hover:text-slate-900 transition-colors">
               Mon profil
             </a>
+            <a href="/pro/billing" className="text-xs text-slate-500 hover:text-slate-900 transition-colors">
+              Abonnement
+            </a>
             <button onClick={logout} className="text-xs text-slate-400 hover:text-slate-700 transition-colors">
               Déconnexion
             </button>
