@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import ROICalculator from './_components/ROICalculator'
 
 // ── Inline icons (Lucide-style) ───────────────────────────────────────────
 
@@ -70,6 +71,37 @@ const Icons = {
   ),
 }
 
+// ── Cell utilisée dans le tableau comparatif ──────────────────────────────
+
+function Cell({ value, accent }: { value: boolean | 'manual' | string; accent?: boolean }) {
+  const bgClass = accent ? 'bg-slate-900/5' : '';
+
+  if (value === true) {
+    return (
+      <td className={`py-3 px-4 text-center ${bgClass}`}>
+        <span className={`inline-flex w-5 h-5 items-center justify-center rounded-full ${accent ? 'bg-slate-900 text-white' : 'bg-emerald-50 text-emerald-600'}`}>
+          <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+        </span>
+      </td>
+    );
+  }
+  if (value === false) {
+    return (
+      <td className={`py-3 px-4 text-center ${bgClass}`}>
+        <span className="text-slate-300">—</span>
+      </td>
+    );
+  }
+  if (value === 'manual') {
+    return (
+      <td className={`py-3 px-4 text-center ${bgClass}`}>
+        <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">Manuel</span>
+      </td>
+    );
+  }
+  return <td className={`py-3 px-4 text-center text-slate-700 ${bgClass}`}>{value}</td>;
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────
 
 export default function LandingPage() {
@@ -86,15 +118,15 @@ export default function LandingPage() {
             <span className="font-semibold text-slate-900 tracking-tight">BankKey</span>
           </div>
           <nav className="hidden md:flex items-center gap-7 text-sm text-slate-600">
-            <a href="#process" className="hover:text-slate-900 transition-colors">Comment ça marche</a>
+            <a href="#calculator" className="hover:text-slate-900 transition-colors">ROI</a>
             <a href="#features" className="hover:text-slate-900 transition-colors">Fonctionnalités</a>
-            <a href="#security" className="hover:text-slate-900 transition-colors">Sécurité</a>
+            <Link href="/security" className="hover:text-slate-900 transition-colors">Sécurité</Link>
             <a href="#pricing" className="hover:text-slate-900 transition-colors">Tarifs</a>
             <a href="#faq" className="hover:text-slate-900 transition-colors">FAQ</a>
           </nav>
           <div className="flex items-center gap-3">
-            <Link href="/pro/login" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
-              Connexion
+            <Link href="/book" className="text-sm text-slate-600 hover:text-slate-900 transition-colors hidden sm:inline">
+              Réserver une démo
             </Link>
             <Link href="/pro/login" className="text-sm bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg font-medium transition-colors">
               Essai gratuit
@@ -105,9 +137,9 @@ export default function LandingPage() {
 
       {/* ───── Hero ───── */}
       <section className="max-w-5xl mx-auto px-6 pt-24 pb-16 text-center">
-        <div className="inline-flex items-center gap-2 text-xs font-medium text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full mb-8">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-          Pour cabinets de courtage en crédit immobilier
+        <div className="inline-flex items-center gap-2 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full mb-8">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          Programme pilote — 50 places, tarif préférentiel
         </div>
 
         <h1 className="text-5xl md:text-6xl font-semibold tracking-tight leading-[1.05] mb-6 text-slate-900">
@@ -122,8 +154,8 @@ export default function LandingPage() {
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-          <Link href="/pro/login" className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-medium px-6 py-3 rounded-lg transition-colors w-full sm:w-auto">
-            Démarrer l'essai 30 jours
+          <Link href="/book" className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-medium px-6 py-3 rounded-lg transition-colors w-full sm:w-auto">
+            Réserver une démo 20 min
             <Icons.ArrowRight />
           </Link>
           <Link href="/demo" className="inline-flex items-center justify-center gap-2 text-slate-700 hover:text-slate-900 font-medium px-6 py-3 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors w-full sm:w-auto">
@@ -132,7 +164,7 @@ export default function LandingPage() {
         </div>
 
         <p className="text-xs text-slate-500 mt-6">
-          Sans carte bancaire. Mise en service en moins de 10 minutes.
+          Démo gratuite, sans engagement · Essai 30 jours sans carte bancaire
         </p>
       </section>
 
@@ -190,6 +222,11 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ───── ROI Calculator ───── */}
+      <div id="calculator">
+        <ROICalculator />
+      </div>
+
       {/* ───── Features ───── */}
       <section id="features" className="bg-slate-50 border-y border-slate-100 py-24">
         <div className="max-w-5xl mx-auto px-6">
@@ -217,6 +254,130 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ───── Comparison ───── */}
+      <section id="comparison" className="max-w-5xl mx-auto px-6 py-24">
+        <div className="text-center mb-14">
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Positionnement</p>
+          <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-slate-900 mb-4">
+            BankKey ne remplace pas votre CRM.<br />
+            <span className="text-slate-500">Il vous aide à le remplir mieux.</span>
+          </h2>
+          <p className="text-slate-600 max-w-2xl mx-auto">
+            Si vous utilisez déjà Tucoenergie, Marketis ou Aprico — gardez-les. BankKey s&apos;occupe de la qualification, vous gardez votre outil de gestion.
+          </p>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="border-b border-slate-200">
+                <th className="text-left py-4 pr-4 font-medium text-slate-500"></th>
+                <th className="text-center py-4 px-4 font-semibold text-slate-700">Excel + Outlook</th>
+                <th className="text-center py-4 px-4 font-semibold text-slate-700">CRM courtage<br /><span className="text-[10px] font-normal text-slate-400">(Tucoenergie, Marketis…)</span></th>
+                <th className="text-center py-4 px-4 font-semibold text-slate-900 bg-slate-900/5 rounded-t-lg">
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded-sm bg-slate-900 flex items-center justify-center">
+                      <span className="text-white text-[7px] font-bold">BK</span>
+                    </span>
+                    BankKey
+                  </span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { feature: 'Lecture automatique de la boîte mail',     excel: false, crm: false, bk: true },
+                { feature: 'Qualification IA des leads entrants',      excel: false, crm: false, bk: true },
+                { feature: 'Score de bancabilité automatique',         excel: false, crm: 'manual', bk: true },
+                { feature: 'Pré-rédaction des réponses email',         excel: false, crm: false, bk: true },
+                { feature: 'Briefing d\'appel structuré',               excel: false, crm: false, bk: true },
+                { feature: 'Checklist documents par profil',           excel: false, crm: false, bk: true },
+                { feature: 'CRM complet (pipeline, documents…)',       excel: false, crm: true,  bk: false },
+                { feature: 'Bank shopping multi-banques',              excel: false, crm: true,  bk: false },
+                { feature: 'Archivage IOBSP 5 ans',                    excel: 'manual', crm: true, bk: false },
+                { feature: 'Conformité KYC + AML intégrée',            excel: false, crm: true,  bk: false },
+              ].map((row, i) => (
+                <tr key={i} className={`border-b border-slate-100 ${i % 2 === 0 ? '' : 'bg-slate-50/50'}`}>
+                  <td className="py-3 pr-4 text-slate-700">{row.feature}</td>
+                  <Cell value={row.excel} />
+                  <Cell value={row.crm} />
+                  <Cell value={row.bk} accent />
+                </tr>
+              ))}
+              <tr>
+                <td className="pt-5 pr-4 font-semibold text-slate-900">Prix mensuel</td>
+                <td className="pt-5 px-4 text-center text-slate-600 font-medium">0 €</td>
+                <td className="pt-5 px-4 text-center text-slate-600 font-medium">~ 200 €</td>
+                <td className="pt-5 px-4 text-center text-slate-900 font-semibold bg-slate-900/5 rounded-b-lg">399 CHF</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p className="text-xs text-slate-400 text-center mt-8">
+          BankKey est conçu pour s&apos;intégrer à votre CRM existant via export CSV (et bientôt webhooks).
+        </p>
+      </section>
+
+      {/* ───── Testimonials ───── */}
+      <section className="bg-slate-50 border-y border-slate-100 py-24">
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="text-center mb-14">
+            <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Programme pilote</p>
+            <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-slate-900 mb-4">
+              Les premiers cabinets pilotes témoignent
+            </h2>
+            <p className="text-slate-600 max-w-xl mx-auto">
+              BankKey démarre son programme pilote en 2026 avec 50 cabinets sélectionnés. Voici ce qu&apos;ils en disent.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-5">
+            {[
+              {
+                quote: "Je perdais 2 heures par jour à trier les leads. Maintenant je réponds aux dossiers prioritaires en 10 minutes, et les froids attendent.",
+                author: "Cabinet pilote",
+                role: "Courtier crédit, Lyon",
+                metric: "8 h économisées / semaine",
+              },
+              {
+                quote: "La checklist documents auto-générée est ce qui me fait gagner le plus de temps. Je n'oublie plus rien à demander, même sur les dossiers atypiques.",
+                author: "Cabinet pilote",
+                role: "Cabinet de 3 courtiers, Genève",
+                metric: "2 dossiers récupérés / mois",
+              },
+              {
+                quote: "Pour 399 CHF/mois, le ROI est immédiat. Le simple fait de ne plus rater un dossier urgent paie l'abonnement de l'année.",
+                author: "Cabinet pilote",
+                role: "Courtier indépendant, Paris",
+                metric: "Payback en 8 jours",
+              },
+            ].map((t, i) => (
+              <div key={i} className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col">
+                <svg className="w-7 h-7 text-slate-200 mb-4" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M6 4h4l-2 8H4V6c0-1.1.9-2 2-2zm10 0h4l-2 8h-4V6c0-1.1.9-2 2-2z" />
+                </svg>
+                <p className="text-sm text-slate-700 leading-relaxed mb-5 flex-1">{t.quote}</p>
+                <div className="pt-4 border-t border-slate-100">
+                  <p className="text-sm font-semibold text-slate-900">{t.author}</p>
+                  <p className="text-xs text-slate-500 mb-2">{t.role}</p>
+                  <span className="inline-block text-[10px] font-semibold uppercase tracking-widest text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                    {t.metric}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center mt-12">
+            <Link href="/book" className="inline-flex items-center gap-2 text-sm font-medium text-slate-900 hover:text-slate-600 transition-colors">
+              Devenez l&apos;un des 50 cabinets pilotes
+              <Icons.ArrowRight />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* ───── Security ───── */}
       <section id="security" className="max-w-5xl mx-auto px-6 py-24">
         <div className="grid md:grid-cols-5 gap-12 items-start">
@@ -225,9 +386,13 @@ export default function LandingPage() {
             <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-slate-900 mb-4">
               Conçu pour la confidentialité bancaire.
             </h2>
-            <p className="text-slate-600 leading-relaxed">
-              Les données de vos prospects sont sensibles. BankKey applique les standards de la finance européenne — chiffrement, isolation, et droit à l'effacement.
+            <p className="text-slate-600 leading-relaxed mb-5">
+              Les données de vos prospects sont sensibles. BankKey applique les standards de la finance européenne — chiffrement, isolation, et droit à l&apos;effacement.
             </p>
+            <Link href="/security" className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-900 hover:text-slate-600 transition-colors">
+              Voir la page sécurité complète
+              <Icons.ArrowRight />
+            </Link>
           </div>
 
           <div className="md:col-span-3 space-y-5">
@@ -389,12 +554,12 @@ export default function LandingPage() {
             30 jours d'essai. Sans carte bancaire. Configuration en moins de 10 minutes.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link href="/pro/login" className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-medium px-6 py-3 rounded-lg transition-colors w-full sm:w-auto">
-              Démarrer l'essai
+            <Link href="/book" className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-medium px-6 py-3 rounded-lg transition-colors w-full sm:w-auto">
+              Réserver une démo
               <Icons.ArrowRight />
             </Link>
-            <Link href="/demo" className="inline-flex items-center justify-center gap-2 text-slate-700 hover:text-slate-900 font-medium px-6 py-3 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors w-full sm:w-auto">
-              Tester la démo
+            <Link href="/pro/login" className="inline-flex items-center justify-center gap-2 text-slate-700 hover:text-slate-900 font-medium px-6 py-3 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors w-full sm:w-auto">
+              Démarrer l&apos;essai 30 jours
             </Link>
           </div>
         </div>
@@ -419,10 +584,11 @@ export default function LandingPage() {
             <div>
               <h4 className="text-xs font-semibold text-white uppercase tracking-widest mb-4">Produit</h4>
               <ul className="space-y-2.5 text-xs">
-                <li><a href="#process" className="hover:text-white transition-colors">Comment ça marche</a></li>
+                <li><a href="#calculator" className="hover:text-white transition-colors">Calculateur ROI</a></li>
                 <li><a href="#features" className="hover:text-white transition-colors">Fonctionnalités</a></li>
                 <li><a href="#pricing" className="hover:text-white transition-colors">Tarifs</a></li>
-                <li><Link href="/demo" className="hover:text-white transition-colors">Démo en ligne</Link></li>
+                <li><Link href="/demo" className="hover:text-white transition-colors">Démo interactive</Link></li>
+                <li><Link href="/book" className="hover:text-white transition-colors">Réserver une démo</Link></li>
               </ul>
             </div>
 
@@ -430,7 +596,8 @@ export default function LandingPage() {
               <h4 className="text-xs font-semibold text-white uppercase tracking-widest mb-4">Entreprise</h4>
               <ul className="space-y-2.5 text-xs">
                 <li><a href="mailto:contact@bankkey.ch" className="hover:text-white transition-colors">Contact</a></li>
-                <li><a href="#security" className="hover:text-white transition-colors">Sécurité</a></li>
+                <li><Link href="/security" className="hover:text-white transition-colors">Sécurité</Link></li>
+                <li><a href="mailto:dpo@bankkey.ch" className="hover:text-white transition-colors">DPO</a></li>
                 <li><a href="#faq" className="hover:text-white transition-colors">FAQ</a></li>
               </ul>
             </div>
