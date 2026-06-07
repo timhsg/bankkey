@@ -124,18 +124,38 @@ export function buildScoringWeights(memory: BrokerMemory | null | undefined): st
     contact_completeness: 10,
   }
 
-  const final = { ...defaults, ...w }
-  const total = Object.values(final).reduce((s, v) => s + v, 0)
+  const raw = { ...defaults, ...w }
+  const sanitized = Object.fromEntries(
+    Object.entries(raw).map(([key, value]) => {
+      const numeric = Number.isFinite(value) ? Math.round(value) : 0
+      return [key, Math.max(0, Math.min(100, numeric))]
+    })
+  ) as typeof defaults
+  const total = Object.values(sanitized).reduce((s, v) => s + v, 0)
+  const multiplier = total > 0 ? 100 / total : 1
+  const entries = Object.entries(sanitized).map(([key, value]) => {
+    const exact = value * multiplier
+    return { key, points: Math.floor(exact), fraction: exact - Math.floor(exact) }
+  })
+  let remainder = 100 - entries.reduce((sum, entry) => sum + entry.points, 0)
+  entries
+    .sort((a, b) => b.fraction - a.fraction)
+    .forEach((entry) => {
+      if (remainder <= 0) return
+      entry.points += 1
+      remainder -= 1
+    })
+  const final = Object.fromEntries(entries.map((entry) => [entry.key, entry.points])) as typeof defaults
 
   return `\n═══ PONDÉRATION PERSONNALISÉE DU CABINET ═══
-Le courtier a paramétré ses propres priorités. Adapte le score sur 100 selon ces poids :
+Le courtier a paramétré ses propres priorités. Utilise ce barème final sur 100 points :
 - Situation pro (CDI, fonctionnaire, indépendant) : ${final.employment_situation} pts max
 - Apport personnel (en % du prix) : ${final.down_payment} pts max
 - Taux d'endettement (charges/revenus) : ${final.debt_ratio} pts max
 - Maturité du projet (compromis signé, financing) : ${final.project_maturity} pts max
 - Complétude du contact (email + tél) : ${final.contact_completeness} pts max
 
-Total maximum : ${total} pts (normalise à 100 si différent)
+Total maximum : 100 pts
 ══════════════════════════════════════════\n`
 }
 

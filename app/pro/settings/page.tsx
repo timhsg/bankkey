@@ -30,6 +30,128 @@ const EMPTY_MEMORY: BrokerMemory = {
   notes: '',
 }
 
+const SCORING_DEFAULT_WEIGHTS = {
+  employment_situation: 25,
+  down_payment: 25,
+  debt_ratio: 20,
+  project_maturity: 20,
+  contact_completeness: 10,
+} as const
+
+type ScoringWeightKey = keyof typeof SCORING_DEFAULT_WEIGHTS
+type CompleteScoringWeights = Record<ScoringWeightKey, number>
+
+const SCORING_ITEMS: Array<{
+  key: ScoringWeightKey
+  label: string
+  desc: string
+  tone: string
+}> = [
+  {
+    key: 'employment_situation',
+    label: 'Situation professionnelle',
+    desc: 'Stabilité des revenus : CDI, fonctionnaire, indépendant...',
+    tone: 'bg-slate-700',
+  },
+  {
+    key: 'down_payment',
+    label: 'Apport personnel',
+    desc: 'Capacité du prospect à sécuriser son financement.',
+    tone: 'bg-emerald-600',
+  },
+  {
+    key: 'debt_ratio',
+    label: 'Endettement actuel',
+    desc: 'Poids des crédits existants par rapport aux revenus.',
+    tone: 'bg-sky-600',
+  },
+  {
+    key: 'project_maturity',
+    label: 'Maturité du projet',
+    desc: "Urgence, compromis signé, délai d'achat.",
+    tone: 'bg-amber-600',
+  },
+  {
+    key: 'contact_completeness',
+    label: 'Contact exploitable',
+    desc: 'Email et téléphone disponibles pour rappeler vite.',
+    tone: 'bg-violet-600',
+  },
+]
+
+function clampWeight(value: number) {
+  if (!Number.isFinite(value)) return 0
+  return Math.max(0, Math.min(100, Math.round(value)))
+}
+
+function distributeWeights(
+  baseWeights: CompleteScoringWeights,
+  keys: ScoringWeightKey[],
+  targetTotal: number,
+): CompleteScoringWeights {
+  const next = { ...baseWeights }
+  const safeTarget = clampWeight(targetTotal)
+  const baseTotal = keys.reduce((sum, key) => sum + Math.max(0, baseWeights[key]), 0)
+
+  if (keys.length === 0) return next
+
+  if (safeTarget === 0) {
+    keys.forEach((key) => { next[key] = 0 })
+    return next
+  }
+
+  if (baseTotal <= 0) {
+    const base = Math.floor(safeTarget / keys.length)
+    const remainder = safeTarget - base * keys.length
+    keys.forEach((key, index) => {
+      next[key] = base + (index < remainder ? 1 : 0)
+    })
+    return next
+  }
+
+  const raw = keys.map((key) => {
+    const exact = (Math.max(0, baseWeights[key]) / baseTotal) * safeTarget
+    return { key, points: Math.floor(exact), fraction: exact - Math.floor(exact) }
+  })
+
+  let remainder = safeTarget - raw.reduce((sum, item) => sum + item.points, 0)
+  raw
+    .sort((a, b) => b.fraction - a.fraction)
+    .forEach((item) => {
+      if (remainder <= 0) return
+      item.points += 1
+      remainder -= 1
+    })
+
+  raw.forEach((item) => { next[item.key] = item.points })
+  return next
+}
+
+function getCompleteScoringWeights(weights?: BrokerMemory['scoring_weights']): CompleteScoringWeights {
+  const merged = { ...SCORING_DEFAULT_WEIGHTS, ...(weights ?? {}) }
+  const sanitized = Object.fromEntries(
+    Object.entries(merged).map(([key, value]) => [key, clampWeight(value)])
+  ) as CompleteScoringWeights
+  const total = Object.values(sanitized).reduce((sum, value) => sum + value, 0)
+
+  if (total === 100) return sanitized
+  return distributeWeights(sanitized, Object.keys(SCORING_DEFAULT_WEIGHTS) as ScoringWeightKey[], 100)
+}
+
+function updateScoringWeight(
+  weights: CompleteScoringWeights,
+  key: ScoringWeightKey,
+  value: number,
+): CompleteScoringWeights {
+  const otherKeys = (Object.keys(SCORING_DEFAULT_WEIGHTS) as ScoringWeightKey[]).filter((item) => item !== key)
+  const current = getCompleteScoringWeights(weights)
+  const otherTotal = otherKeys.reduce((sum, item) => sum + current[item], 0)
+  const nextValue = Math.min(clampWeight(value), current[key] + otherTotal)
+  const next = { ...current, [key]: nextValue }
+
+  return distributeWeights(next, otherKeys, 100 - nextValue)
+}
+
 export default function SettingsPage() {
   const router   = useRouter()
   const supabase = createClient()
@@ -225,44 +347,56 @@ export default function SettingsPage() {
         </Section>
 
         {/* ── Section: Pondération scoring ── */}
-        <Section title="Vos critères de scoring" desc="Pondérez chaque critère selon vos priorités. Total libre — BankKey normalise sur 100.">
+        <Section title="Scoring personnalisé" desc="Répartissez 100 points entre vos critères. Plus un critère reçoit de points, plus il pèse dans la note finale.">
           {(() => {
-            const weights = memory.scoring_weights ?? {}
-            const defaults = {
-              employment_situation: 25,
-              down_payment: 25,
-              debt_ratio: 20,
-              project_maturity: 20,
-              contact_completeness: 10,
-            }
-            const items = [
-              { key: 'employment_situation' as const, label: 'Situation professionnelle', desc: 'CDI, fonctionnaire, indépendant…' },
-              { key: 'down_payment'         as const, label: 'Apport personnel',          desc: 'En % du prix du bien' },
-              { key: 'debt_ratio'           as const, label: 'Taux d\'endettement',        desc: 'Charges existantes / revenus' },
-              { key: 'project_maturity'     as const, label: 'Maturité du projet',         desc: 'Compromis signé, financing obtenu' },
-              { key: 'contact_completeness' as const, label: 'Qualité du contact',         desc: 'Email + téléphone disponibles' },
-            ]
+            const weights = getCompleteScoringWeights(memory.scoring_weights)
+            const total = Object.values(weights).reduce((sum, value) => sum + value, 0)
             return (
-              <div className="space-y-4">
-                {items.map(item => {
-                  const value = weights[item.key] ?? defaults[item.key]
+              <div className="space-y-5">
+                <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                  <div className="flex items-center justify-between gap-4 mb-3">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900">Répartition du score</p>
+                      <p className="text-xs text-slate-500 mt-0.5">Le total reste toujours à 100 points.</p>
+                    </div>
+                    <span className="text-sm font-semibold text-slate-900 tabular-nums">{total}/100</span>
+                  </div>
+                  <div className="flex h-2.5 overflow-hidden rounded-full bg-white ring-1 ring-slate-200">
+                    {SCORING_ITEMS.map((item) => (
+                      <div
+                        key={item.key}
+                        className={`${item.tone} transition-all duration-300`}
+                        style={{ width: `${weights[item.key]}%` }}
+                        title={`${item.label} : ${weights[item.key]} points`}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {SCORING_ITEMS.map(item => {
+                  const value = weights[item.key]
                   return (
-                    <div key={item.key}>
-                      <div className="flex items-baseline justify-between mb-1.5">
-                        <div>
-                          <span className="text-sm font-medium text-slate-700">{item.label}</span>
-                          <span className="text-xs text-slate-400 ml-2">{item.desc}</span>
+                    <div key={item.key} className="rounded-xl border border-slate-200 bg-white px-4 py-3">
+                      <div className="flex items-start justify-between gap-4 mb-3">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className={`h-2.5 w-2.5 rounded-full ${item.tone}`} />
+                            <span className="text-sm font-semibold text-slate-800">{item.label}</span>
+                          </div>
+                          <p className="text-xs text-slate-500 mt-1 leading-relaxed">{item.desc}</p>
                         </div>
-                        <span className="text-sm font-semibold text-slate-900 tracking-tight tabular-nums">{value} pts</span>
+                        <span className="shrink-0 rounded-lg bg-slate-100 px-2.5 py-1 text-sm font-semibold text-slate-900 tabular-nums">
+                          {value} pts
+                        </span>
                       </div>
                       <input
                         type="range"
                         min={0}
-                        max={50}
-                        step={5}
+                        max={100}
+                        step={1}
                         value={value}
-                        onChange={(e) => update('scoring_weights', { ...weights, [item.key]: Number(e.target.value) })}
-                        className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer
+                        onChange={(e) => update('scoring_weights', updateScoringWeight(weights, item.key, Number(e.target.value)))}
+                        className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-slate-900
                                    [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4
                                    [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full
                                    [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2
@@ -271,12 +405,17 @@ export default function SettingsPage() {
                     </div>
                   )
                 })}
-                <button
-                  onClick={() => update('scoring_weights', undefined)}
-                  className="text-[11px] text-slate-500 hover:text-slate-900 transition-colors"
-                >
-                  Réinitialiser aux valeurs par défaut
-                </button>
+                <div className="flex items-center justify-between gap-4">
+                  <p className="text-[11px] leading-relaxed text-slate-500">
+                    Exemple : si vous montez “Apport personnel”, BankKey réduit automatiquement les autres critères pour garder un total de 100.
+                  </p>
+                  <button
+                    onClick={() => update('scoring_weights', undefined)}
+                    className="shrink-0 text-[11px] font-medium text-slate-500 hover:text-slate-900 transition-colors"
+                  >
+                    Réinitialiser
+                  </button>
+                </div>
               </div>
             )
           })()}

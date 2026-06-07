@@ -118,7 +118,8 @@ export interface BrokerMemory {
   // Notes libres
   notes?: string;               // Champ libre pour notes / instructions spéciales
 
-  // Pondération scoring personnalisée (0-100, défaut = défini par BankKey)
+  // Pondération scoring personnalisée.
+  // Ces valeurs représentent une répartition sur 100 points, pas des notes indépendantes.
   scoring_weights?: {
     employment_situation?: number;  // Importance situation pro (défaut 25)
     down_payment?: number;          // Importance apport (défaut 25)
