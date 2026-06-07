@@ -34,6 +34,25 @@ const FINANCING_LABEL: Record<string, string> = {
   none:        'Non démarré',
 };
 
+const EMPLOYMENT_LABEL: Record<string, string> = {
+  cdi:           'CDI',
+  fonctionnaire: 'Fonctionnaire',
+  cdd:           'CDD / Intérim',
+  independant:   'Indépendant',
+  retraite:      'Retraité',
+  sans_emploi:   'Sans emploi',
+};
+
+function formatMoney(value: number, currency: string): string {
+  return value.toLocaleString('fr-FR') + ' ' + currency;
+}
+
+function detectCurrency(q: QualificationResult): string {
+  const text = `${q.address ?? ''} ${q.description}`.toLowerCase();
+  if (/genève|geneve|lausanne|zurich|chf|suisse/.test(text)) return 'CHF';
+  return '€';
+}
+
 const JURISDICTION_LABEL: Record<string, string> = {
   FR: 'France',
   CH: 'Suisse',
@@ -129,6 +148,13 @@ function ClientCard({ q, s }: { q: QualificationResult; s: ScoringResult }) {
   const tempCfg = TEMP_CONFIG[s.temperature];
   const fullName = [q.firstName, q.lastName].filter(Boolean).join(' ') || 'Prospect';
   const cityFromAddress = q.address?.split(',')[0]?.trim();
+  const currency = detectCurrency(q);
+
+  // ── Calculs de bancabilité ──
+  const downPaymentPct = q.down_payment && q.price ? Math.round((q.down_payment / q.price) * 100) : null;
+  const debtRatio = q.existing_debts_monthly !== null && q.monthly_income
+    ? Math.round((q.existing_debts_monthly / q.monthly_income) * 100)
+    : null;
 
   return (
     <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
@@ -144,6 +170,11 @@ function ClientCard({ q, s }: { q: QualificationResult; s: ScoringResult }) {
               <span className={`inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${tempCfg.badge}`}>
                 {tempCfg.label}
               </span>
+              {q.is_couple && (
+                <span className="text-[10px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                  Couple
+                </span>
+              )}
             </div>
             <p className="text-sm text-slate-500">
               Emprunteur · {cityFromAddress ?? q.address ?? 'Localisation à préciser'}
@@ -152,6 +183,52 @@ function ClientCard({ q, s }: { q: QualificationResult; s: ScoringResult }) {
           </div>
         </div>
       </div>
+
+      {/* ── Bancabilité (si données disponibles) ── */}
+      {(q.monthly_income || q.down_payment || q.employment_status) && (
+        <div className="px-6 py-5 bg-emerald-50/40 border-b border-slate-100">
+          <p className="text-[10px] font-semibold text-emerald-700 uppercase tracking-widest mb-4">Bancabilité</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {q.monthly_income && (
+              <div>
+                <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider mb-1">Revenus mensuels</p>
+                <p className="text-base font-semibold text-slate-900">{formatMoney(q.monthly_income, currency)}</p>
+                {q.is_couple && <p className="text-[10px] text-slate-400 mt-0.5">Foyer</p>}
+              </div>
+            )}
+            {q.down_payment && (
+              <div>
+                <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider mb-1">Apport</p>
+                <p className="text-base font-semibold text-slate-900">{formatMoney(q.down_payment, currency)}</p>
+                {downPaymentPct !== null && (
+                  <p className={`text-[10px] font-medium mt-0.5 ${downPaymentPct >= 20 ? 'text-emerald-600' : downPaymentPct >= 10 ? 'text-amber-600' : 'text-red-500'}`}>
+                    {downPaymentPct}% du prix
+                  </p>
+                )}
+              </div>
+            )}
+            {q.employment_status && (
+              <div>
+                <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider mb-1">Situation pro</p>
+                <p className="text-base font-semibold text-slate-900">{EMPLOYMENT_LABEL[q.employment_status]}</p>
+              </div>
+            )}
+            {q.existing_debts_monthly !== null && (
+              <div>
+                <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider mb-1">Crédits en cours</p>
+                <p className="text-base font-semibold text-slate-900">
+                  {q.existing_debts_monthly === 0 ? 'Aucun' : formatMoney(q.existing_debts_monthly, currency) + '/m'}
+                </p>
+                {debtRatio !== null && q.existing_debts_monthly > 0 && (
+                  <p className={`text-[10px] font-medium mt-0.5 ${debtRatio < 10 ? 'text-emerald-600' : debtRatio < 25 ? 'text-amber-600' : 'text-red-500'}`}>
+                    Endettement {debtRatio}%
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Contact */}
       {(q.email || q.phone) && (

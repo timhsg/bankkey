@@ -8,25 +8,50 @@ const SYSTEM_PROMPT = `Tu es un expert en lead scoring.
 Applique le barème fourni de manière mécanique et précise.
 Réponds UNIQUEMENT avec un objet JSON valide, sans aucun texte avant ou après, sans balises markdown.`;
 
-// Barèmes additionnels pour secteurs non-immobilier
+// Barème crédit immobilier — basé sur les vrais critères bancaires
 const BAREME_CREDIT = `
 ═══ EMPRUNTEUR (crédit immobilier) ═══════════════════════════════════
 Critère                                                          Points
 ─────────────────────────────────────────────────────────────────────
-description ou motivationSignals mentionne CDI/fonctionnaire       +25
-description mentionne indépendant > 3 ans d'ancienneté             +15
-description mentionne CDD/intérim/sans emploi                       +5
-Apport > 20% du prix du bien (calculer depuis les données)         +25
-Apport 10-20%                                                       +15
-Apport < 10% ou non précisé                                         +5
-urgencySignals contient "compromis signé"                          +20
-purchase_timeline = "less_3_months" (ou compromis)                  +10
-financing_status = "obtained" (accord bancaire existant)           +15
-financing_status = "in_progress"                                     +8
-Aucun crédit en cours mentionné (pas de charge existante)          +10
-email OU phone non null                                              +5
+■ SITUATION PROFESSIONNELLE
+  employment_status = "fonctionnaire"                              +30
+  employment_status = "cdi"                                        +25
+  employment_status = "retraite" (pension fixe)                    +20
+  employment_status = "independant"                                +15
+  employment_status = "cdd"                                         +8
+  employment_status = "sans_emploi"                                 +0
+  employment_status = null (non précisé)                            +5
+
+■ APPORT PERSONNEL (rapport apport / prix du bien)
+  Apport ≥ 20% du prix                                             +25
+  Apport 10-20% du prix                                            +15
+  Apport 5-10% du prix                                              +8
+  Apport < 5% ou null                                               +3
+
+■ TAUX D'ENDETTEMENT
+  Calculer : (existing_debts_monthly / monthly_income) * 100
+  Endettement actuel = 0 (aucun crédit en cours)                   +20
+  Endettement < 10%                                                +15
+  Endettement 10-25%                                                +8
+  Endettement > 25% (risque dépassement 35%)                        +0
+  Données manquantes → utiliser indices du texte (+5 si "aucun crédit")
+
+■ MATURITÉ DU PROJET
+  urgencySignals mentionne "compromis signé"                       +20
+  purchase_timeline = "less_3_months"                              +12
+  purchase_timeline = "3_to_6_months"                               +6
+  financing_status = "obtained" (accord bancaire existant)         +10
+  financing_status = "in_progress"                                  +5
+
+■ QUALITÉ DU CONTACT
+  email ET phone tous deux non null                                 +5
+  email OU phone non null (un seul)                                 +3
+
 ─────────────────────────────────────────────────────────────────────
-Maximum possible                                                    100
+Maximum théorique                                                  100
+
+NB : si les revenus ne sont pas mentionnés et qu'aucun indice de
+situation pro n'est donné, le score plafonne à 45 (warm max).
 
 Rappel températures : 0-30 = cold | 31-60 = warm | 61-100 = hot`;
 

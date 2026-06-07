@@ -125,7 +125,15 @@ function DashboardContent() {
   const counts = {
     new: prospects.filter(p => p.status === 'new').length,
     hot: prospects.filter(p => p.scoring?.temperature === 'hot').length,
+    warm: prospects.filter(p => p.scoring?.temperature === 'warm').length,
+    replied: prospects.filter(p => p.status === 'replied').length,
   }
+
+  const today = new Date(); today.setHours(0, 0, 0, 0)
+  const newToday = prospects.filter(p => {
+    const d = new Date(p.received_at ?? p.created_at)
+    return d >= today
+  }).length
 
   // ── Rendu ─────────────────────────────────────────────────────────────────
 
@@ -143,27 +151,39 @@ function DashboardContent() {
     <div className="min-h-screen bg-slate-50">
 
       {/* ── Header ── */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-20">
-        <div className="max-w-3xl mx-auto px-5 h-13 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="font-semibold text-slate-900">BankKey</span>
+      <header className="bg-white/80 backdrop-blur-md border-b border-slate-100 sticky top-0 z-20">
+        <div className="max-w-3xl mx-auto px-5 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <a href="/" className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-md bg-slate-900 flex items-center justify-center">
+                <span className="text-white text-[10px] font-bold tracking-tighter">BK</span>
+              </div>
+              <span className="font-semibold text-slate-900 tracking-tight">BankKey</span>
+            </a>
             <span className="text-slate-200">|</span>
-            <span className="text-xs font-medium text-slate-500">Pro</span>
+            <span className="text-xs font-medium text-slate-500">Tableau de bord</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             {gmailConnected && (
               <button
                 onClick={sync}
                 disabled={syncing}
-                className="text-xs text-slate-500 hover:text-slate-700 flex items-center gap-1.5 disabled:opacity-50"
+                className="text-xs text-slate-500 hover:text-slate-900 flex items-center gap-1.5 disabled:opacity-50 transition-colors"
               >
                 {syncing
                   ? <span className="w-3 h-3 border border-slate-400 border-t-slate-700 rounded-full animate-spin" />
-                  : '↻'}
-                {syncing ? 'Sync...' : 'Sync Gmail'}
+                  : (
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                      <path d="M21 3v5h-5" />
+                      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                      <path d="M3 21v-5h5" />
+                    </svg>
+                  )}
+                {syncing ? 'Synchronisation...' : 'Synchroniser'}
               </button>
             )}
-            <button onClick={logout} className="text-xs text-slate-400 hover:text-slate-600">
+            <button onClick={logout} className="text-xs text-slate-400 hover:text-slate-700 transition-colors">
               Déconnexion
             </button>
           </div>
@@ -194,7 +214,25 @@ function DashboardContent() {
           </div>
         )}
 
-        {/* ── Filtres + stats ── */}
+        {/* ── Stats ── */}
+        {prospects.length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              { label: 'Aujourd\'hui', value: newToday, sub: 'nouveaux' },
+              { label: 'Prioritaires', value: counts.hot, sub: 'à traiter', accent: counts.hot > 0 ? 'text-emerald-600' : 'text-slate-900' },
+              { label: 'À qualifier', value: counts.warm, sub: 'tièdes' },
+              { label: 'Répondus', value: counts.replied, sub: 'cette période' },
+            ].map((stat, i) => (
+              <div key={i} className="bg-white border border-slate-200 rounded-xl px-4 py-3">
+                <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">{stat.label}</p>
+                <p className={`text-2xl font-semibold tracking-tight mt-1 ${stat.accent ?? 'text-slate-900'}`}>{stat.value}</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">{stat.sub}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ── Filtres ── */}
         {prospects.length > 0 && (
           <div className="flex items-center gap-2">
             {([

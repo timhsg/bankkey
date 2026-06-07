@@ -60,13 +60,43 @@ RÈGLES D'EXTRACTION STRICTES :
    - "sans financement encore", "pas encore commencé" → "none"
    - Non mentionné → null
 
-9. "description" — résumé FACTUEL de 1-2 phrases, UNIQUEMENT avec les infos présentes dans le texte
-   Si peu d'informations → phrase courte sans invention
+9. CHAMPS CRÉDIT IMMOBILIER (critiques pour le scoring de bancabilité) :
 
-10. "motivationSignals" et "urgencySignals" — UNIQUEMENT les éléments présents dans le texte
-    motivationSignals = POURQUOI vendre/acheter (raison du projet)
-    urgencySignals = QUAND / avec quelle pression temporelle
-    Si rien n'est mentionné → tableau vide []
+   "monthly_income" — revenu net mensuel TOTAL du foyer (en euros ou CHF, entier) :
+   - "Revenus combinés 5 800€/mois", "salaire net 4500 CHF" → 5800 ou 4500
+   - Si annuel précisé : diviser par 12 (mais arrondir à l'entier)
+   - Si plusieurs personnes : SOMMER les revenus
+   - Non mentionné → null
+
+   "down_payment" — apport personnel disponible (entier, dans la devise du dossier) :
+   - "apport 50 000€", "apport de 170 000 CHF", "épargne disponible 80k" → entier
+   - Non mentionné → null
+
+   "existing_debts_monthly" — mensualités totales des crédits en cours :
+   - "crédit auto 300€/mois", "déjà un prêt conso à 250€" → somme
+   - "aucun crédit en cours", "endettement nul/quasi nul" → 0
+   - Non mentionné → null
+
+   "employment_status" — situation professionnelle dominante :
+   - "CDI", "intérim CDI" → "cdi"
+   - "fonctionnaire", "agent territorial", "enseignant titulaire" → "fonctionnaire"
+   - "CDD", "intérim" → "cdd"
+   - "indépendant", "freelance", "auto-entrepreneur", "libéral", "gérant" → "independant"
+   - "retraité" → "retraite"
+   - "sans emploi", "chômage" → "sans_emploi"
+   - Non mentionné → null
+   - Si couple mixte : retourner le statut le PLUS solide (cdi > fonctionnaire > cdd > independant > retraite > sans_emploi)
+
+   "is_couple" — true si demande explicitement en couple/à deux :
+   - "nous cherchons", "en couple", "tous les deux en CDI", "mon conjoint et moi" → true
+   - "je cherche", "mon projet" sans mention couple → false
+   - Ambigu → null
+
+10. "description" — résumé FACTUEL de 1-2 phrases, UNIQUEMENT avec les infos présentes dans le texte
+
+11. "motivationSignals" et "urgencySignals" — UNIQUEMENT les éléments présents dans le texte
+    motivationSignals = POURQUOI le projet (résidence principale, locatif, secondaire, etc.)
+    urgencySignals = QUAND / avec quelle pression temporelle (compromis signé, délai, etc.)
 
 Retourne ce JSON (null si information absente, ne jamais inventer) :
 {
@@ -81,6 +111,11 @@ Retourne ce JSON (null si information absente, ne jamais inventer) :
   "surface": number | null,
   "rooms": number | null,
   "price": number | null,
+  "monthly_income": number | null,
+  "down_payment": number | null,
+  "existing_debts_monthly": number | null,
+  "employment_status": "cdi" | "fonctionnaire" | "cdd" | "independant" | "retraite" | "sans_emploi" | null,
+  "is_couple": boolean | null,
   "sell_timeline": "less_3_months" | "3_to_6_months" | "more_6_months" | null,
   "purchase_timeline": "less_3_months" | "3_to_6_months" | "more_6_months" | null,
   "financing_status": "obtained" | "in_progress" | "none" | null,

@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import type { QualificationResult, ScoringResult, ProspectionResult } from '@/types'
+import { generateDocumentChecklist } from '@/lib/documents/checklist'
+import type { QualificationResult, ScoringResult, ProspectionResult, DocumentChecklistResult } from '@/types'
 
-// ── Types ──────────────────────────────────────────────────────────────────────
+// ── Types ──────────────────────────────────────────────────────────────────
 
 interface ProspectFull {
   id: string
@@ -22,60 +23,77 @@ interface ProspectFull {
   prospection: ProspectionResult | null
 }
 
-// ── Config ────────────────────────────────────────────────────────────────────
+type Tab = 'email' | 'call' | 'documents'
+
+// ── Config ─────────────────────────────────────────────────────────────────
 
 const TEMP = {
-  cold: { label: 'Non prioritaire', badge: 'bg-slate-100 text-slate-500', ring: '#94a3b8' },
-  warm: { label: 'À qualifier',     badge: 'bg-amber-50 text-amber-700',  ring: '#fbbf24' },
-  hot:  { label: 'Prioritaire',     badge: 'bg-emerald-50 text-emerald-700', ring: '#34d399' },
+  cold: { label: 'Non prioritaire', badge: 'bg-slate-100 text-slate-600',   ring: '#94a3b8' },
+  warm: { label: 'À qualifier',     badge: 'bg-amber-50 text-amber-700',    ring: '#f59e0b' },
+  hot:  { label: 'Prioritaire',     badge: 'bg-emerald-50 text-emerald-700', ring: '#10b981' },
 } as const
 
 const TIMELINE_LABEL: Record<string, string> = {
-  less_3_months: '< 3 mois',
-  '3_to_6_months': '3–6 mois',
-  more_6_months: '> 6 mois',
+  less_3_months:   'Moins de 3 mois',
+  '3_to_6_months': '3 à 6 mois',
+  more_6_months:   'Plus de 6 mois',
 }
 
 const FINANCING_LABEL: Record<string, string> = {
-  obtained: 'Obtenu', in_progress: 'En cours', none: 'Non démarré',
+  obtained: 'Accord obtenu', in_progress: 'En cours', none: 'Non démarré',
 }
 
-// ── Sous-composants ───────────────────────────────────────────────────────────
-
-function Field({ label, value }: { label: string; value: string | number | null | undefined }) {
-  if (!value && value !== 0) return null
-  return (
-    <div className="flex flex-col gap-0.5">
-      <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">{label}</span>
-      <span className="text-sm font-medium text-slate-700">{value}</span>
-    </div>
-  )
+const EMPLOYMENT_LABEL: Record<string, string> = {
+  cdi: 'CDI', fonctionnaire: 'Fonctionnaire', cdd: 'CDD / Intérim',
+  independant: 'Indépendant', retraite: 'Retraité', sans_emploi: 'Sans emploi',
 }
+
+const JURISDICTION_LABEL: Record<string, string> = {
+  FR: 'France', CH: 'Suisse', unknown: 'À préciser',
+}
+
+function detectCurrency(q: QualificationResult): string {
+  const text = `${q.address ?? ''} ${q.description}`.toLowerCase()
+  if (/genève|geneve|lausanne|zurich|chf|suisse/.test(text)) return 'CHF'
+  return '€'
+}
+
+// ── Petite icône ───────────────────────────────────────────────────────────
+
+const I = {
+  Phone: () => <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.33 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z" /></svg>,
+  Mail: () => <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>,
+  MapPin: () => <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>,
+  Spark: () => <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg>,
+  Circle: () => <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9" /></svg>,
+  Copy: () => <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></svg>,
+}
+
+// ── Sub-components ─────────────────────────────────────────────────────────
 
 function ScoreRing({ score, temperature }: { score: number; temperature: 'cold' | 'warm' | 'hot' }) {
-  const r = 40, circ = 2 * Math.PI * r
+  const r = 32, circ = 2 * Math.PI * r
   const offset = circ * (1 - score / 100)
   const color  = TEMP[temperature].ring
 
   return (
-    <div className="relative w-24 h-24 shrink-0">
-      <svg className="w-full h-full" viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r={r} fill="none" stroke="#f1f5f9" strokeWidth="9" />
-        <circle cx="50" cy="50" r={r} fill="none" stroke={color} strokeWidth="9"
+    <div className="relative w-20 h-20 shrink-0">
+      <svg className="w-full h-full -rotate-90" viewBox="0 0 80 80">
+        <circle cx="40" cy="40" r={r} fill="none" stroke="#f1f5f9" strokeWidth="6" />
+        <circle cx="40" cy="40" r={r} fill="none" stroke={color} strokeWidth="6"
           strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={offset}
-          transform="rotate(-90 50 50)"
           style={{ transition: 'stroke-dashoffset 1s ease-out' }}
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-2xl font-black text-slate-900 leading-none">{score}</span>
-        <span className="text-[9px] text-slate-400 font-medium">/ 100</span>
+        <span className="text-2xl font-semibold text-slate-900 leading-none tracking-tight">{score}</span>
+        <span className="text-[9px] font-medium text-slate-400 mt-0.5 uppercase tracking-wider">/ 100</span>
       </div>
     </div>
   )
 }
 
-// ── Page principale ───────────────────────────────────────────────────────────
+// ── Page ───────────────────────────────────────────────────────────────────
 
 export default function LeadDetailPage() {
   const params  = useParams<{ id: string }>()
@@ -84,7 +102,7 @@ export default function LeadDetailPage() {
 
   const [prospect, setProspect] = useState<ProspectFull | null>(null)
   const [loading,  setLoading]  = useState(true)
-  const [tab,      setTab]      = useState<'email' | 'call'>('email')
+  const [tab,      setTab]      = useState<Tab>('email')
   const [copied,   setCopied]   = useState(false)
   const [sending,  setSending]  = useState(false)
   const [profile,  setProfile]  = useState<{ gmail_access_token: string | null; gmail_refresh_token: string | null } | null>(null)
@@ -99,7 +117,6 @@ export default function LeadDetailPage() {
       setProspect(p as ProspectFull)
       setProfile(prof)
 
-      // Marquer comme vu
       if (p?.status === 'new') {
         await supabase.from('prospects').update({ status: 'viewed' }).eq('id', params.id)
       }
@@ -108,6 +125,12 @@ export default function LeadDetailPage() {
     }
     void load()
   }, [params.id, supabase])
+
+  // Compute documents checklist from qualification (deterministic, fast)
+  const documents: DocumentChecklistResult | null = useMemo(
+    () => prospect?.qualification ? generateDocumentChecklist(prospect.qualification) : null,
+    [prospect?.qualification]
+  )
 
   async function sendReply() {
     if (!prospect?.prospection || !profile?.gmail_access_token || !profile?.gmail_refresh_token) return
@@ -166,116 +189,227 @@ export default function LeadDetailPage() {
   const s    = prospect.scoring
   const p    = prospect.prospection
   const temp = s?.temperature ? TEMP[s.temperature] : null
+  const fullName = q ? [q.firstName, q.lastName].filter(Boolean).join(' ') : null
+  const currency = q ? detectCurrency(q) : '€'
+  const cityFromAddress = q?.address?.split(',')[0]?.trim()
+
+  const downPaymentPct = q?.down_payment && q?.price ? Math.round((q.down_payment / q.price) * 100) : null
+  const debtRatio = q?.existing_debts_monthly !== null && q?.existing_debts_monthly !== undefined && q?.monthly_income
+    ? Math.round((q.existing_debts_monthly / q.monthly_income) * 100)
+    : null
 
   return (
     <div className="min-h-screen bg-slate-50">
 
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-20">
-        <div className="max-w-2xl mx-auto px-5 py-3 flex items-center justify-between">
-          <button onClick={() => router.push('/pro')} className="text-sm text-slate-500 hover:text-slate-700">
-            ← Tableau de bord
+      {/* ── Header ── */}
+      <header className="bg-white/80 backdrop-blur-md border-b border-slate-100 sticky top-0 z-20">
+        <div className="max-w-3xl mx-auto px-5 h-14 flex items-center justify-between">
+          <button onClick={() => router.push('/pro')} className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 transition-colors">
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m12 19-7-7 7-7" /><path d="M19 12H5" />
+            </svg>
+            Tableau de bord
           </button>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {prospect.status === 'replied' ? (
-              <span className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full">
+              <span className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full font-medium">
                 Répondu
               </span>
             ) : (
               <button
                 onClick={sendReply}
                 disabled={sending || !profile?.gmail_access_token}
-                className="text-xs bg-slate-900 hover:bg-slate-700 disabled:bg-slate-200
-                           text-white px-3 py-1.5 rounded-lg transition-colors font-medium"
+                className="text-xs bg-slate-900 hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-400 text-white px-3.5 py-1.5 rounded-lg transition-colors font-medium"
               >
-                {sending ? 'Envoi...' : '↑ Envoyer la réponse'}
+                {sending ? 'Envoi...' : 'Envoyer la réponse'}
               </button>
             )}
-            <button onClick={archive} className="text-xs text-slate-400 hover:text-slate-600">
+            <button onClick={archive} className="text-xs text-slate-400 hover:text-slate-700 transition-colors">
               Archiver
             </button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-5 py-8 space-y-4">
+      <main className="max-w-3xl mx-auto px-5 py-8 space-y-4">
 
-        {/* Score */}
-        {s && temp && (
-          <div className="bg-white rounded-xl border border-slate-200 p-5">
-            <div className="flex items-start gap-5">
-              <ScoreRing score={s.score} temperature={s.temperature} />
-              <div className="flex-1 min-w-0 pt-1">
-                <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                  {q?.firstName && (
-                    <span className="font-semibold text-slate-900">
-                      {q.firstName}{q.lastName ? ` ${q.lastName}` : ''}
+        {/* ── Client card ── */}
+        {q && s && temp && (
+          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+
+            {/* Header */}
+            <div className="px-6 pt-6 pb-5 border-b border-slate-100">
+              <div className="flex items-start gap-5">
+                <ScoreRing score={s.score} temperature={s.temperature} />
+                <div className="flex-1 min-w-0 pt-0.5">
+                  <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                    <h2 className="text-xl font-semibold text-slate-900 tracking-tight">{fullName || prospect.email_from_name || 'Prospect'}</h2>
+                    <span className={`inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${temp.badge}`}>
+                      {temp.label}
                     </span>
-                  )}
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${temp.badge}`}>
-                    {temp.label}
-                  </span>
+                    {q.is_couple && (
+                      <span className="text-[10px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                        Couple
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-slate-500">
+                    Emprunteur · {cityFromAddress ?? q.address ?? 'Localisation à préciser'}
+                  </p>
+                  <p className="text-sm text-slate-600 leading-relaxed mt-3">{s.explanation}</p>
                 </div>
-                <p className="text-sm text-slate-500 leading-relaxed mb-3">{s.explanation}</p>
+              </div>
+            </div>
+
+            {/* Contact */}
+            {(q.email || q.phone) && (
+              <div className="px-6 py-3 bg-slate-50/50 border-b border-slate-100 flex items-center gap-5 text-xs">
+                {q.phone && (
+                  <a href={`tel:${q.phone.replace(/\s/g, '')}`} className="flex items-center gap-1.5 text-slate-700 hover:text-slate-900 font-medium transition-colors">
+                    <I.Phone />
+                    {q.phone}
+                  </a>
+                )}
+                {q.email && (
+                  <a href={`mailto:${q.email}`} className="flex items-center gap-1.5 text-slate-700 hover:text-slate-900 font-medium transition-colors">
+                    <I.Mail />
+                    {q.email}
+                  </a>
+                )}
+              </div>
+            )}
+
+            {/* Bancabilité */}
+            {(q.monthly_income || q.down_payment || q.employment_status) && (
+              <div className="px-6 py-5 bg-emerald-50/40 border-b border-slate-100">
+                <p className="text-[10px] font-semibold text-emerald-700 uppercase tracking-widest mb-4">Bancabilité</p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {q.monthly_income && (
+                    <div>
+                      <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider mb-1">Revenus mensuels</p>
+                      <p className="text-base font-semibold text-slate-900">{q.monthly_income.toLocaleString('fr-FR')} {currency}</p>
+                      {q.is_couple && <p className="text-[10px] text-slate-400 mt-0.5">Foyer</p>}
+                    </div>
+                  )}
+                  {q.down_payment && (
+                    <div>
+                      <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider mb-1">Apport</p>
+                      <p className="text-base font-semibold text-slate-900">{q.down_payment.toLocaleString('fr-FR')} {currency}</p>
+                      {downPaymentPct !== null && (
+                        <p className={`text-[10px] font-medium mt-0.5 ${downPaymentPct >= 20 ? 'text-emerald-600' : downPaymentPct >= 10 ? 'text-amber-600' : 'text-red-500'}`}>
+                          {downPaymentPct}% du prix
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  {q.employment_status && (
+                    <div>
+                      <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider mb-1">Situation pro</p>
+                      <p className="text-base font-semibold text-slate-900">{EMPLOYMENT_LABEL[q.employment_status]}</p>
+                    </div>
+                  )}
+                  {q.existing_debts_monthly !== null && q.existing_debts_monthly !== undefined && (
+                    <div>
+                      <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider mb-1">Crédits en cours</p>
+                      <p className="text-base font-semibold text-slate-900">
+                        {q.existing_debts_monthly === 0 ? 'Aucun' : `${q.existing_debts_monthly.toLocaleString('fr-FR')} ${currency}/m`}
+                      </p>
+                      {debtRatio !== null && q.existing_debts_monthly > 0 && (
+                        <p className={`text-[10px] font-medium mt-0.5 ${debtRatio < 10 ? 'text-emerald-600' : debtRatio < 25 ? 'text-amber-600' : 'text-red-500'}`}>
+                          Endettement {debtRatio}%
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Profile */}
+            <div className="px-6 py-5 border-b border-slate-100">
+              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-4">Profil emprunteur</p>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4">
+                {[
+                  { label: 'Bien ciblé', value: q.propertyType },
+                  { label: 'Localisation', value: q.address },
+                  { label: 'Surface', value: q.surface ? `${q.surface} m²` : null },
+                  { label: 'Pièces', value: q.rooms },
+                  { label: 'Budget / Prix', value: q.price ? `${q.price.toLocaleString('fr-FR')} ${currency}` : null },
+                  { label: 'Délai d\'achat', value: q.purchase_timeline ? TIMELINE_LABEL[q.purchase_timeline] : null },
+                  { label: 'Financement', value: q.financing_status ? FINANCING_LABEL[q.financing_status] : null },
+                ].filter(f => f.value !== null && f.value !== undefined && f.value !== '').map((f, i) => (
+                  <div key={i}>
+                    <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider mb-1">{f.label}</p>
+                    <p className="text-sm font-medium text-slate-900">{f.value}</p>
+                  </div>
+                ))}
+              </div>
+
+              {q.urgencySignals.length > 0 && (
+                <div className="mt-5 pt-4 border-t border-slate-100">
+                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-2">Signaux d&apos;urgence</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {q.urgencySignals.map((sig, i) => (
+                      <span key={i} className="text-xs bg-amber-50 text-amber-700 px-2 py-0.5 rounded-md border border-amber-200">
+                        {sig}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Scoring factors */}
+            {s.keyFactors.length > 0 && (
+              <div className="px-6 py-4 bg-slate-50/30">
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-2.5">Facteurs de scoring</p>
                 <div className="flex flex-wrap gap-1.5">
                   {s.keyFactors.map((f, i) => (
-                    <span key={i} className="text-xs bg-slate-50 border border-slate-200 text-slate-600 px-2 py-0.5 rounded-md font-medium">
-                      +{f.points} {f.factor}
+                    <span key={i} className="text-xs bg-white text-slate-600 border border-slate-200 px-2 py-0.5 rounded-md font-medium">
+                      +{f.points} · {f.factor}
                     </span>
                   ))}
                 </div>
               </div>
-            </div>
-          </div>
-        )}
-
-        {/* Profil */}
-        {q && (
-          <div className="bg-white rounded-xl border border-slate-200 p-5">
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-3">Profil</p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-3 mb-4">
-              <Field label="Email"         value={q.email} />
-              <Field label="Téléphone"     value={q.phone} />
-              <Field label="Type de bien"  value={q.propertyType} />
-              <Field label="Adresse"       value={q.address} />
-              <Field label="Surface"       value={q.surface ? `${q.surface} m²` : null} />
-              <Field label="Pièces"        value={q.rooms} />
-              <Field label="Prix / Budget" value={q.price ? `${q.price.toLocaleString('fr-FR')} €` : null} />
-              <Field label="Délai vente"   value={q.sell_timeline ? TIMELINE_LABEL[q.sell_timeline] : null} />
-              <Field label="Délai achat"   value={q.purchase_timeline ? TIMELINE_LABEL[q.purchase_timeline] : null} />
-              <Field label="Financement"   value={q.financing_status ? FINANCING_LABEL[q.financing_status] : null} />
-            </div>
-            {q.description && (
-              <p className="text-sm text-slate-500 italic">{q.description}</p>
-            )}
-            {q.urgencySignals.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {q.urgencySignals.map((sig, i) => (
-                  <span key={i} className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-md">
-                    {sig}
-                  </span>
-                ))}
-              </div>
             )}
           </div>
         )}
 
-        {/* Outils */}
-        {p && (
+        {/* ── Tabs ── */}
+        {(p || documents) && (
           <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+
             <div className="flex border-b border-slate-100">
-              {(['email', 'call'] as const).map(t => (
-                <button key={t} onClick={() => setTab(t)}
-                  className={`flex-1 py-3 text-xs font-semibold uppercase tracking-wide transition-colors ${
-                    tab === t ? 'text-slate-900 border-b-2 border-slate-900' : 'text-slate-400 hover:text-slate-600'
-                  }`}>
-                  {t === 'email' ? 'Réponse email' : 'Briefing appel'}
+              {([
+                { id: 'email' as const,     label: 'Réponse email',  enabled: !!p, badge: undefined as string | undefined },
+                { id: 'call' as const,      label: 'Briefing appel', enabled: !!p, badge: undefined as string | undefined },
+                { id: 'documents' as const, label: 'Documents',      enabled: !!documents, badge: documents?.urgency === 'urgent' ? 'Urgent' : undefined },
+              ]).map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => t.enabled && setTab(t.id as Tab)}
+                  disabled={!t.enabled}
+                  className={`flex-1 py-3 text-xs font-semibold uppercase tracking-wide transition-colors flex items-center justify-center gap-2 ${
+                    tab === t.id
+                      ? 'text-slate-900 border-b-2 border-slate-900'
+                      : t.enabled
+                        ? 'text-slate-400 hover:text-slate-600'
+                        : 'text-slate-200 cursor-not-allowed'
+                  }`}
+                >
+                  {t.label}
+                  {t.badge && (
+                    <span className="text-[9px] font-bold uppercase tracking-wider bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">
+                      {t.badge}
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
 
             <div className="p-5">
-              {tab === 'email' && (
+
+              {tab === 'email' && p && (
                 <div>
                   <div className="border border-slate-200 rounded-xl overflow-hidden">
                     <div className="bg-slate-50 border-b border-slate-200 px-4 py-2.5 flex items-baseline gap-2">
@@ -289,39 +423,90 @@ export default function LeadDetailPage() {
                     </div>
                   </div>
                   <div className="mt-2.5 flex justify-end">
-                    <button onClick={copyEmail} className="text-xs text-slate-400 hover:text-slate-600">
-                      {copied ? '✓ Copié' : 'Copier'}
+                    <button onClick={copyEmail} className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600 transition-colors">
+                      <I.Copy />
+                      {copied ? 'Copié' : 'Copier'}
                     </button>
                   </div>
                 </div>
               )}
 
-              {tab === 'call' && (
+              {tab === 'call' && p && (
                 <div className="space-y-3">
                   <div className="border border-slate-200 rounded-xl overflow-hidden">
                     <div className="bg-slate-50 border-b border-slate-200 px-4 py-2">
                       <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Contexte</span>
                     </div>
                     <div className="px-4 py-3">
-                      <p className="text-sm font-medium text-slate-800">{p.callScript.briefing}</p>
+                      <p className="text-sm font-medium text-slate-800 leading-relaxed">{p.callScript.briefing}</p>
                     </div>
                   </div>
                   <div className="border border-slate-200 rounded-xl overflow-hidden">
                     <div className="bg-slate-50 border-b border-slate-200 px-4 py-2">
-                      <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Ce qu'il veut</span>
+                      <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Besoin du prospect</span>
                     </div>
                     <div className="px-4 py-3">
-                      <p className="text-sm text-slate-700">{p.callScript.need}</p>
+                      <p className="text-sm text-slate-700 leading-relaxed">{p.callScript.need}</p>
                     </div>
                   </div>
                   <div className="border border-emerald-200 rounded-xl overflow-hidden">
                     <div className="bg-emerald-50 border-b border-emerald-200 px-4 py-2">
-                      <span className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wide">Question clé</span>
+                      <span className="text-[10px] font-semibold text-emerald-700 uppercase tracking-wide">Question clé à poser en premier</span>
                     </div>
                     <div className="px-4 py-3">
-                      <p className="text-sm text-slate-700 italic">« {p.callScript.keyQuestion} »</p>
+                      <p className="text-sm text-slate-700 leading-relaxed italic">« {p.callScript.keyQuestion} »</p>
                     </div>
                   </div>
+                </div>
+              )}
+
+              {tab === 'documents' && documents && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-3">
+                      <span className="flex items-center gap-1.5 text-slate-600">
+                        <I.MapPin />
+                        Juridiction : <span className="font-medium text-slate-900">{JURISDICTION_LABEL[documents.jurisdiction]}</span>
+                      </span>
+                      {documents.urgency === 'urgent' && (
+                        <span className="flex items-center gap-1 text-amber-700 font-medium">
+                          <I.Spark />
+                          Compromis signé — priorité haute
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-slate-400">
+                      Profil rempli à <span className="font-semibold text-slate-700">{documents.estimatedCompleteness}%</span>
+                    </span>
+                  </div>
+
+                  {documents.groups.map((group, gi) => (
+                    <div key={gi} className="border border-slate-200 rounded-xl overflow-hidden">
+                      <div className="bg-slate-50 border-b border-slate-200 px-4 py-2">
+                        <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">{group.category}</span>
+                      </div>
+                      <ul className="divide-y divide-slate-100">
+                        {group.items.map((item, ii) => (
+                          <li key={ii} className="px-4 py-3 flex items-start gap-3">
+                            <span className={`mt-0.5 shrink-0 ${item.required ? 'text-slate-400' : 'text-slate-300'}`}>
+                              <I.Circle />
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-baseline gap-2 flex-wrap">
+                                <p className="text-sm text-slate-800 leading-snug">{item.name}</p>
+                                {!item.required && (
+                                  <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">Optionnel</span>
+                                )}
+                              </div>
+                              {item.hint && (
+                                <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{item.hint}</p>
+                              )}
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -331,8 +516,8 @@ export default function LeadDetailPage() {
         {/* Email original */}
         {prospect.email_body && (
           <details className="bg-white rounded-xl border border-slate-200">
-            <summary className="px-5 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide cursor-pointer hover:text-slate-600">
-              Email original
+            <summary className="px-5 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide cursor-pointer hover:text-slate-600 transition-colors">
+              Email original reçu
             </summary>
             <div className="px-5 pb-5 pt-0">
               <pre className="text-xs text-slate-500 whitespace-pre-wrap font-sans leading-relaxed max-h-48 overflow-y-auto">

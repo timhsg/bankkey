@@ -11,10 +11,17 @@ export interface QualificationResult {
   surface: number | null;
   rooms: number | null;        // Toujours entier — "3.5 pièces" → 4
   price: number | null;        // Toujours entier, tous formats normalisés
-  // Champs structurés pour le scoring — critères clés du barème
+  // ─── Champs spécifiques crédit immobilier ───────────────────────────
+  monthly_income: number | null;       // Revenu net mensuel combiné (foyer)
+  down_payment: number | null;         // Apport personnel disponible
+  existing_debts_monthly: number | null; // Mensualités de crédits en cours
+  employment_status: 'cdi' | 'fonctionnaire' | 'cdd' | 'independant' | 'retraite' | 'sans_emploi' | null;
+  is_couple: boolean | null;
+  // ─── Timing ─────────────────────────────────────────────────────────
   sell_timeline: 'less_3_months' | '3_to_6_months' | 'more_6_months' | null;
   purchase_timeline: 'less_3_months' | '3_to_6_months' | 'more_6_months' | null;
   financing_status: 'obtained' | 'in_progress' | 'none' | null;
+  // ─── Texte libre ────────────────────────────────────────────────────
   description: string;
   motivationSignals: string[];
   urgencySignals: string[];
