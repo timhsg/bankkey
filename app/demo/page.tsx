@@ -115,6 +115,22 @@ function BigScore({ score, temp }: { score: number; temp: 'cold' | 'warm' | 'hot
 
 type Stage = 'intro' | 'arriving' | 'analyzing' | 'complete';
 
+// Barre de progression discrète sous le header pendant l'auto-play
+function IntroProgress({ stage }: { stage: Stage }) {
+  const progress = stage === 'intro' ? 5 :
+                   stage === 'arriving' ? 30 :
+                   stage === 'analyzing' ? 70 :
+                   100;
+  return (
+    <div className="h-px bg-slate-100">
+      <div
+        className="h-px bg-emerald-500 transition-all ease-linear"
+        style={{ width: `${progress}%`, transitionDuration: '2500ms' }}
+      />
+    </div>
+  );
+}
+
 export default function InteractiveDemo() {
   const [selectedId, setSelectedId] = useState<string>(MOCK_PROSPECTS[1].id); // Sophie par défaut
   const [stage, setStage] = useState<Stage>('intro');
@@ -124,16 +140,21 @@ export default function InteractiveDemo() {
   const introTimeoutRef = useRef<NodeJS.Timeout[]>([]);
 
   // ── Auto-play l'intro au premier chargement ──
+  // Cadencée pour laisser le temps de lire chaque étape
   useEffect(() => {
     if (introPlayed) return;
 
-    const t1 = setTimeout(() => setStage('arriving'), 1200);
-    const t2 = setTimeout(() => setStage('analyzing'), 2800);
+    // 0s        : init (tableau de bord calme)
+    // 2.5s      : nouvel email arrive (visible 3s pour le remarquer)
+    // 5.5s      : BankKey commence à analyser (visible 5s)
+    // 10.5s     : fiche complète révélée + Camille en tête de liste
+    const t1 = setTimeout(() => setStage('arriving'), 2500);
+    const t2 = setTimeout(() => setStage('analyzing'), 5500);
     const t3 = setTimeout(() => {
       setSelectedId(NEW_PROSPECT_ID);
       setStage('complete');
       setIntroPlayed(true);
-    }, 5500);
+    }, 10500);
 
     introTimeoutRef.current = [t1, t2, t3];
     return () => introTimeoutRef.current.forEach(clearTimeout);
@@ -166,12 +187,6 @@ export default function InteractiveDemo() {
   const hotCount = sortedProspects.filter(p => p.scoring.temperature === 'hot').length;
   const warmCount = sortedProspects.filter(p => p.scoring.temperature === 'warm').length;
 
-  function replayIntro() {
-    setSelectedId(MOCK_PROSPECTS[1].id);
-    setStage('intro');
-    setIntroPlayed(false);
-  }
-
   function copyEmail() {
     const text = `Objet : ${selected.prospection.email.subject}\n\n${selected.prospection.email.body}`;
     navigator.clipboard.writeText(text).then(() => {
@@ -197,17 +212,6 @@ export default function InteractiveDemo() {
             <span className="text-xs font-medium text-slate-500">Démo interactive</span>
           </div>
           <div className="flex items-center gap-4">
-            {introPlayed && (
-              <button
-                onClick={replayIntro}
-                className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1.5 transition-colors"
-              >
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" /><path d="M3 21v-5h5" />
-                </svg>
-                Rejouer la démo
-              </button>
-            )}
             <Link href="/demo/manual" className="text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors">
               Tester avec mon email →
             </Link>
@@ -216,18 +220,24 @@ export default function InteractiveDemo() {
             </Link>
           </div>
         </div>
+
+        {/* Barre de progression discrète pendant l'intro */}
+        {!introPlayed && <IntroProgress stage={stage} />}
       </header>
 
       {/* ── Intro ── */}
-      <div className="max-w-7xl mx-auto px-5 pt-8 pb-6 text-center">
+      <div className="max-w-7xl mx-auto px-5 pt-10 pb-6 text-center">
         <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Une journée type</p>
         <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-slate-900 mb-3">
-          Explorez vos prospects, cliquez sur n&apos;importe quel email
+          {stage === 'complete'
+            ? 'Explorez vos prospects, cliquez sur n\'importe quel email'
+            : 'Regardez BankKey traiter un email en direct'}
         </h1>
         <p className="text-slate-600 max-w-2xl mx-auto">
-          {stage === 'complete'
-            ? 'Cliquez sur un prospect à gauche pour voir son email, son analyse et la réponse pré-rédigée.'
-            : "BankKey reçoit un nouvel email et l'analyse en direct…"}
+          {stage === 'intro' && 'Votre tableau de bord matinal : 4 prospects en attente, classés par score.'}
+          {stage === 'arriving' && 'Un nouvel email vient d\'arriver.'}
+          {stage === 'analyzing' && 'BankKey extrait le profil, calcule la bancabilité et rédige la réponse.'}
+          {stage === 'complete' && 'Cliquez sur un prospect pour voir son email, son analyse et la réponse pré-rédigée.'}
         </p>
       </div>
 
