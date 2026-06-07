@@ -1,46 +1,86 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import {
-  SOURCE_CATALOG,
-  CATEGORY_LABELS,
-  CATEGORY_DESCRIPTIONS,
-  type SourceCategory,
-  type SourceDefinition,
-} from '@/lib/sources/catalog'
 import { SOURCE_ICONS } from '@/lib/sources/icons'
+import { aggregateSourceStats, type SourceStats } from '@/lib/sources/detection'
+
+// ════════════════════════════════════════════════════════════════════════
+//  /pro/sources — Nouvelle approche : auto-détection depuis Gmail
+//
+//  Plus de forwarding manuel. Le courtier connecte Gmail (ou Outlook),
+//  BankKey scanne l'inbox et identifie automatiquement la provenance
+//  de chaque email (Empruntis, SeLoger, etc.) via le domaine d'envoi.
+// ════════════════════════════════════════════════════════════════════════
 
 interface Profile {
   forwarding_address: string | null
   gmail_connected_email: string | null
-  connected_sources: Record<string, unknown> | null
+  gmail_last_processed_at: string | null
+}
+
+interface Prospect {
+  detected_source: { sourceId: string; sourceName: string } | null
+  scoring: { score: number; temperature: string } | null
+  received_at: string | null
+  created_at: string
 }
 
 export default function SourcesPage() {
   const router   = useRouter()
   const supabase = createClient()
 
-  const [profile, setProfile] = useState<Profile | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [copied, setCopied]   = useState(false)
+  const [profile, setProfile]     = useState<Profile | null>(null)
+  const [prospects, setProspects] = useState<Prospect[]>([])
+  const [loading, setLoading]     = useState(true)
+  const [syncing, setSyncing]     = useState(false)
+  const [showAdvanced, setShowAdvanced] = useState(false)
+  const [copied, setCopied]       = useState(false)
 
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/pro/login'); return }
 
-      const { data } = await supabase
-        .from('profiles')
-        .select('forwarding_address, gmail_connected_email, connected_sources')
-        .single()
+      const [{ data: profileData }, { data: prospectsData }] = await Promise.all([
+        supabase.from('profiles')
+          .select('forwarding_address, gmail_connected_email, gmail_last_processed_at')
+          .single(),
+        supabase.from('prospects')
+          .select('detected_source, scoring, received_at, created_at')
+          .order('created_at', { ascending: false })
+          .limit(500),
+      ])
 
-      setProfile(data)
+      setProfile(profileData)
+      setProspects((prospectsData ?? []) as Prospect[])
       setLoading(false)
     }
     void load()
   }, [supabase, router])
+
+  // Agrégation des sources détectées
+  const sourceStats = useMemo(() => aggregateSourceStats(prospects), [prospects])
+  const totalLeads = sourceStats.reduce((s, st) => s + st.count, 0)
+  const totalHot = sourceStats.reduce((s, st) => s + st.hotCount, 0)
+
+  async function syncGmail() {
+    setSyncing(true)
+    try {
+      await fetch('/api/gmail/process', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Internal-Request': 'true' },
+        body: JSON.stringify({}),
+      })
+      // Recharger
+      const { data } = await supabase.from('prospects')
+        .select('detected_source, scoring, received_at, created_at')
+        .order('created_at', { ascending: false })
+        .limit(500)
+      setProspects((data ?? []) as Prospect[])
+    } finally { setSyncing(false) }
+  }
 
   function copyForwarding() {
     if (!profile?.forwarding_address) return
@@ -58,149 +98,258 @@ export default function SourcesPage() {
     )
   }
 
-  const categories: SourceCategory[] = ['email', 'aggregator', 'portal', 'crm', 'direct']
-
-  function isConnected(s: SourceDefinition): boolean {
-    if (s.id === 'gmail')     return !!profile?.gmail_connected_email
-    if (s.id === 'forwarding') return !!profile?.forwarding_address
-    return false
-  }
+  const gmailConnected = !!profile?.gmail_connected_email
 
   return (
     <div className="min-h-screen">
 
+      {/* Header */}
       <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
-          <h1 className="text-base font-semibold text-slate-900 tracking-tight pl-12 lg:pl-0">Sources de leads</h1>
+        <div className="max-w-4xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
+          <div className="pl-12 lg:pl-0">
+            <h1 className="text-base font-semibold text-slate-900 tracking-tight">Sources de leads</h1>
+            <p className="text-[11px] text-slate-500 mt-0.5">
+              {gmailConnected
+                ? `Détection automatique active · ${totalLeads} leads analysés`
+                : 'Connectez Gmail pour démarrer'}
+            </p>
+          </div>
+          {gmailConnected && (
+            <button
+              onClick={syncGmail}
+              disabled={syncing}
+              className="flex items-center gap-1.5 text-xs font-medium bg-white border border-slate-200 hover:border-slate-300 text-slate-700 px-3 py-1.5 rounded-lg transition-base disabled:opacity-50"
+            >
+              {syncing
+                ? <span className="w-3 h-3 border border-slate-400 border-t-slate-700 rounded-full animate-spin" />
+                : (
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                    <path d="M21 3v5h-5" />
+                    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                    <path d="M3 21v-5h5" />
+                  </svg>
+                )}
+              {syncing ? 'Synchronisation' : 'Synchroniser'}
+            </button>
+          )}
         </div>
       </div>
 
-      <main className="max-w-5xl mx-auto px-6 py-8 space-y-8">
+      <main className="max-w-4xl mx-auto px-6 py-8 space-y-8">
 
-        {/* ── Adresse de forwarding (la solution universelle) ── */}
-        {profile?.forwarding_address && (
-          <div className="bg-slate-900 text-white rounded-2xl overflow-hidden transition-shadow hover:shadow-xl">
-            <div className="px-6 py-5">
-              <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">Votre adresse BankKey</p>
-              <p className="text-xl font-mono font-semibold tracking-tight mb-3 break-all">{profile.forwarding_address}</p>
-              <p className="text-sm text-slate-300 leading-relaxed max-w-2xl">
-                Faites suivre n&apos;importe quel email (Empruntis, SeLoger, partenaires, contacts directs) à cette adresse — BankKey analyse et qualifie automatiquement chaque lead.
-              </p>
-              <div className="mt-4 flex items-center gap-3">
-                <button
-                  onClick={copyForwarding}
-                  className="text-xs bg-white hover:bg-slate-100 text-slate-900 font-medium px-3 py-1.5 rounded-lg transition-all duration-200 flex items-center gap-1.5"
-                >
-                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect width="14" height="14" x="8" y="8" rx="2" />
-                    <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
-                  </svg>
-                  {copied ? 'Copié dans le presse-papiers' : 'Copier l\'adresse'}
-                </button>
-                <span className="text-[11px] text-slate-500">
-                  Inactive — configuration en cours
-                </span>
-              </div>
-            </div>
-            <div className="bg-slate-800 px-6 py-3 text-xs text-slate-400 leading-relaxed">
-              <span className="font-semibold text-slate-300">Comment ça marche :</span> dans votre boîte mail source (Gmail, Outlook, etc.) ou dans la plateforme (Empruntis, SeLoger), créez une règle qui forwarde tous les emails reçus vers cette adresse. BankKey reçoit, filtre et qualifie.
-            </div>
+        {/* ═══ ÉTAPE 1 : Connecter une boîte mail ═══ */}
+        {!gmailConnected ? (
+          <ConnectMailbox />
+        ) : (
+          <MailboxConnected
+            email={profile.gmail_connected_email!}
+            lastSync={profile.gmail_last_processed_at}
+            totalLeads={totalLeads}
+            totalHot={totalHot}
+          />
+        )}
+
+        {/* ═══ ÉTAPE 2 : Sources détectées ═══ */}
+        {gmailConnected && sourceStats.length > 0 && (
+          <DetectedSources stats={sourceStats} />
+        )}
+
+        {gmailConnected && sourceStats.length === 0 && (
+          <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center">
+            <svg className="w-10 h-10 text-slate-300 mx-auto mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect width="20" height="16" x="2" y="4" rx="2" />
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+            </svg>
+            <h3 className="text-sm font-semibold text-slate-900 mb-1">Aucun lead détecté pour l&apos;instant</h3>
+            <p className="text-xs text-slate-500 max-w-md mx-auto">
+              Dès qu&apos;un email d&apos;Empruntis, SeLoger, Pretto ou de n&apos;importe quelle source arrive dans votre Gmail, BankKey le détectera automatiquement.
+            </p>
           </div>
         )}
 
-        {/* ── Catégories de sources ── */}
-        {categories.map((cat) => {
-          const sources = SOURCE_CATALOG.filter(s => s.category === cat)
-          return (
-            <div key={cat}>
-              <div className="mb-4">
-                <h2 className="text-sm font-semibold text-slate-900 mb-1">{CATEGORY_LABELS[cat]}</h2>
-                <p className="text-xs text-slate-500">{CATEGORY_DESCRIPTIONS[cat]}</p>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {sources.map(s => (
-                  <SourceCard
-                    key={s.id}
-                    source={s}
-                    connected={isConnected(s)}
-                    onConnect={() => {
-                      if (s.id === 'gmail') router.push('/pro/onboarding')
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-          )
-        })}
+        {/* ═══ ÉTAPE 3 (avancé) : Adresse de forwarding ═══ */}
+        <button
+          onClick={() => setShowAdvanced(s => !s)}
+          className="w-full text-left flex items-center justify-between text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors py-2"
+        >
+          <span className="flex items-center gap-1.5">
+            <svg className={`w-3.5 h-3.5 transition-transform ${showAdvanced ? 'rotate-90' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+            Options avancées · Email forwarding (optionnel)
+          </span>
+        </button>
 
+        {showAdvanced && profile?.forwarding_address && (
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 animate-fade-up">
+            <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-2">Adresse personnelle BankKey</p>
+            <p className="text-base font-mono font-semibold tracking-tight text-slate-900 mb-3 break-all">{profile.forwarding_address}</p>
+            <p className="text-xs text-slate-600 leading-relaxed mb-3">
+              Utile uniquement si vous avez une source qui n&apos;arrive pas dans Gmail (CRM courtage, webhook externe).
+              Pour Empruntis, SeLoger ou tout autre email entrant dans votre Gmail, la détection automatique suffit — pas besoin de forwarder.
+            </p>
+            <button
+              onClick={copyForwarding}
+              className="text-xs bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-medium px-3 py-1.5 rounded-lg transition-base"
+            >
+              {copied ? '✓ Copié' : 'Copier l\'adresse'}
+            </button>
+          </div>
+        )}
       </main>
     </div>
   )
 }
 
-// ── Card ────────────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════════════
+//  Sous-composants
+// ════════════════════════════════════════════════════════════════════════
 
-function SourceCard({ source, connected, onConnect }: {
-  source: SourceDefinition
-  connected: boolean
-  onConnect: () => void
-}) {
-  const isComing = source.status === 'coming_soon'
-
+function ConnectMailbox() {
   return (
-    <div className={`bg-white border rounded-xl p-4 transition-all duration-200 ${
-      connected
-        ? 'border-emerald-300 bg-emerald-50/30'
-        : isComing
-          ? 'border-slate-200 opacity-60'
-          : 'border-slate-200 hover:border-slate-300 hover:-translate-y-0.5 hover:shadow-sm'
-    }`}>
-      <div className="flex items-start gap-3 mb-3">
-        <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 overflow-hidden p-1.5">
-          {(() => {
-            const Icon = SOURCE_ICONS[source.id]
-            return Icon ? <Icon className="w-full h-full" /> : (
-              <span className="text-[11px] font-bold text-slate-700">
-                {source.name.slice(0, 2).toUpperCase()}
-              </span>
-            )
-          })()}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 mb-0.5">
-            <h3 className="text-sm font-semibold text-slate-900 truncate">{source.name}</h3>
-            {connected && (
-              <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">
-                Connecté
-              </span>
-            )}
-            {source.status === 'beta' && (
-              <span className="text-[9px] font-bold uppercase tracking-widest text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded">
-                Bêta
-              </span>
-            )}
+    <div className="space-y-4">
+      <div>
+        <h2 className="text-sm font-semibold text-slate-900 mb-1">Connectez votre boîte mail</h2>
+        <p className="text-xs text-slate-500">BankKey scanne vos emails entrants et détecte automatiquement chaque source.</p>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-3">
+        <a
+          href="/api/gmail/connect"
+          className="bg-white border border-slate-200 rounded-xl p-5 hover-lift transition-base flex items-center gap-4"
+        >
+          <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 p-2">
+            <svg className="w-full h-full" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
           </div>
-          <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">{source.description}</p>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-slate-900 mb-0.5">Connecter Gmail</p>
+            <p className="text-xs text-slate-500">Lecture seule · 30 sec</p>
+          </div>
+          <svg className="w-4 h-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </a>
+
+        <div className="bg-white border border-slate-200 rounded-xl p-5 flex items-center gap-4 opacity-60">
+          <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 p-2">
+            <svg className="w-full h-full" viewBox="0 0 24 24">
+              <path fill="#0078D4" d="M21.66 4H10.34A2.34 2.34 0 0 0 8 6.34v.66H2v11.32A1.68 1.68 0 0 0 3.68 20H17v-3h6.34A2.34 2.34 0 0 0 24 14.66v-8.32A2.34 2.34 0 0 0 21.66 4z"/>
+              <circle fill="#0078D4" cx="6.5" cy="13.5" r="3"/>
+              <circle fill="#fff" cx="6.5" cy="13.5" r="1.3"/>
+            </svg>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-slate-900 mb-0.5">Connecter Outlook</p>
+            <p className="text-xs text-slate-500">Bientôt disponible</p>
+          </div>
         </div>
       </div>
 
-      <div className="pt-2.5 border-t border-slate-100">
-        {connected ? (
-          <span className="text-xs font-medium text-emerald-700">✓ Actif</span>
-        ) : source.status === 'available' ? (
-          <button
-            onClick={onConnect}
-            className="text-xs font-medium text-slate-900 hover:text-slate-600 transition-colors"
-          >
-            Connecter →
-          </button>
-        ) : source.status === 'forwarding' ? (
-          <span className="text-[11px] text-slate-500">Faites suivre vers votre adresse BankKey ↑</span>
-        ) : source.status === 'beta' ? (
-          <span className="text-[11px] text-blue-600">Nous contacter pour l&apos;accès</span>
-        ) : (
-          <span className="text-[11px] text-slate-400">Bientôt disponible</span>
-        )}
+      <p className="text-[11px] text-slate-400 leading-relaxed">
+        BankKey accède à vos emails en lecture seule. Vous gardez la main sur chaque réponse.
+        Voir notre <a href="/privacy" className="underline text-slate-600">politique de confidentialité</a>.
+      </p>
+    </div>
+  )
+}
+
+function MailboxConnected({ email, lastSync, totalLeads, totalHot }: {
+  email: string
+  lastSync: string | null
+  totalLeads: number
+  totalHot: number
+}) {
+  const lastSyncStr = lastSync
+    ? new Date(lastSync).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+    : 'jamais'
+
+  return (
+    <div className="bg-gradient-to-br from-emerald-50 via-white to-emerald-50/40 border border-emerald-200 rounded-2xl p-5">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-10 h-10 rounded-xl bg-white border border-emerald-200 flex items-center justify-center p-1.5 shrink-0">
+          <svg className="w-full h-full" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-slate-900 truncate">{email}</span>
+            <span className="text-[9px] font-bold uppercase tracking-widest bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded">
+              Actif
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 mt-0.5">Dernière synchro : {lastSyncStr}</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className="bg-white border border-emerald-100 rounded-lg px-3 py-2">
+          <p className="text-[10px] font-medium text-slate-500 uppercase tracking-widest">Leads analysés</p>
+          <p className="text-xl font-semibold text-slate-900 mt-0.5">{totalLeads}</p>
+        </div>
+        <div className="bg-white border border-emerald-100 rounded-lg px-3 py-2">
+          <p className="text-[10px] font-medium text-slate-500 uppercase tracking-widest">Dont prioritaires</p>
+          <p className="text-xl font-semibold text-emerald-700 mt-0.5">{totalHot}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function DetectedSources({ stats }: { stats: SourceStats[] }) {
+  return (
+    <div>
+      <div className="mb-4">
+        <h2 className="text-sm font-semibold text-slate-900 mb-1">Sources détectées dans votre boîte</h2>
+        <p className="text-xs text-slate-500">Identification automatique selon l&apos;expéditeur — aucune configuration nécessaire.</p>
+      </div>
+
+      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+        {stats.map((stat, idx) => {
+          const Icon = SOURCE_ICONS[stat.sourceId]
+          const lastDate = stat.lastReceivedAt
+            ? new Date(stat.lastReceivedAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
+            : '—'
+
+          return (
+            <div
+              key={stat.sourceId}
+              className={`px-5 py-4 flex items-center gap-4 ${idx > 0 ? 'border-t border-slate-100' : ''}`}
+            >
+              <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 p-1.5 overflow-hidden">
+                {Icon ? <Icon className="w-full h-full" /> : (
+                  <span className="text-xs font-bold text-slate-600">
+                    {stat.sourceName.slice(0, 2).toUpperCase()}
+                  </span>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <p className="text-sm font-semibold text-slate-900 truncate">{stat.sourceName}</p>
+                  {stat.hotCount > 0 && (
+                    <span className="text-[9px] font-medium uppercase tracking-widest bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded-full">
+                      {stat.hotCount} hot
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-slate-500">Dernier lead : {lastDate}</p>
+              </div>
+              <div className="text-right shrink-0">
+                <p className="text-lg font-semibold text-slate-900 tracking-tight">{stat.count}</p>
+                <p className="text-[10px] text-slate-400">leads</p>
+              </div>
+            </div>
+          )
+        })}
       </div>
     </div>
   )

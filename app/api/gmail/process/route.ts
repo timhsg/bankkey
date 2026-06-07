@@ -5,6 +5,7 @@ import { runQualificationAgent } from '@/lib/agents/qualification'
 import { runScoringAgent } from '@/lib/agents/scoring'
 import { runProspectionAgent } from '@/lib/agents/prospection'
 import { classifyRelevance } from '@/lib/agents/relevance'
+import { detectSource } from '@/lib/sources/detection'
 import type { SectorId } from '@/lib/sectors'
 
 /**
@@ -112,7 +113,14 @@ async function processUserEmails(
     if (!email.body.trim() || email.body.trim().length < 30) continue
 
     try {
-      // 0. Pré-filtrage : éviter spam, newsletter, perso, auto-reply
+      // 0a. Détection automatique de la source (Empruntis, SeLoger, etc.)
+      const detected = detectSource(
+        email.fromEmail ?? '',
+        email.subject ?? '',
+        email.body,
+      )
+
+      // 0b. Pré-filtrage : éviter spam, newsletter, perso, auto-reply
       const relevance = await classifyRelevance(
         email.fromEmail ?? '',
         email.subject ?? '',
@@ -132,7 +140,8 @@ async function processUserEmails(
           email_body:        email.body,
           sector,
           status:            'filtered',
-          relevance:         relevance,  // jsonb
+          relevance:         relevance,    // jsonb
+          detected_source:   detected,     // jsonb
           received_at:       email.receivedAt,
         })
         continue  // Ne pas lancer la pipeline IA
@@ -157,6 +166,8 @@ async function processUserEmails(
         qualification,
         scoring,
         prospection,
+        detected_source:   detected,                       // jsonb
+        relevance:         relevance,                      // jsonb
         status:            'new',
         received_at:       email.receivedAt.toISOString(),
       })
