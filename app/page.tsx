@@ -164,13 +164,13 @@ export default function BankKeyLanding() {
                     </li>
                   ))}
                 </ul>
-                <button className={`w-full py-3 font-bold rounded-lg transition-colors text-base ${
+                <a href="/pro/login" className={`block w-full py-3 font-bold rounded-lg transition-colors text-base text-center ${
                   plan.highlight
                     ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
                     : 'border-2 border-slate-300 hover:border-slate-400 text-slate-900'
                 }`}>
                   {plan.cta}
-                </button>
+                </a>
               </div>
             ))}
           </div>
