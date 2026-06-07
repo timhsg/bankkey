@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
-import type { QualificationResult, ScoringResult, ProspectionResult } from '@/types';
+import type { QualificationResult, ScoringResult, ProspectionResult, BrokerMemory } from '@/types';
 import type { SectorId } from '@/lib/sectors';
+import { buildBrokerContext, applyBrokerMemoryToEmail } from '@/lib/broker/memory';
 
 const client = new Anthropic();
 
@@ -107,16 +108,28 @@ export async function runProspectionAgent(
   qualification: QualificationResult,
   scoring: ScoringResult,
   sector: SectorId = 'credit',
+  brokerMemory?: BrokerMemory | null,
 ): Promise<ProspectionResult> {
+  // Injecter le contexte du cabinet dans le system prompt
+  const brokerContext = buildBrokerContext(brokerMemory);
+  const systemPrompt = SYSTEM_PROMPT_BY_SECTOR[sector] + brokerContext;
+
   const message = await client.messages.create({
     model: 'claude-sonnet-4-5',
     max_tokens: 2048,
-    system: SYSTEM_PROMPT_BY_SECTOR[sector],
+    system: systemPrompt,
     messages: [{ role: 'user', content: buildPrompt(qualification, scoring) }],
   });
 
   const content = message.content[0];
   if (content.type !== 'text') throw new Error('Type de réponse inattendu de l\'IA');
 
-  return parseJSON<ProspectionResult>(content.text);
+  const result = parseJSON<ProspectionResult>(content.text);
+
+  // Appliquer la signature et placeholders sur l'email rédigé
+  if (brokerMemory) {
+    result.email.body = applyBrokerMemoryToEmail(result.email.body, brokerMemory);
+  }
+
+  return result;
 }

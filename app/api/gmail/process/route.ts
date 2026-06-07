@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
   // Cibler un utilisateur spécifique ou traiter tout le monde (cron)
   let query = supabase
     .from('profiles')
-    .select('id, sector, gmail_access_token, gmail_refresh_token, gmail_token_expiry')
+    .select('id, sector, broker_memory, gmail_access_token, gmail_refresh_token, gmail_token_expiry')
     .not('gmail_access_token', 'is', null)
     .not('gmail_refresh_token', 'is', null)
 
@@ -61,6 +61,7 @@ export async function POST(request: NextRequest) {
         profile.gmail_access_token,
         profile.gmail_refresh_token,
         (profile.sector as SectorId) ?? 'credit',
+        profile.broker_memory ?? null,
       )
       totalProcessed += processed
 
@@ -90,6 +91,7 @@ async function processUserEmails(
   accessToken: string,
   refreshToken: string,
   sector: SectorId,
+  brokerMemory: import('@/types').BrokerMemory | null,
 ): Promise<number> {
   const emails = await getUnreadEmails(accessToken, refreshToken, 20)
   let count = 0
@@ -112,7 +114,7 @@ async function processUserEmails(
       // Pipeline des 3 agents
       const qualification = await runQualificationAgent(email.body, sector)
       const scoring       = await runScoringAgent(qualification, sector)
-      const prospection   = await runProspectionAgent(qualification, scoring, sector)
+      const prospection   = await runProspectionAgent(qualification, scoring, sector, brokerMemory)
 
       // Stocker dans Supabase
       await supabase.from('prospects').insert({

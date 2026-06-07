@@ -80,3 +80,44 @@ export interface AnalysisResult {
   prospection: ProspectionResult;
   documents: DocumentChecklistResult;
 }
+
+// ────────────────────────────────────────────────────────────────────────
+//  Mémoire du courtier (broker memory)
+//  Stockée dans profiles.broker_memory (JSONB) — injectée dans les prompts
+//  pour personnaliser les réponses générées par l'IA.
+// ────────────────────────────────────────────────────────────────────────
+
+export interface BrokerMemory {
+  // Identité
+  fullName?: string;            // "Marie Lefèvre"
+  jobTitle?: string;            // "Courtière en crédit immobilier"
+  agencyName?: string;          // "Cabinet Lefèvre Courtage"
+  agencyAddress?: string;       // "12 rue de la République, 69002 Lyon"
+  iobspNumber?: string;         // Numéro registre IOBSP (FR)
+  websiteUrl?: string;          // "https://lefevre-courtage.fr"
+
+  // Contact
+  signatureEmail?: string;      // Bloc signature complet à coller en fin d'email
+  signaturePhone?: string;      // Téléphone affiché dans les emails
+
+  // Spécialités
+  zones?: string[];             // ["Lyon centre", "Villeurbanne", "Lyon 6e"]
+  specialties?: string[];       // ["Primo-accédants", "Investisseurs locatifs", "Refinancement"]
+  bankPartners?: string[];      // ["BNP Paribas", "Crédit Agricole", "Caisse d'Épargne"]
+
+  // Style de communication
+  tone?: 'formal' | 'friendly' | 'concise'; // Ton préféré (défaut: formal)
+  preferredLanguages?: ('fr' | 'en' | 'de' | 'it')[]; // Langues acceptées
+  vouvoiement?: boolean;        // true par défaut
+
+  // Règles métier
+  minIncome?: number;           // Revenus minimum pour accepter un dossier (mensuel)
+  maxProjectAmount?: number;    // Montant max de dossier accepté
+  commissionPct?: number;       // Pourcentage de commission moyen (info interne)
+
+  // Notes libres
+  notes?: string;               // Champ libre pour notes / instructions spéciales
+
+  // Méta
+  updatedAt?: string;           // ISO date dernière màj
+}

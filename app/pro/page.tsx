@@ -183,6 +183,9 @@ function DashboardContent() {
                 {syncing ? 'Synchronisation...' : 'Synchroniser'}
               </button>
             )}
+            <a href="/pro/settings" className="text-xs text-slate-500 hover:text-slate-900 transition-colors">
+              Mon profil
+            </a>
             <button onClick={logout} className="text-xs text-slate-400 hover:text-slate-700 transition-colors">
               Déconnexion
             </button>
