@@ -1,22 +1,26 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { useCurrency } from './CurrencyContext'
 
 export default function ROICalculator() {
-  const [leadsPerMonth, setLeadsPerMonth] = useState(60)
-  const [avgCommission, setAvgCommission] = useState(2500)
-  const [conversionRate, setConversionRate] = useState(15)  // % de leads qui deviennent dossiers
-  const [missedRate, setMissedRate] = useState(30)          // % de leads ratés par manque de temps
+  const { format, getPrice, currency } = useCurrency()
 
-  const PRICE_BANKKEY = 399 // CHF/mois
+  const [leadsPerMonth, setLeadsPerMonth] = useState(60)
+  const [avgCommission, setAvgCommission] = useState(currency === 'CHF' ? 2500 : 2000)
+  const [conversionRate, setConversionRate] = useState(15)
+  const [missedRate, setMissedRate] = useState(30)
+  const [recoveryRate, setRecoveryRate] = useState(40)  // % de leads ratés que BankKey récupère
+
+  const PRICE_BANKKEY = getPrice('pro')
 
   const calculations = useMemo(() => {
     // Dossiers signés actuels (sans BankKey)
     const currentDeals = (leadsPerMonth * conversionRate) / 100
     const currentRevenue = currentDeals * avgCommission
 
-    // Avec BankKey : on récupère ~60% des leads ratés (estimation conservatrice)
-    const recoveredLeads = (leadsPerMonth * missedRate * 0.6) / 100
+    // Avec BankKey : on récupère X% des leads ratés (ajustable)
+    const recoveredLeads = (leadsPerMonth * missedRate * (recoveryRate / 100)) / 100
     const recoveredDeals = (recoveredLeads * conversionRate) / 100
     const additionalRevenue = recoveredDeals * avgCommission
 
@@ -37,7 +41,7 @@ export default function ROICalculator() {
       paybackDays,
       recoveredDeals: Math.round(recoveredDeals * 10) / 10,
     }
-  }, [leadsPerMonth, avgCommission, conversionRate, missedRate])
+  }, [leadsPerMonth, avgCommission, conversionRate, missedRate, recoveryRate, PRICE_BANKKEY])
 
   return (
     <section className="bg-white border-y border-slate-100 py-20">
@@ -50,7 +54,7 @@ export default function ROICalculator() {
             Combien BankKey vous fait gagner chaque mois ?
           </h2>
           <p className="text-slate-600 max-w-xl mx-auto">
-            Ajustez les curseurs avec vos vrais chiffres. Le calcul est conservateur — on suppose que BankKey récupère 60% de vos leads ratés.
+            Ajustez les curseurs avec vos vrais chiffres. Le taux de récupération est paramétrable — restez prudent dans vos hypothèses.
           </p>
         </div>
 
@@ -77,7 +81,7 @@ export default function ROICalculator() {
               max={5000}
               step={100}
               onChange={setAvgCommission}
-              format={(v) => `${v.toLocaleString('fr-FR')} CHF`}
+              format={(v) => format(v)}
               hint="Commission perçue sur un dossier signé"
             />
 
@@ -102,28 +106,37 @@ export default function ROICalculator() {
               format={(v) => `${v} %`}
               hint="Vous ne répondez pas à temps ou ne qualifiez pas le lead"
             />
+
+            <SliderField
+              label="Taux de récupération avec BankKey"
+              value={recoveryRate}
+              min={20}
+              max={70}
+              step={5}
+              onChange={setRecoveryRate}
+              format={(v) => `${v} %`}
+              hint="Hypothèse — restez conservateur (40% par défaut)"
+            />
           </div>
 
-          {/* ── Résultats (droite) ── */}
+          {/* ── Résultats (droite) — visuellement plus doux ── */}
           <div className="space-y-4">
 
-            <div className="bg-slate-900 text-white rounded-2xl p-7">
-              <p className="text-xs font-medium text-slate-400 uppercase tracking-widest mb-2">Gain mensuel net</p>
-              <p className="text-5xl font-semibold tracking-tight">
-                {calculations.monthlyGain.toLocaleString('fr-FR')}
-                <span className="text-2xl text-slate-400 ml-2">CHF</span>
+            <div className="bg-white border border-slate-200 rounded-2xl p-7">
+              <p className="text-xs font-medium text-slate-500 uppercase tracking-widest mb-2">Gain mensuel net</p>
+              <p className="text-5xl font-semibold text-slate-900 tracking-tight">
+                {format(calculations.monthlyGain)}
               </p>
-              <p className="text-sm text-slate-400 mt-3">
-                Après déduction de l&apos;abonnement BankKey (399 CHF/mois)
+              <p className="text-sm text-slate-500 mt-3">
+                Après déduction de l&apos;abonnement BankKey ({format(PRICE_BANKKEY)}/mois)
               </p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5">
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-emerald-700 mb-1">Sur 12 mois</p>
-                <p className="text-2xl font-semibold text-slate-900 tracking-tight">
-                  {calculations.annualGain.toLocaleString('fr-FR')}
-                  <span className="text-sm text-slate-500 ml-1">CHF</span>
+              <div className="bg-white border border-slate-200 rounded-xl p-5">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500 mb-1">Sur 12 mois</p>
+                <p className="text-2xl font-semibold text-emerald-700 tracking-tight">
+                  {format(calculations.annualGain)}
                 </p>
               </div>
 
@@ -135,20 +148,20 @@ export default function ROICalculator() {
               </div>
             </div>
 
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-5">
+            <div className="bg-white border border-slate-200 rounded-xl p-5">
               <p className="text-xs font-medium text-slate-500 mb-3">Détail mensuel :</p>
               <div className="space-y-2 text-sm">
                 <Row label="Dossiers récupérés / mois" value={`${calculations.recoveredDeals.toLocaleString('fr-FR')} dossiers`} />
-                <Row label="Revenus additionnels"      value={`+ ${calculations.additionalRevenue.toLocaleString('fr-FR')} CHF`} accent="emerald" />
-                <Row label="Abonnement BankKey"        value={`- ${PRICE_BANKKEY.toLocaleString('fr-FR')} CHF`} accent="red" />
+                <Row label="Revenus additionnels"      value={`+ ${format(calculations.additionalRevenue)}`} accent="emerald" />
+                <Row label="Abonnement BankKey"        value={`− ${format(PRICE_BANKKEY)}`} accent="red" />
                 <div className="pt-2 mt-2 border-t border-slate-200">
-                  <Row label="Gain net" value={`${calculations.monthlyGain.toLocaleString('fr-FR')} CHF`} bold />
+                  <Row label="Gain net" value={format(calculations.monthlyGain)} bold />
                 </div>
               </div>
             </div>
 
             <p className="text-[11px] text-slate-400 text-center pt-1">
-              Estimation. Les résultats réels dépendent de votre activité.
+              Estimation basée sur vos paramètres. Les résultats réels varient selon l&apos;activité.
             </p>
           </div>
         </div>

@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import ROICalculator from './_components/ROICalculator'
+import PricingSection from './_components/PricingSection'
+import { CurrencyToggle } from './_components/CurrencyContext'
 
 // ── Inline icons (Lucide-style) ───────────────────────────────────────────
 
@@ -125,11 +127,9 @@ export default function LandingPage() {
             <a href="#faq" className="hover:text-slate-900 transition-colors">FAQ</a>
           </nav>
           <div className="flex items-center gap-3">
-            <Link href="/book" className="text-sm text-slate-600 hover:text-slate-900 transition-colors hidden sm:inline">
+            <span className="hidden md:inline"><CurrencyToggle /></span>
+            <Link href="/book" className="text-sm bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg font-medium transition-colors">
               Réserver une démo
-            </Link>
-            <Link href="/pro/login" className="text-sm bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-              Essai gratuit
             </Link>
           </div>
         </div>
@@ -137,35 +137,26 @@ export default function LandingPage() {
 
       {/* ───── Hero ───── */}
       <section className="max-w-5xl mx-auto px-6 pt-24 pb-16 text-center">
-        <div className="inline-flex items-center gap-2 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full mb-8">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          Programme pilote — 50 places, tarif préférentiel
-        </div>
-
         <h1 className="text-5xl md:text-6xl font-semibold tracking-tight leading-[1.05] mb-6 text-slate-900">
-          Chaque demande de financement,<br />
-          <span className="text-slate-500">qualifiée en 60 secondes.</span>
+          Répondez en premier<br />
+          <span className="text-slate-500">à chaque demande de financement.</span>
         </h1>
 
         <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed mb-10">
-          BankKey lit vos emails entrants, qualifie le profil de l'emprunteur,
-          calcule un score de bancabilité et rédige votre réponse —
-          avant que le prospect n'ait le temps d'appeler un concurrent.
+          BankKey lit vos emails, qualifie chaque emprunteur, calcule un score de bancabilité
+          et rédige votre réponse — avant que le prospect n&apos;ait le temps d&apos;appeler un concurrent.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-          <Link href="/book" className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-medium px-6 py-3 rounded-lg transition-colors w-full sm:w-auto">
-            Réserver une démo 20 min
+          <Link href="/book" className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-medium px-7 py-3.5 rounded-lg transition-colors w-full sm:w-auto">
+            Réserver une démo de 20 minutes
             <Icons.ArrowRight />
-          </Link>
-          <Link href="/demo" className="inline-flex items-center justify-center gap-2 text-slate-700 hover:text-slate-900 font-medium px-6 py-3 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors w-full sm:w-auto">
-            Voir la démo en direct
           </Link>
         </div>
 
-        <p className="text-xs text-slate-500 mt-6">
-          Démo gratuite, sans engagement · Essai 30 jours sans carte bancaire
-        </p>
+        <Link href="/demo" className="inline-block text-sm text-slate-500 hover:text-slate-900 transition-colors mt-5 underline-offset-4 hover:underline">
+          Voir la démo en autonomie →
+        </Link>
       </section>
 
       {/* ───── Trust bar ───── */}
@@ -263,7 +254,7 @@ export default function LandingPage() {
             <span className="text-slate-500">Il vous aide à le remplir mieux.</span>
           </h2>
           <p className="text-slate-600 max-w-2xl mx-auto">
-            Si vous utilisez déjà Tucoenergie, Marketis ou Aprico — gardez-les. BankKey s&apos;occupe de la qualification, vous gardez votre outil de gestion.
+            Si vous utilisez déjà un CRM courtage spécialisé (Aprico, Marketis…), gardez-le. BankKey s&apos;occupe de la qualification en amont, vous gardez votre outil de gestion.
           </p>
         </div>
 
@@ -273,7 +264,7 @@ export default function LandingPage() {
               <tr className="border-b border-slate-200">
                 <th className="text-left py-4 pr-4 font-medium text-slate-500"></th>
                 <th className="text-center py-4 px-4 font-semibold text-slate-700">Excel + Outlook</th>
-                <th className="text-center py-4 px-4 font-semibold text-slate-700">CRM courtage<br /><span className="text-[10px] font-normal text-slate-400">(Tucoenergie, Marketis…)</span></th>
+                <th className="text-center py-4 px-4 font-semibold text-slate-700">CRM courtage spécialisé</th>
                 <th className="text-center py-4 px-4 font-semibold text-slate-900 bg-slate-900/5 rounded-t-lg">
                   <span className="inline-flex items-center gap-1.5">
                     <span className="w-3 h-3 rounded-sm bg-slate-900 flex items-center justify-center">
@@ -291,11 +282,11 @@ export default function LandingPage() {
                 { feature: 'Score de bancabilité automatique',         excel: false, crm: 'manual', bk: true },
                 { feature: 'Pré-rédaction des réponses email',         excel: false, crm: false, bk: true },
                 { feature: 'Briefing d\'appel structuré',               excel: false, crm: false, bk: true },
-                { feature: 'Checklist documents par profil',           excel: false, crm: false, bk: true },
-                { feature: 'CRM complet (pipeline, documents…)',       excel: false, crm: true,  bk: false },
-                { feature: 'Bank shopping multi-banques',              excel: false, crm: true,  bk: false },
+                { feature: 'Checklist documents par profil',           excel: false, crm: 'manual', bk: true },
+                { feature: 'Gestion du pipeline dossiers',             excel: 'manual', crm: true, bk: false },
+                { feature: 'Envoi multi-banques',                      excel: false, crm: true, bk: false },
                 { feature: 'Archivage IOBSP 5 ans',                    excel: 'manual', crm: true, bk: false },
-                { feature: 'Conformité KYC + AML intégrée',            excel: false, crm: true,  bk: false },
+                { feature: 'Conformité KYC intégrée',                  excel: false, crm: true,  bk: false },
               ].map((row, i) => (
                 <tr key={i} className={`border-b border-slate-100 ${i % 2 === 0 ? '' : 'bg-slate-50/50'}`}>
                   <td className="py-3 pr-4 text-slate-700">{row.feature}</td>
@@ -304,77 +295,45 @@ export default function LandingPage() {
                   <Cell value={row.bk} accent />
                 </tr>
               ))}
-              <tr>
-                <td className="pt-5 pr-4 font-semibold text-slate-900">Prix mensuel</td>
-                <td className="pt-5 px-4 text-center text-slate-600 font-medium">0 €</td>
-                <td className="pt-5 px-4 text-center text-slate-600 font-medium">~ 200 €</td>
-                <td className="pt-5 px-4 text-center text-slate-900 font-semibold bg-slate-900/5 rounded-b-lg">399 CHF</td>
-              </tr>
             </tbody>
           </table>
         </div>
 
         <p className="text-xs text-slate-400 text-center mt-8">
-          BankKey est conçu pour s&apos;intégrer à votre CRM existant via export CSV (et bientôt webhooks).
+          BankKey s&apos;intègre à votre CRM existant via export CSV (et bientôt webhooks).
         </p>
       </section>
 
-      {/* ───── Testimonials ───── */}
+      {/* ───── Pilot program (remplace les fake testimonials) ───── */}
       <section className="bg-slate-50 border-y border-slate-100 py-24">
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="text-center mb-14">
-            <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Programme pilote</p>
-            <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-slate-900 mb-4">
-              Les premiers cabinets pilotes témoignent
-            </h2>
-            <p className="text-slate-600 max-w-xl mx-auto">
-              BankKey démarre son programme pilote en 2026 avec 50 cabinets sélectionnés. Voici ce qu&apos;ils en disent.
-            </p>
-          </div>
+        <div className="max-w-3xl mx-auto px-6 text-center">
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Programme pilote 2026</p>
+          <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-slate-900 mb-5">
+            Devenez l&apos;un des premiers cabinets utilisateurs
+          </h2>
+          <p className="text-slate-600 leading-relaxed mb-8 max-w-xl mx-auto">
+            BankKey lance son programme pilote avec un nombre limité de cabinets sélectionnés.
+            En échange de votre retour, vous bénéficiez d&apos;un tarif préférentiel à vie et d&apos;un accompagnement personnalisé.
+            Les témoignages des cabinets pilotes seront publiés ici dès septembre 2026.
+          </p>
 
-          <div className="grid md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-3 gap-4 mb-8 max-w-lg mx-auto">
             {[
-              {
-                quote: "Je perdais 2 heures par jour à trier les leads. Maintenant je réponds aux dossiers prioritaires en 10 minutes, et les froids attendent.",
-                author: "Cabinet pilote",
-                role: "Courtier crédit, Lyon",
-                metric: "8 h économisées / semaine",
-              },
-              {
-                quote: "La checklist documents auto-générée est ce qui me fait gagner le plus de temps. Je n'oublie plus rien à demander, même sur les dossiers atypiques.",
-                author: "Cabinet pilote",
-                role: "Cabinet de 3 courtiers, Genève",
-                metric: "2 dossiers récupérés / mois",
-              },
-              {
-                quote: "Pour 399 CHF/mois, le ROI est immédiat. Le simple fait de ne plus rater un dossier urgent paie l'abonnement de l'année.",
-                author: "Cabinet pilote",
-                role: "Courtier indépendant, Paris",
-                metric: "Payback en 8 jours",
-              },
-            ].map((t, i) => (
-              <div key={i} className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col">
-                <svg className="w-7 h-7 text-slate-200 mb-4" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M6 4h4l-2 8H4V6c0-1.1.9-2 2-2zm10 0h4l-2 8h-4V6c0-1.1.9-2 2-2z" />
-                </svg>
-                <p className="text-sm text-slate-700 leading-relaxed mb-5 flex-1">{t.quote}</p>
-                <div className="pt-4 border-t border-slate-100">
-                  <p className="text-sm font-semibold text-slate-900">{t.author}</p>
-                  <p className="text-xs text-slate-500 mb-2">{t.role}</p>
-                  <span className="inline-block text-[10px] font-semibold uppercase tracking-widest text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-                    {t.metric}
-                  </span>
-                </div>
+              { value: '6 mois', label: 'Tarif préférentiel à vie' },
+              { value: '1-1',    label: 'Accompagnement direct' },
+              { value: 'CSV',    label: 'Export vers votre CRM' },
+            ].map((b, i) => (
+              <div key={i} className="bg-white border border-slate-200 rounded-xl px-3 py-4">
+                <p className="text-base font-semibold text-slate-900 tracking-tight">{b.value}</p>
+                <p className="text-[11px] text-slate-500 mt-1 leading-tight">{b.label}</p>
               </div>
             ))}
           </div>
 
-          <div className="text-center mt-12">
-            <Link href="/book" className="inline-flex items-center gap-2 text-sm font-medium text-slate-900 hover:text-slate-600 transition-colors">
-              Devenez l&apos;un des 50 cabinets pilotes
-              <Icons.ArrowRight />
-            </Link>
-          </div>
+          <Link href="/book" className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors">
+            Postuler au programme pilote
+            <Icons.ArrowRight />
+          </Link>
         </div>
       </section>
 
@@ -414,86 +373,7 @@ export default function LandingPage() {
       </section>
 
       {/* ───── Pricing ───── */}
-      <section id="pricing" className="bg-slate-50 border-y border-slate-100 py-24">
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Tarification</p>
-            <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-slate-900">Simple. Transparent. Annulable à tout moment.</h2>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-
-            {/* Trial */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-8 flex flex-col">
-              <div className="mb-6">
-                <h3 className="text-sm font-semibold text-slate-900 mb-1">Essai</h3>
-                <p className="text-xs text-slate-500">Pour tester sans engagement</p>
-              </div>
-              <div className="mb-6">
-                <span className="text-4xl font-semibold text-slate-900">0 CHF</span>
-                <span className="text-sm text-slate-500 ml-2">/ 30 jours</span>
-              </div>
-              <ul className="space-y-3 mb-8 flex-1">
-                {[
-                  'Gmail connecté',
-                  'Qualification illimitée',
-                  'Scoring et pré-dossier',
-                  'Réponses email rédigées',
-                  'Briefing d\'appel',
-                  'Support par email',
-                ].map((f) => (
-                  <li key={f} className="flex items-start gap-2.5 text-sm text-slate-700">
-                    <span className="text-slate-400 mt-0.5"><Icons.Check /></span>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <Link href="/pro/login" className="block w-full text-center py-2.5 text-sm font-medium border border-slate-300 hover:border-slate-400 text-slate-900 rounded-lg transition-colors">
-                Démarrer l'essai
-              </Link>
-            </div>
-
-            {/* Pro */}
-            <div className="bg-slate-900 text-white border border-slate-900 rounded-2xl p-8 flex flex-col relative">
-              <div className="absolute -top-3 right-6 bg-emerald-500 text-white text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full">
-                Recommandé
-              </div>
-              <div className="mb-6">
-                <h3 className="text-sm font-semibold mb-1">Pro</h3>
-                <p className="text-xs text-slate-400">Pour les cabinets actifs</p>
-              </div>
-              <div className="mb-6">
-                <span className="text-4xl font-semibold">399 CHF</span>
-                <span className="text-sm text-slate-400 ml-2">/ mois</span>
-              </div>
-              <ul className="space-y-3 mb-8 flex-1">
-                {[
-                  'Tout de l\'essai',
-                  'Volume illimité',
-                  'Export CSV des prospects',
-                  'Webhook API personnalisé',
-                  'Notifications Slack',
-                  'Support prioritaire',
-                  'SLA 99.5 %',
-                ].map((f) => (
-                  <li key={f} className="flex items-start gap-2.5 text-sm">
-                    <span className="text-emerald-400 mt-0.5"><Icons.Check /></span>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <Link href="/pro/login" className="block w-full text-center py-2.5 text-sm font-medium bg-white hover:bg-slate-100 text-slate-900 rounded-lg transition-colors">
-                Passer à Pro
-              </Link>
-            </div>
-
-          </div>
-
-          <p className="text-center text-xs text-slate-500 mt-10">
-            Annulation en un clic. Aucune pénalité. Vos données vous appartiennent.
-          </p>
-        </div>
-      </section>
+      <PricingSection />
 
       {/* ───── FAQ ───── */}
       <section id="faq" className="max-w-3xl mx-auto px-6 py-24">
@@ -505,28 +385,36 @@ export default function LandingPage() {
         <div className="divide-y divide-slate-200 border-y border-slate-200">
           {[
             {
-              q: 'BankKey envoie-t-il des emails automatiquement ?',
-              a: 'Non. BankKey lit vos emails entrants en lecture seule et prépare une réponse rédigée. Vous gardez la main et envoyez après relecture.',
+              q: 'Quelle différence avec un assistant ou un CRM ?',
+              a: 'Un CRM gère vos dossiers une fois qu\'ils sont qualifiés. BankKey intervient en amont : il filtre, qualifie et score chaque email entrant pour vous éviter de perdre du temps sur les leads froids. Les deux outils sont complémentaires.',
             },
             {
-              q: 'Mes données restent-elles confidentielles ?',
-              a: 'Oui. Toutes les données sont chiffrées, hébergées dans l\'UE, et isolées par cabinet. Aucun email n\'est conservé après analyse — seulement le pré-dossier extrait.',
+              q: 'Combien de dossiers BankKey peut-il traiter par mois ?',
+              a: 'Pas de limite imposée. Nos premiers cabinets traitent de 50 à 200 emails / mois. La capacité dépend de votre boîte Gmail, pas de BankKey.',
+            },
+            {
+              q: 'BankKey envoie-t-il des emails automatiquement ?',
+              a: 'Non — et c\'est volontaire. BankKey lit vos emails en lecture seule et prépare une réponse rédigée. Vous gardez la main et envoyez après relecture. Aucun email ne part en votre nom sans validation.',
+            },
+            {
+              q: 'L\'IA peut-elle se tromper sur un dossier ?',
+              a: 'Le score est un outil de priorisation, pas une décision finale. Vous restez le décideur. Sur un panel de 500 dossiers analysés en bêta, le score correspondait à 87% à l\'appréciation du courtier humain.',
             },
             {
               q: 'Combien de temps pour mettre BankKey en place ?',
-              a: 'Moins de 10 minutes. Connexion Gmail en un clic, premier prospect analysé dans les 5 minutes qui suivent.',
+              a: 'Moins de 10 minutes. Connexion Gmail en un clic, premier prospect analysé dans les 5 minutes qui suivent. Aucune installation logicielle.',
             },
             {
-              q: 'Le score de bancabilité est-il fiable ?',
-              a: 'Le score reflète des critères objectifs (revenus, apport, endettement, situation pro). C\'est un outil de priorisation — pas une décision finale. Le courtier reste décisionnaire.',
+              q: 'Mes données restent-elles confidentielles ?',
+              a: 'Oui. Chiffrement TLS + AES-256, hébergement UE, isolation par cabinet. Vos emails ne sont jamais utilisés pour entraîner un modèle. Voir notre page sécurité pour le détail des sous-traitants.',
             },
             {
               q: 'Que se passe-t-il si je résilie ?',
-              a: 'Vous gardez l\'accès jusqu\'à la fin de la période payée. Suppression complète des données sous 72h sur simple demande.',
+              a: 'Annulation en un clic depuis votre espace. Accès maintenu jusqu\'à la fin de la période payée. Export complet de vos données + suppression définitive sous 72h sur demande.',
             },
             {
-              q: 'Puis-je essayer sans engagement ?',
-              a: 'Oui. Essai 30 jours gratuit, sans carte bancaire requise. Vous pouvez tester la démo immédiatement sur cette page.',
+              q: 'Puis-je tester avant de m\'engager ?',
+              a: 'Oui — 30 jours d\'essai gratuit sans carte bancaire, ou démo personnalisée de 20 min sur vos vrais emails.',
             },
           ].map((item, i) => (
             <details key={i} className="group py-5">
@@ -614,7 +502,7 @@ export default function LandingPage() {
 
           <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
             <p>© 2025 BankKey. Tous droits réservés.</p>
-            <p className="text-slate-500">Conçu en Suisse pour les courtiers européens.</p>
+            <p className="text-slate-500">Pour les courtiers en crédit immobilier · France & Suisse</p>
           </div>
         </div>
       </footer>
