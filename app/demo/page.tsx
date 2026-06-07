@@ -291,19 +291,23 @@ export default function InteractiveDemo() {
                     <button
                       key={p.id}
                       onClick={() => setSelectedId(p.id)}
-                      className={`w-full flex items-start gap-3 px-3 py-2.5 rounded-lg transition-all text-left ${
+                      className={`relative w-full flex items-start gap-3 px-3 py-2.5 rounded-lg transition-all text-left ${
                         isSelected
-                          ? 'bg-slate-900 text-white'
+                          ? 'bg-slate-50 border border-slate-300 shadow-sm'
                           : isNew
                             ? 'bg-emerald-50/60 border border-emerald-200 hover:bg-emerald-50'
-                            : 'hover:bg-slate-50 border border-transparent'
+                            : 'border border-transparent hover:bg-slate-50'
                       }`}
                       style={isNew && stage === 'complete' ? { animation: 'slideInTop 0.6s cubic-bezier(0.16, 1, 0.3, 1)' } : undefined}
                     >
+                      {/* Indicateur de sélection sur la gauche */}
+                      {isSelected && (
+                        <span className="absolute left-0 top-2.5 bottom-2.5 w-0.5 bg-slate-900 rounded-r" />
+                      )}
                       <MiniScore score={p.scoring.score} temp={p.scoring.temperature} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5 mb-0.5">
-                          <span className={`text-sm font-semibold truncate ${isSelected ? 'text-white' : 'text-slate-900'}`}>
+                          <span className="text-sm font-semibold truncate text-slate-900">
                             {p.fromName}
                           </span>
                           {isNew && (
@@ -312,16 +316,14 @@ export default function InteractiveDemo() {
                             </span>
                           )}
                         </div>
-                        <p className={`text-[11px] truncate ${isSelected ? 'text-slate-300' : 'text-slate-500'}`}>
+                        <p className="text-[11px] truncate text-slate-500">
                           {p.qualification.description}
                         </p>
                         <div className="flex items-center gap-1.5 mt-1">
-                          <span className={`text-[9px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded ${
-                            isSelected ? 'bg-white/10 text-white' : TEMP_BADGE[p.scoring.temperature]
-                          }`}>
+                          <span className={`text-[9px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded ${TEMP_BADGE[p.scoring.temperature]}`}>
                             {TEMP_LABEL[p.scoring.temperature]}
                           </span>
-                          <span className={`text-[9px] ${isSelected ? 'text-slate-400' : 'text-slate-400'}`}>
+                          <span className="text-[9px] text-slate-400">
                             · {p.receivedDisplay}
                           </span>
                         </div>
