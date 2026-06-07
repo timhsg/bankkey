@@ -156,13 +156,21 @@ export default function BankTracker({ prospectId, initialBanks, qualification }:
       )}
 
       {banks.length > 0 && !adding && (
-        <div className="px-5 py-2 border-t border-slate-100 bg-slate-50/50">
+        <div className="px-5 py-2 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
           <button
             onClick={() => setAdding(true)}
             className="text-xs text-slate-500 hover:text-slate-900 transition-colors"
           >
             + Ajouter une banque
           </button>
+          {banks.some(b => b.status === 'pending') && banks.some(b => b.status === 'accepted' || b.status === 'rejected' || b.status === 'counter') && (
+            <span className="text-[10px] text-amber-700 flex items-center gap-1">
+              <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              Marquez l&apos;issue dès qu&apos;une banque répond
+            </span>
+          )}
         </div>
       )}
 

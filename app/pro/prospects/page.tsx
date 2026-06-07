@@ -159,25 +159,37 @@ function ProspectsContent() {
             <h1 className="text-xl font-semibold text-slate-900 tracking-tight">Prospects</h1>
             <p className="text-xs text-slate-500 mt-0.5">{counts.all} dossiers actifs</p>
           </div>
-          {gmailConnected && (
-            <button
-              onClick={sync}
-              disabled={syncing}
-              className="flex items-center gap-1.5 text-xs font-medium bg-white border border-slate-200 hover:border-slate-300 text-slate-700 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+          <div className="flex items-center gap-2">
+            {gmailConnected && (
+              <button
+                onClick={sync}
+                disabled={syncing}
+                className="flex items-center gap-1.5 text-xs font-medium bg-white border border-slate-200 hover:border-slate-300 text-slate-700 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {syncing
+                  ? <span className="w-3 h-3 border border-slate-400 border-t-slate-700 rounded-full animate-spin" />
+                  : (
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                      <path d="M21 3v5h-5" />
+                      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                      <path d="M3 21v-5h5" />
+                    </svg>
+                  )}
+                {syncing ? 'Synchronisation' : 'Synchroniser'}
+              </button>
+            )}
+            <a
+              href="/pro/prospects/new"
+              className="flex items-center gap-1.5 text-xs font-medium bg-slate-900 hover:bg-slate-800 text-white px-3 py-1.5 rounded-lg transition-base"
             >
-              {syncing
-                ? <span className="w-3 h-3 border border-slate-400 border-t-slate-700 rounded-full animate-spin" />
-                : (
-                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-                    <path d="M21 3v5h-5" />
-                    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-                    <path d="M3 21v-5h5" />
-                  </svg>
-                )}
-              {syncing ? 'Synchronisation' : 'Synchroniser'}
-            </button>
-          )}
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Ajouter un dossier
+            </a>
+          </div>
         </div>
       </div>
 

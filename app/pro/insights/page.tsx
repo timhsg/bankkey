@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import CompletenessCard from '../_components/CompletenessCard'
 
 // ════════════════════════════════════════════════════════════════════════
 //  /pro/insights — Insights statistiques basés sur les outcomes du cabinet
@@ -34,20 +35,62 @@ export default function InsightsPage() {
   const router   = useRouter()
   const supabase = createClient()
 
-  const [outcomes, setOutcomes] = useState<Outcome[]>([])
-  const [loading, setLoading]   = useState(true)
+  interface IncompleteProspect {
+    id: string
+    name: string
+    status: string
+    bank_count: number
+  }
+
+  const [outcomes, setOutcomes]     = useState<Outcome[]>([])
+  const [totalProspects, setTotalProspects] = useState(0)
+  const [incomplete, setIncomplete] = useState<IncompleteProspect[]>([])
+  const [loading, setLoading]       = useState(true)
 
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/pro/login'); return }
 
-      const { data } = await supabase
-        .from('deal_outcomes')
-        .select('id, bank_name, status, rate_pct, loan_amount, duration_years, rejection_reason, snapshot, decided_at')
-        .order('decided_at', { ascending: false })
+      const [outcomesRes, prospectsRes] = await Promise.all([
+        supabase.from('deal_outcomes')
+          .select('id, bank_name, status, rate_pct, loan_amount, duration_years, rejection_reason, snapshot, decided_at')
+          .order('decided_at', { ascending: false }),
+        supabase.from('prospects')
+          .select('id, qualification, email_from_name, status, bank_submitted')
+          .neq('status', 'archived')
+          .neq('status', 'filtered'),
+      ])
 
-      setOutcomes((data ?? []) as Outcome[])
+      const fetchedOutcomes = (outcomesRes.data ?? []) as Outcome[]
+      const allProspects = (prospectsRes.data ?? []) as Array<{
+        id: string
+        qualification: { firstName?: string | null; lastName?: string | null } | null
+        email_from_name: string | null
+        status: string
+        bank_submitted: Array<{ name: string; status?: string }> | null
+      }>
+
+      // Trouver les dossiers avec banques en attente mais pas d'outcome
+      const prospectIdsWithOutcome = new Set(
+        fetchedOutcomes.map(o => o as Outcome & { prospect_id?: string }).map(o => (o as { prospect_id?: string }).prospect_id).filter(Boolean)
+      )
+
+      const incompleteList: IncompleteProspect[] = allProspects
+        .filter(p => p.bank_submitted && p.bank_submitted.length > 0 && !prospectIdsWithOutcome.has(p.id))
+        .map(p => ({
+          id: p.id,
+          name: p.qualification?.firstName
+            ? `${p.qualification.firstName} ${p.qualification.lastName ?? ''}`.trim()
+            : p.email_from_name ?? 'Sans nom',
+          status: p.status,
+          bank_count: p.bank_submitted?.length ?? 0,
+        }))
+        .slice(0, 10)
+
+      setOutcomes(fetchedOutcomes)
+      setTotalProspects(allProspects.length)
+      setIncomplete(incompleteList)
       setLoading(false)
     }
     void load()
@@ -140,6 +183,13 @@ export default function InsightsPage() {
       </div>
 
       <main className="max-w-5xl mx-auto px-6 py-8 space-y-8">
+
+        {/* Carte complétude — toujours visible */}
+        <CompletenessCard
+          totalProspects={totalProspects}
+          withOutcome={stats.total}
+          incompleteWithBanks={incomplete}
+        />
 
         {stats.total === 0 ? (
           <EmptyState />
