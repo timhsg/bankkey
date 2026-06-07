@@ -156,10 +156,10 @@ function SourceCard({ source, connected, onConnect }: {
           : 'border-slate-200 hover:border-slate-300 hover:-translate-y-0.5 hover:shadow-sm'
     }`}>
       <div className="flex items-start gap-3 mb-3">
-        <div className="w-9 h-9 rounded-lg bg-white border border-slate-100 flex items-center justify-center shrink-0">
+        <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 overflow-hidden p-1.5">
           {(() => {
             const Icon = SOURCE_ICONS[source.id]
-            return Icon ? <Icon className="w-6 h-6" /> : (
+            return Icon ? <Icon className="w-full h-full" /> : (
               <span className="text-[11px] font-bold text-slate-700">
                 {source.name.slice(0, 2).toUpperCase()}
               </span>

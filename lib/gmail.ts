@@ -12,9 +12,21 @@ import { google } from 'googleapis'
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
-const REDIRECT_URI =
-  process.env.GOOGLE_REDIRECT_URI ??
-  `${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}/api/gmail/callback`
+// Détection robuste de l'URL de redirection :
+// 1. GOOGLE_REDIRECT_URI explicite (prioritaire)
+// 2. NEXT_PUBLIC_APP_URL si défini
+// 3. VERCEL_URL si on est sur Vercel (production / preview)
+// 4. localhost en dernier recours (dev local uniquement)
+function detectRedirectUri(): string {
+  if (process.env.GOOGLE_REDIRECT_URI) return process.env.GOOGLE_REDIRECT_URI
+  if (process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes('localhost'))
+    return `${process.env.NEXT_PUBLIC_APP_URL}/api/gmail/callback`
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}/api/gmail/callback`
+  if (process.env.NEXT_PUBLIC_APP_URL) return `${process.env.NEXT_PUBLIC_APP_URL}/api/gmail/callback`
+  return 'http://localhost:3000/api/gmail/callback'
+}
+
+const REDIRECT_URI = detectRedirectUri()
 
 const SCOPES = [
   'https://www.googleapis.com/auth/gmail.readonly',
