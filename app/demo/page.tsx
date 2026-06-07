@@ -222,29 +222,48 @@ export default function Home() {
     <div className="min-h-screen bg-slate-50">
 
       {/* ── Header ── */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-20">
-        <div className="max-w-2xl mx-auto px-5 h-13 flex items-center justify-between py-3">
-          <div className="flex items-center gap-3">
-            <a href="/" className="font-semibold text-slate-900 tracking-tight">BankKey</a>
+      <header className="bg-white border-b border-slate-100 sticky top-0 z-20 backdrop-blur-md bg-white/80">
+        <div className="max-w-2xl mx-auto px-5 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <a href="/" className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-md bg-slate-900 flex items-center justify-center">
+                <span className="text-white text-[10px] font-bold tracking-tighter">BK</span>
+              </div>
+              <span className="font-semibold text-slate-900 tracking-tight">BankKey</span>
+            </a>
             <span className="text-slate-200 select-none">|</span>
-            <span className="text-xs font-medium text-slate-500">Démo crédit immobilier</span>
+            <span className="text-xs font-medium text-slate-500">Démo</span>
           </div>
-          <span className="text-[10px] font-mono text-slate-400">v0.1</span>
+          <a href="/pro/login" className="text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors">
+            Démarrer l'essai →
+          </a>
         </div>
       </header>
 
       <main className="max-w-2xl mx-auto px-5 py-8 space-y-4">
 
+        {/* ── Intro ── */}
+        {step === 'idle' && (
+          <div className="text-center pt-2 pb-2 animate-fade-up">
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-900 mb-2">
+              Collez une demande de financement
+            </h1>
+            <p className="text-sm text-slate-500 max-w-md mx-auto">
+              Email d'un prospect, message reçu, formulaire de contact — BankKey extrait le profil, calcule le score et prépare votre réponse.
+            </p>
+          </div>
+        )}
+
         {/* ── Input ── */}
         {step === 'idle' && (
           <div className="bg-white rounded-xl border border-slate-200 p-5 animate-fade-up">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-medium text-slate-600">{config.emoji} {config.label}</span>
+              <span className="text-sm font-medium text-slate-700">{config.label}</span>
               <button
                 onClick={() => setListing(config.example)}
                 className="text-xs text-slate-400 hover:text-slate-600 transition-colors"
               >
-                Exemple
+                Charger un exemple
               </button>
             </div>
             <textarea
@@ -264,11 +283,14 @@ export default function Home() {
               <button
                 onClick={analyze}
                 disabled={!listing.trim()}
-                className="flex items-center gap-2 bg-slate-900 hover:bg-slate-700
+                className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800
                            disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed
                            text-white text-sm font-medium px-5 py-2 rounded-lg transition-colors"
               >
-                Analyser →
+                Analyser
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+                </svg>
               </button>
             </div>
           </div>
