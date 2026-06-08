@@ -88,6 +88,14 @@ types/index.ts              # Types partagés (QualificationResult, ScoringResul
 | Selection prospect : fond gris clair + barre verticale gauche | Le fond noir initial rendait le texte illisible |
 | Ton design : slate + emerald discret | Pas de "tech startup générique" — vise sobriété bancaire |
 | Programme pilote "50 places" | Crée de la rareté honnête plutôt que faux compteurs |
+| **Prix unifié 199 € / 199 CHF** | Lowering bar pour les 20 premiers cabinets pilotes. Le Suisse paie 5% de plus en réel — acceptable. |
+| **Auto-détection source via domaine email** | Plus de forwarding manuel — courtier connecte Gmail et BankKey reconnaît Empruntis, SeLoger, Pretto via @domaine |
+| **Filtre strict "default reject"** | Vercel, LinkedIn, Disney+ etc. étaient laissés passer. Maintenant on rejette par défaut, on accepte sur signal explicite. |
+| **BankKey = hub des prospects, pas seulement qualif email** | Création manuelle ajoutée pour referrals, agences, téléphone — couverture complète des dossiers |
+| **4 onglets sur fiche prospect** (Vue / Communication / Banques / Historique) | Évite l'empilement infini, navigation claire |
+| **"Prospect" universel, "dossier" contextuel** | Cohérence terminologique sans rigidité — courtage parle des 2 |
+| **/admin supprimée** | Prématurée à 0-1 cabinet, on la recréera quand on en aura 10+ |
+| **Cron Gmail tous les jours 8h** | Le produit travaille sans clic — la sync manuelle reste pour debug |
 
 ## 5. Préférences utilisateur (Sandra)
 
@@ -109,37 +117,76 @@ types/index.ts              # Types partagés (QualificationResult, ScoringResul
 
 ## 7. Statut actuel (mettre à jour à chaque session)
 
-### ✅ Livré
-- Landing complète : hero, ROI calc, comparison table, testimonials, security teaser, pricing, FAQ, footer
-- Démo interactive `/demo` avec 5 prospects, auto-play une fois, click pour explorer
-- Démo textarea `/demo/manual` (vrai appel API)
-- Page réservation démo `/book` avec sauvegarde Supabase
-- Page sécurité complète `/security`
-- Dashboard pro `/pro` avec stats + filtres
-- Page détail prospect `/pro/leads/[id]` avec ClientCard + 3 onglets
-- Qualification IA enrichie : revenus, apport, endettement, employment_status, is_couple
-- Scoring crédit basé sur vrais critères bancaires
-- Checklist documents auto-générée FR/CH
+### ✅ Livré (état au 8 juin 2026)
+
+**Landing & marketing**
+- Landing complète : hero avec mockup produit, ROI calc, comparison, "Pour qui" (sans fakes), Security, Pricing 199€, FAQ, Footer
+- Démo unifiée `/demo` + `/demo/manual` (toggle commun en haut)
+- `/book` réservation démo avec sauvegarde Supabase
+- `/security`, `/privacy`, `/terms` (pour Google OAuth verification)
+
+**Pro application**
+- Sidebar permanente avec : Aujourd'hui · Prospects · Banques · Bilan · Statistiques · Sources · Mon profil · Abonnement
+- `/pro` Aujourd'hui (top 3 prioritaires, stats du jour)
+- `/pro/prospects` liste complète avec filtres + recherche + tri + bouton "Ajouter un prospect"
+- `/pro/prospects/new` création manuelle (8 sources : referral, agence, téléphone, etc.)
+- `/pro/leads/[id]` fiche en **4 onglets propres** : Vue d'ensemble / Communication / Banques / Historique
+- `/pro/banks` suivi banques en kanban (En attente / Contre-offre / Accordé / Refusé)
+- `/pro/bilan` bilan mensuel (this month vs previous, sources, banques) — base future de l'email digest
+- `/pro/statistiques` insights avec carte complétude gamifiée (tiers Démarrage → Mémoire complète)
+- `/pro/sources` 11 canaux (Gmail live, Outlook beta, IMAP Q3, webhook, etc.) + auto-détection source
+- `/pro/settings` mémoire courtier + scoring weights customisables (curseurs additionnant à 100)
+- `/pro/billing` abonnement Stripe (essai 30j → Pro 199€)
+- `/pro/onboarding` wizard 4 étapes + création d'un prospect démo Camille Martin
+
+**Intelligence**
+- Filtre strict "default reject" : rejette Vercel, LinkedIn, Disney+, Slack, etc.
+- Auto-détection source via domaine email (Empruntis, SeLoger, Pretto…)
+- 4 agents IA : relevance (Haiku) → qualification (Haiku) → scoring (Haiku) → prospection (Sonnet)
+- Activity log JSONB par prospect (chronologique)
+- Outcome tracking : modal auto qui demande taux/conditions quand banque accordée
+- Document checklist déterministe FR/CH
+
+**Communication**
+- Email response éditable dans l'onglet Communication
+- Envoi direct via Gmail OAuth (pas de copier-coller)
+- Toasts feedback (succès / erreur)
+- Activity log automatique des envois
+
+**Auto-sync**
+- Cron Vercel `/api/cron/sync-gmail` tous les jours à 8h UTC
+- Synchro manuelle reste disponible (bouton "Synchroniser" sur /pro/sources et /pro/prospects)
 
 ### 🟡 En attente (besoin input Sandra)
-- **Stripe** : clés `pk_test_…` et `sk_test_…` à fournir
-- **Crisp live chat** : Website ID à fournir (compte gratuit)
-- **Cal.com sync** : lien calendrier (compte gratuit)
-- **Migration SQL** : à appliquer manuellement sur Supabase Dashboard
+- **Vercel env vars** : `STRIPE_PRICE_ID_PRO` doit être à jour (`price_1TfyJw0reUrQKljH2Z3oIAKX`)
+- **Vercel cron** : sera activé automatiquement au prochain deploy (vercel.json présent)
+- **CRON_SECRET** sur Vercel (optionnel mais recommandé pour sécuriser la route cron)
+- **Resend** : pour envoi automatique du bilan mensuel par email (pas encore intégré)
+- **Outlook OAuth** : Azure app registration à créer si on veut le supporter
 
 ### 🔮 Roadmap proche
-1. Mémoire courtier (broker memory injectée dans prompts IA)
-2. Stripe Pro 399 CHF/mois (paiement)
-3. Gmail OAuth réel (ingestion production)
-4. Lead magnet PDF "Guide courtier IA 2026"
-5. Blog SEO
+1. **Email bilan mensuel automatique** via Resend (page /pro/bilan déjà prête)
+2. **Outlook OAuth** (Azure setup + Microsoft Graph API)
+3. **Webhook API ingest** pour brokers avec CRM custom
+4. **Mobile pass** complet (responsivité fine)
+5. **Activity log → table dédiée** (passer de JSONB array à table propre pour scaling)
+6. **Recréer /admin** quand on aura 10+ cabinets pour suivi MRR/churn
+7. **Google OAuth verification** (4-6 semaines de process)
 
 ## 8. Migrations SQL à appliquer manuellement
 
-L'utilisateur applique les SQL sur Supabase Dashboard → SQL Editor. À la dernière session :
-- `001_initial.sql` — appliqué (probablement)
-- `002_credit_mvp.sql` — fourni inline en chat, à confirmer
-- `003_demo_bookings.sql` — fourni inline en chat, à confirmer
+L'utilisateur applique les SQL sur Supabase Dashboard → SQL Editor.
+
+**Statut des migrations** :
+- `001_initial.sql` ✅ — profiles + prospects + RLS + trigger
+- `002_credit_mvp.sql` ✅ — sector='credit' contrainte + colonnes documents
+- `003_demo_bookings.sql` ✅ — table réservations démo
+- `004_broker_memory.sql` ✅ — colonne JSONB broker_memory
+- `005_subscriptions.sql` ✅ — colonnes Stripe sur profiles + trial_ends_at
+- `006_relevance_sources.sql` ✅ — colonne relevance JSONB + forwarding_address
+- `007_detected_source.sql` ✅ — colonne detected_source JSONB
+- `008_activity_admin.sql` ✅ — activity JSONB + is_admin flag
+- `009_outcomes.sql` ✅ — table deal_outcomes pour le data moat
 
 **Toujours fournir le SQL inline en chat avec le lien direct vers le SQL editor**, pas juste référencer un fichier — Sandra n'arrive pas toujours à les trouver dans Finder.
 
