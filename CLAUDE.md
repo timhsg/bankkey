@@ -15,7 +15,9 @@ BankKey est un SaaS qui qualifie automatiquement les emails de demande de financ
 
 **Cible** : cabinets de courtage en crédit (1-5 personnes), 60-120 leads/mois, commission moyenne 2 500 CHF/dossier.
 
-**Tarif** : Essai gratuit 30 jours · Pro 399 CHF/mois.
+**Tarif lancement programme pilote** : Essai gratuit 30 jours · Pro **199 €/mois** (et 199 CHF/mois pour la Suisse).
+- Stripe Price ID actuel : `price_1TfyJw0reUrQKljH2Z3oIAKX` (199 EUR/mois)
+- Ancien Price ID (349 EUR, archivé) : `price_1TffPa0reUrQKljHZBVtkXHM`
 
 ## 2. Stack technique
 
