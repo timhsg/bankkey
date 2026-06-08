@@ -7,3 +7,6 @@ node_modules
 dist
 build
 .DS_Store
+
+# Word exports générés par scripts/md-to-docx.js
+exports/

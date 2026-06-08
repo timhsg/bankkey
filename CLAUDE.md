@@ -19,7 +19,7 @@ BankKey est un SaaS qui qualifie automatiquement les emails de demande de financ
 - Stripe Price ID actuel : `price_1TfyJw0reUrQKljH2Z3oIAKX` (199 EUR/mois)
 - Ancien Price ID (349 EUR, archivé) : `price_1TffPa0reUrQKljHZBVtkXHM`
 - **Resend** (emails transactionnels + digest mensuel) : compte créé, clé API `re_gHTvvk54_9ZfK3LBnjvLwzRPYdR556vZ1` en .env.local. Domaine `bankkey.ch` à vérifier via DNS pour envoyer depuis @bankkey.ch.
-- **Sentry** : setup en cours par Sandra (compte gratuit Developer + projet Next.js)
+- **Sentry** : setup en cours par Tim (compte gratuit Developer + projet Next.js)
 
 ## 2. Stack technique
 
@@ -99,11 +99,12 @@ types/index.ts              # Types partagés (QualificationResult, ScoringResul
 | **/admin supprimée** | Prématurée à 0-1 cabinet, on la recréera quand on en aura 10+ |
 | **Cron Gmail tous les jours 8h** | Le produit travaille sans clic — la sync manuelle reste pour debug |
 
-## 5. Préférences utilisateur (Sandra)
+## 5. Préférences utilisateur (Tim)
 
 - **Langue** : français exclusivement
-- **Niveau dev** : débutante — explications **ultra-détaillées**, commandes exactes, chemins absolus
-- **Workflow** : Sandra montre les erreurs Vercel/Supabase brutes → je diagnostique et corrige
+- **Profil** : Tim, 18 ans, homme, fondateur solo de BankKey
+- **Niveau dev** : débutant — explications **ultra-détaillées**, commandes exactes, chemins absolus
+- **Workflow** : Tim montre les erreurs Vercel/Supabase brutes → je diagnostique et corrige
 - **Style** : préfère des plans clairs avec ordre de priorité
 - **Décisions** : me laisse souvent carte blanche ("fais ce qui te parait le mieux") — j'exécute et je documente
 - **Ne pas** : bouton "rejouer" cliché, emojis génériques type 🔗📊, animations trop rapides, fonds noirs sur sélection
@@ -113,7 +114,7 @@ types/index.ts              # Types partagés (QualificationResult, ScoringResul
 - **GitHub** : github.com/timhsg/bankkey
 - **Vercel** : vercel.com/timhsg/bankkey (déploiement auto sur push main)
 - **Supabase** : projet `pffnjqylzdxnytbyorhk` (EU Francfort)
-- **Anthropic** : compte de Sandra (clé API rotée après une fuite chat le 7 juin 2026)
+- **Anthropic** : compte de Tim (clé API rotée après une fuite chat le 7 juin 2026)
 - **Domaine** : bankkey.ch
 - **Email** : pas encore configuré (support@bankkey.ch, dpo@bankkey.ch sont mentionnés mais pas créés)
 
@@ -159,7 +160,7 @@ types/index.ts              # Types partagés (QualificationResult, ScoringResul
 - Cron Vercel `/api/cron/sync-gmail` tous les jours à 8h UTC
 - Synchro manuelle reste disponible (bouton "Synchroniser" sur /pro/sources et /pro/prospects)
 
-### 🟡 En attente (besoin input Sandra)
+### 🟡 En attente (besoin input Tim)
 - **Vercel env vars** : `STRIPE_PRICE_ID_PRO` doit être à jour (`price_1TfyJw0reUrQKljH2Z3oIAKX`)
 - **Vercel cron** : sera activé automatiquement au prochain deploy (vercel.json présent)
 - **CRON_SECRET** sur Vercel (optionnel mais recommandé pour sécuriser la route cron)
@@ -190,7 +191,7 @@ L'utilisateur applique les SQL sur Supabase Dashboard → SQL Editor.
 - `008_activity_admin.sql` ✅ — activity JSONB + is_admin flag
 - `009_outcomes.sql` ✅ — table deal_outcomes pour le data moat
 
-**Toujours fournir le SQL inline en chat avec le lien direct vers le SQL editor**, pas juste référencer un fichier — Sandra n'arrive pas toujours à les trouver dans Finder.
+**Toujours fournir le SQL inline en chat avec le lien direct vers le SQL editor**, pas juste référencer un fichier — Tim n'arrive pas toujours à les trouver dans Finder.
 
 ## 9. Bugs connus / à surveiller
 
