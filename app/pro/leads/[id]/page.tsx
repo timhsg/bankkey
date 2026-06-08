@@ -160,6 +160,18 @@ export default function LeadDetailPage() {
   const [sentToast, setSentToast] = useState(false)
   const [sendError, setSendError] = useState<string | null>(null)
 
+  // États pour édition de l'email avant envoi
+  const [editedSubject, setEditedSubject] = useState<string>('')
+  const [editedBody, setEditedBody]       = useState<string>('')
+
+  // Initialise les champs d'édition quand le prospect est chargé
+  useEffect(() => {
+    if (prospect?.prospection?.email) {
+      setEditedSubject(prospect.prospection.email.subject)
+      setEditedBody(prospect.prospection.email.body)
+    }
+  }, [prospect?.prospection?.email])
+
   async function sendReply() {
     if (!prospect?.prospection || !profile?.gmail_access_token || !profile?.gmail_refresh_token) return
     setSending(true)
@@ -170,8 +182,8 @@ export default function LeadDetailPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           to:       prospect.email_from,
-          subject:  prospect.email_subject,
-          body:     prospect.prospection.email.body,
+          subject:  editedSubject || prospect.email_subject || 'Réponse',
+          body:     editedBody || prospect.prospection.email.body,
           threadId: prospect.gmail_thread_id,
         }),
       })
@@ -476,26 +488,104 @@ export default function LeadDetailPage() {
               {/* ─── Onglet : Communication ─── */}
               {tab === 'communication' && p && (
                 <div className="space-y-5">
-                  {/* Réponse email rédigée */}
+                  {/* Réponse email — éditable + envoyable directement */}
                   <div>
-                    <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest mb-2">Réponse email rédigée</p>
-                    <div className="border border-slate-200 rounded-xl overflow-hidden">
-                      <div className="bg-slate-50 border-b border-slate-200 px-4 py-2.5 flex items-baseline gap-2">
-                        <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide w-10 shrink-0">Objet</span>
-                        <span className="text-sm font-medium text-slate-800">{p.email.subject}</span>
-                      </div>
-                      <div className="px-4 py-4">
-                        <pre className="text-sm text-slate-700 whitespace-pre-wrap font-sans leading-relaxed">
-                          {p.email.body}
-                        </pre>
-                      </div>
+                    <div className="flex items-baseline justify-between mb-2">
+                      <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Réponse email rédigée par l&apos;IA</p>
+                      <p className="text-[10px] text-slate-400">Modifiable avant envoi</p>
                     </div>
-                    <div className="mt-2.5 flex justify-end">
+
+                    <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
+
+                      {/* Destinataire (lecture seule) */}
+                      <div className="bg-slate-50 border-b border-slate-200 px-4 py-2 flex items-baseline gap-2">
+                        <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide w-12 shrink-0">À</span>
+                        <span className="text-sm text-slate-700">
+                          {fullName ?? prospect.email_from_name ?? 'destinataire'}
+                          {prospect.email_from && (
+                            <span className="text-slate-400 ml-1.5">&lt;{prospect.email_from}&gt;</span>
+                          )}
+                        </span>
+                      </div>
+
+                      {/* Objet éditable */}
+                      <div className="border-b border-slate-100 px-4 py-2 flex items-baseline gap-2">
+                        <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide w-12 shrink-0">Objet</span>
+                        <input
+                          type="text"
+                          value={editedSubject}
+                          onChange={(e) => setEditedSubject(e.target.value)}
+                          className="flex-1 text-sm font-medium text-slate-900 bg-transparent focus:outline-none placeholder-slate-300"
+                          placeholder="Objet de l'email"
+                        />
+                      </div>
+
+                      {/* Corps éditable */}
+                      <textarea
+                        value={editedBody}
+                        onChange={(e) => setEditedBody(e.target.value)}
+                        rows={12}
+                        className="w-full px-4 py-4 text-sm text-slate-700 leading-relaxed focus:outline-none resize-y font-sans placeholder-slate-300"
+                        placeholder="Corps de l'email"
+                      />
+                    </div>
+
+                    {/* Barre d'actions sous l'email */}
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={sendReply}
+                          disabled={sending || prospect.status === 'replied' || !profile?.gmail_access_token || !prospect.email_from}
+                          className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white text-sm font-medium px-4 py-2 rounded-lg transition-base"
+                        >
+                          {sending ? (
+                            <>
+                              <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                              Envoi en cours...
+                            </>
+                          ) : prospect.status === 'replied' ? (
+                            <>
+                              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                              Déjà répondu
+                            </>
+                          ) : (
+                            <>
+                              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <line x1="22" y1="2" x2="11" y2="13"/>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                              </svg>
+                              Envoyer depuis Gmail
+                            </>
+                          )}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setEditedSubject(p.email.subject)
+                            setEditedBody(p.email.body)
+                          }}
+                          className="text-xs text-slate-500 hover:text-slate-900 transition-colors"
+                          title="Restaurer la version rédigée par l'IA"
+                        >
+                          Restaurer la version IA
+                        </button>
+                      </div>
                       <button onClick={copyEmail} className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600 transition-colors">
                         <I.Copy />
-                        {copied ? 'Copié' : 'Copier'}
+                        {copied ? 'Copié' : 'Copier dans le presse-papiers'}
                       </button>
                     </div>
+
+                    {/* Statut Gmail */}
+                    {!profile?.gmail_access_token && (
+                      <div className="mt-3 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-xs text-amber-800">
+                        <a href="/pro/sources" className="font-medium underline">Connectez Gmail</a> pour envoyer directement depuis BankKey, ou copiez le texte ci-dessus.
+                      </div>
+                    )}
+                    {profile?.gmail_access_token && !prospect.email_from && (
+                      <div className="mt-3 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-600">
+                        Pas d&apos;adresse email pour ce prospect — copiez le texte pour l&apos;envoyer manuellement.
+                      </div>
+                    )}
                   </div>
 
                   {/* Briefing appel */}
