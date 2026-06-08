@@ -296,11 +296,7 @@ export default function BilanPage() {
             </Section>
 
             {/* ─── Note bas de page ─── */}
-            <div className="bg-blue-50 border border-blue-100 rounded-xl px-5 py-4">
-              <p className="text-sm text-slate-700 leading-relaxed">
-                <span className="font-semibold text-slate-900">À venir :</span> ce bilan vous sera envoyé automatiquement par email chaque 1er du mois, avec un récap clair de votre activité et vos meilleurs résultats.
-              </p>
-            </div>
+            <DigestPreviewCard />
           </>
         )}
 
@@ -311,6 +307,62 @@ export default function BilanPage() {
           </Link>
         </div>
       </main>
+    </div>
+  )
+}
+
+// ── Carte preview email digest ─────────────────────────────────────
+
+function DigestPreviewCard() {
+  const [sending, setSending] = useState(false)
+  const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null)
+
+  async function sendPreview() {
+    setSending(true)
+    setResult(null)
+    try {
+      const res = await fetch('/api/email/test-digest', { method: 'POST' })
+      const data = await res.json()
+      if (res.ok) {
+        setResult({ ok: true, message: `Aperçu envoyé à ${data.sent_to}` })
+      } else {
+        setResult({ ok: false, message: data.error ?? 'Erreur d\'envoi' })
+      }
+    } catch {
+      setResult({ ok: false, message: 'Erreur réseau' })
+    } finally {
+      setSending(false)
+    }
+  }
+
+  return (
+    <div className="bg-gradient-to-br from-blue-50 via-white to-emerald-50/40 border border-blue-100 rounded-2xl px-5 py-5">
+      <div className="flex items-start gap-4">
+        <div className="w-10 h-10 rounded-xl bg-white border border-blue-100 flex items-center justify-center shrink-0">
+          <svg className="w-5 h-5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+            <rect width="20" height="16" x="2" y="4" rx="2"/>
+            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+          </svg>
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-slate-900 mb-1">Envoi automatique chaque 1er du mois</p>
+          <p className="text-xs text-slate-600 leading-relaxed mb-3">
+            BankKey vous enverra ce bilan par email chaque 1er du mois à 09h. Voulez-vous voir à quoi ça ressemble dans votre boîte mail ?
+          </p>
+          <button
+            onClick={sendPreview}
+            disabled={sending}
+            className="text-xs font-medium bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white px-3 py-1.5 rounded-lg transition-base"
+          >
+            {sending ? 'Envoi...' : 'M\'envoyer un aperçu'}
+          </button>
+          {result && (
+            <p className={`text-xs mt-2 ${result.ok ? 'text-emerald-700' : 'text-red-600'}`}>
+              {result.ok ? '✓ ' : ''}{result.message}
+            </p>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
