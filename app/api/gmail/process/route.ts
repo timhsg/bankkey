@@ -8,6 +8,7 @@ import { classifyRelevance } from '@/lib/agents/relevance'
 import { detectSource } from '@/lib/sources/detection'
 import { activityEmailReceived, activityFiltered, activityQualified } from '@/lib/activity'
 import { rateLimit } from '@/lib/rate-limit'
+import { sendHotLeadNotification, HOT_LEAD_THRESHOLD } from '@/lib/email/send-hot-lead'
 import type { SectorId } from '@/lib/sectors'
 
 /**
@@ -172,28 +173,44 @@ async function processUserEmails(
       const prospection   = await runProspectionAgent(qualification, scoring, sector, brokerMemory)
 
       // Stocker dans Supabase avec activité initiale
-      await supabase.from('prospects').insert({
-        user_id:           userId,
-        source:            'gmail',
-        gmail_message_id:  email.id,
-        gmail_thread_id:   email.threadId,
-        email_from_name:   email.fromName,
-        email_from:        email.fromEmail,
-        email_subject:     email.subject,
-        email_body:        email.body,
-        sector,
-        qualification,
-        scoring,
-        prospection,
-        detected_source:   detected,
-        relevance:         relevance,
-        status:            'new',
-        received_at:       email.receivedAt.toISOString(),
-        activity:          [
-          activityEmailReceived(detected.sourceName),
-          activityQualified(scoring.score, scoring.temperature),
-        ],
-      })
+      const { data: inserted } = await supabase
+        .from('prospects')
+        .insert({
+          user_id:           userId,
+          source:            'gmail',
+          gmail_message_id:  email.id,
+          gmail_thread_id:   email.threadId,
+          email_from_name:   email.fromName,
+          email_from:        email.fromEmail,
+          email_subject:     email.subject,
+          email_body:        email.body,
+          sector,
+          qualification,
+          scoring,
+          prospection,
+          detected_source:   detected,
+          relevance:         relevance,
+          status:            'new',
+          received_at:       email.receivedAt.toISOString(),
+          activity:          [
+            activityEmailReceived(detected.sourceName),
+            activityQualified(scoring.score, scoring.temperature),
+          ],
+        })
+        .select('id')
+        .single()
+
+      // Notification "lead chaud" si score ≥ 70 (non-bloquant)
+      if (inserted?.id && scoring.score >= HOT_LEAD_THRESHOLD) {
+        await sendHotLeadNotification({
+          supabase,
+          prospectId: inserted.id,
+          userId,
+          qualification,
+          scoring,
+          prospection,
+        })
+      }
 
       // Marquer comme lu pour ne pas le retraiter
       await markAsRead(accessToken, refreshToken, email.id)

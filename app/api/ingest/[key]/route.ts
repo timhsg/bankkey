@@ -6,6 +6,7 @@ import { runScoringAgent } from '@/lib/agents/scoring'
 import { runProspectionAgent } from '@/lib/agents/prospection'
 import { rateLimit } from '@/lib/rate-limit'
 import { activityEmailReceived, activityQualified } from '@/lib/activity'
+import { sendHotLeadNotification, HOT_LEAD_THRESHOLD } from '@/lib/email/send-hot-lead'
 import type { QualificationResult } from '@/types'
 
 // ════════════════════════════════════════════════════════════════════════
@@ -216,6 +217,18 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       { error: 'Erreur de sauvegarde' },
       { status: 500, headers: CORS_HEADERS },
     )
+  }
+
+  // Notification "lead chaud" si score ≥ 70 (non-bloquant)
+  if (inserted?.id && scoring && scoring.score >= HOT_LEAD_THRESHOLD) {
+    await sendHotLeadNotification({
+      supabase: admin,
+      prospectId: inserted.id,
+      userId: profile.id,
+      qualification,
+      scoring,
+      prospection: prospection ?? null,
+    })
   }
 
   return NextResponse.json(

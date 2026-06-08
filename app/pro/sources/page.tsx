@@ -106,7 +106,8 @@ export default function SourcesPage() {
             <button
               onClick={syncGmail}
               disabled={syncing}
-              className="flex items-center gap-1.5 text-xs font-medium bg-white border border-slate-200 hover:border-slate-300 text-slate-700 px-3 py-1.5 rounded-lg transition-base disabled:opacity-50"
+              className="flex items-center gap-1.5 text-xs font-medium bg-white border border-slate-200 hover:border-slate-300 text-slate-700 px-2.5 py-1.5 sm:px-3 rounded-lg transition-base disabled:opacity-50 shrink-0"
+              aria-label="Synchroniser"
             >
               {syncing
                 ? <span className="w-3 h-3 border border-slate-400 border-t-slate-700 rounded-full animate-spin" />
@@ -118,7 +119,7 @@ export default function SourcesPage() {
                     <path d="M3 21v-5h5" />
                   </svg>
                 )}
-              {syncing ? 'Synchronisation' : 'Synchroniser'}
+              <span className="hidden sm:inline">{syncing ? 'Synchronisation' : 'Synchroniser'}</span>
             </button>
           )}
         </div>

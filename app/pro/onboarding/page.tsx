@@ -217,7 +217,7 @@ function OnboardingContent() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-3 gap-3 max-w-md mx-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-md mx-auto">
                 {[
                   { n: '1', t: 'Profil', d: 'Votre signature, votre style' },
                   { n: '2', t: 'Sources', d: 'D\'où viennent vos leads' },
@@ -384,7 +384,7 @@ function OnboardingContent() {
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-3 max-w-md mx-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md mx-auto">
                 <Link href="/pro" className="bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-base">
                   Mon tableau de bord
                 </Link>

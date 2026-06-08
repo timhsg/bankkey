@@ -159,12 +159,13 @@ function ProspectsContent() {
             <h1 className="text-xl font-semibold text-slate-900 tracking-tight">Prospects</h1>
             <p className="text-xs text-slate-500 mt-0.5">{counts.all} prospects actifs</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             {gmailConnected && (
               <button
                 onClick={sync}
                 disabled={syncing}
-                className="flex items-center gap-1.5 text-xs font-medium bg-white border border-slate-200 hover:border-slate-300 text-slate-700 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                className="flex items-center gap-1.5 text-xs font-medium bg-white border border-slate-200 hover:border-slate-300 text-slate-700 px-2.5 py-1.5 sm:px-3 rounded-lg transition-colors disabled:opacity-50"
+                aria-label="Synchroniser"
               >
                 {syncing
                   ? <span className="w-3 h-3 border border-slate-400 border-t-slate-700 rounded-full animate-spin" />
@@ -176,18 +177,19 @@ function ProspectsContent() {
                       <path d="M3 21v-5h5" />
                     </svg>
                   )}
-                {syncing ? 'Synchronisation' : 'Synchroniser'}
+                <span className="hidden sm:inline">{syncing ? 'Synchronisation' : 'Synchroniser'}</span>
               </button>
             )}
             <a
               href="/pro/prospects/new"
-              className="flex items-center gap-1.5 text-xs font-medium bg-slate-900 hover:bg-slate-800 text-white px-3 py-1.5 rounded-lg transition-base"
+              className="flex items-center gap-1.5 text-xs font-medium bg-slate-900 hover:bg-slate-800 text-white px-2.5 py-1.5 sm:px-3 rounded-lg transition-base"
+              aria-label="Ajouter un prospect"
             >
               <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19"/>
                 <line x1="5" y1="12" x2="19" y2="12"/>
               </svg>
-              Ajouter un prospect
+              <span className="hidden sm:inline">Ajouter un prospect</span>
             </a>
           </div>
         </div>

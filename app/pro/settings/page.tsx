@@ -157,6 +157,7 @@ export default function SettingsPage() {
   const supabase = createClient()
 
   const [memory, setMemory]   = useState<BrokerMemory>(EMPTY_MEMORY)
+  const [hotNotif, setHotNotif] = useState(true)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving]   = useState(false)
   const [saved, setSaved]     = useState(false)
@@ -169,11 +170,14 @@ export default function SettingsPage() {
 
       const { data } = await supabase
         .from('profiles')
-        .select('broker_memory')
+        .select('broker_memory, email_hot_notifications')
         .single()
 
       if (data?.broker_memory) {
         setMemory({ ...EMPTY_MEMORY, ...data.broker_memory })
+      }
+      if (typeof data?.email_hot_notifications === 'boolean') {
+        setHotNotif(data.email_hot_notifications)
       }
       setLoading(false)
     }
@@ -186,7 +190,8 @@ export default function SettingsPage() {
     await supabase
       .from('profiles')
       .update({
-        broker_memory: { ...memory, updatedAt: new Date().toISOString() }
+        broker_memory: { ...memory, updatedAt: new Date().toISOString() },
+        email_hot_notifications: hotNotif,
       })
       .eq('id', (await supabase.auth.getUser()).data.user?.id)
 
@@ -440,6 +445,29 @@ export default function SettingsPage() {
             />
           </div>
         </Section>
+
+        {/* ── Section: Notifications ── */}
+        <div id="notifications" className="scroll-mt-20">
+          <Section title="Notifications" desc="Recevez un email quand un prospect chaud arrive — pour rappeler vite et signer plus.">
+            <div className="flex items-center justify-between p-3 border border-slate-200 rounded-xl">
+              <div className="pr-4">
+                <p className="text-sm font-medium text-slate-900">Alerte email lead chaud</p>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Envoi immédiat dès qu'un prospect obtient un score ≥ 70. Une seule alerte par prospect.
+                </p>
+              </div>
+              <button
+                onClick={() => setHotNotif(v => !v)}
+                aria-pressed={hotNotif}
+                className={`relative w-10 h-5 rounded-full transition-colors shrink-0 ${hotNotif ? 'bg-emerald-600' : 'bg-slate-200'}`}
+              >
+                <span
+                  className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-all ${hotNotif ? 'left-5' : 'left-0.5'}`}
+                />
+              </button>
+            </div>
+          </Section>
+        </div>
 
         {/* ── Section: Notes ── */}
         <Section title="Instructions libres" desc="Tout ce que l'IA doit savoir de spécifique à votre cabinet">

@@ -194,23 +194,23 @@ export default function BilanPage() {
 
       {/* Header */}
       <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
-          <div className="pl-12 lg:pl-0">
+        <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between gap-3 flex-wrap">
+          <div className="pl-12 lg:pl-0 min-w-0">
             <h1 className="text-base font-semibold text-slate-900 tracking-tight">Bilan mensuel</h1>
             <p className="text-[11px] text-slate-500 mt-0.5 capitalize">{periodLabel}</p>
           </div>
 
           {/* Toggle période */}
-          <div className="inline-flex items-center bg-slate-100 rounded-full p-0.5 text-[11px] font-semibold">
+          <div className="inline-flex items-center bg-slate-100 rounded-full p-0.5 text-[11px] font-semibold shrink-0">
             <button
               onClick={() => setPeriod('previous')}
-              className={`px-3 py-1 rounded-full transition-all ${period === 'previous' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`px-2.5 sm:px-3 py-1 rounded-full transition-all ${period === 'previous' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
             >
               Mois dernier
             </button>
             <button
               onClick={() => setPeriod('current')}
-              className={`px-3 py-1 rounded-full transition-all ${period === 'current' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`px-2.5 sm:px-3 py-1 rounded-full transition-all ${period === 'current' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
             >
               Ce mois
             </button>

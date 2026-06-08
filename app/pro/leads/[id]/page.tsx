@@ -258,13 +258,13 @@ export default function LeadDetailPage() {
       {/* ── Header avec breadcrumb + actions ── */}
       <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
-          <button onClick={() => router.push('/pro/prospects')} className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 transition-colors pl-12 lg:pl-0">
+          <button onClick={() => router.push('/pro/prospects')} className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 transition-colors pl-12 lg:pl-0 shrink-0">
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="m12 19-7-7 7-7" /><path d="M19 12H5" />
             </svg>
-            Prospects
+            <span className="hidden sm:inline">Prospects</span>
           </button>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             {prospect.status === 'replied' ? (
               <span className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full font-medium">
                 Répondu
@@ -273,9 +273,10 @@ export default function LeadDetailPage() {
               <button
                 onClick={sendReply}
                 disabled={sending || !profile?.gmail_access_token}
-                className="text-xs bg-slate-900 hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-400 text-white px-3.5 py-1.5 rounded-lg transition-colors font-medium"
+                className="text-xs bg-slate-900 hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-400 text-white px-3 py-1.5 rounded-lg transition-colors font-medium"
               >
-                {sending ? 'Envoi...' : 'Envoyer la réponse'}
+                <span className="sm:hidden">{sending ? 'Envoi…' : 'Envoyer'}</span>
+                <span className="hidden sm:inline">{sending ? 'Envoi...' : 'Envoyer la réponse'}</span>
               </button>
             )}
             <button onClick={archive} className="text-xs text-slate-400 hover:text-slate-700 transition-colors">
@@ -432,18 +433,18 @@ export default function LeadDetailPage() {
         {/* ── 4 onglets principaux ── */}
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
 
-            <div className="flex border-b border-slate-100">
+            <div className="flex border-b border-slate-100 overflow-x-auto">
               {([
-                { id: 'overview'      as const, label: 'Vue d\'ensemble',  enabled: true,         badge: undefined as string | undefined },
-                { id: 'communication' as const, label: 'Communication',    enabled: !!p,          badge: undefined as string | undefined },
-                { id: 'banks'         as const, label: 'Banques',          enabled: true,         badge: prospect.bank_submitted && prospect.bank_submitted.length > 0 ? String(prospect.bank_submitted.length) : undefined },
-                { id: 'history'       as const, label: 'Historique',       enabled: true,         badge: documents?.urgency === 'urgent' ? 'Urgent' : undefined },
+                { id: 'overview'      as const, label: 'Vue d\'ensemble', labelShort: 'Vue',     enabled: true,         badge: undefined as string | undefined },
+                { id: 'communication' as const, label: 'Communication',   labelShort: 'Comm.',   enabled: !!p,          badge: undefined as string | undefined },
+                { id: 'banks'         as const, label: 'Banques',         labelShort: 'Banques', enabled: true,         badge: prospect.bank_submitted && prospect.bank_submitted.length > 0 ? String(prospect.bank_submitted.length) : undefined },
+                { id: 'history'       as const, label: 'Historique',      labelShort: 'Hist.',   enabled: true,         badge: documents?.urgency === 'urgent' ? 'Urgent' : undefined },
               ]).map(t => (
                 <button
                   key={t.id}
                   onClick={() => t.enabled && setTab(t.id as Tab)}
                   disabled={!t.enabled}
-                  className={`flex-1 py-3 text-xs font-semibold uppercase tracking-wide transition-colors flex items-center justify-center gap-2 ${
+                  className={`flex-1 min-w-[80px] py-3 px-2 text-[10px] sm:text-xs font-semibold uppercase tracking-wide transition-colors flex items-center justify-center gap-1.5 sm:gap-2 whitespace-nowrap ${
                     tab === t.id
                       ? 'text-slate-900 border-b-2 border-slate-900'
                       : t.enabled
@@ -451,7 +452,8 @@ export default function LeadDetailPage() {
                         : 'text-slate-200 cursor-not-allowed'
                   }`}
                 >
-                  {t.label}
+                  <span className="sm:hidden">{t.labelShort}</span>
+                  <span className="hidden sm:inline">{t.label}</span>
                   {t.badge && (
                     <span className="text-[9px] font-bold uppercase tracking-wider bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">
                       {t.badge}

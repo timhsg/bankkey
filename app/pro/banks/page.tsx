@@ -136,54 +136,59 @@ export default function BanksPage() {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {(['pending', 'counter', 'accepted', 'rejected'] as const).map((status) => (
-              <div key={status} className="bg-slate-50 rounded-xl">
-                <div className="px-4 py-3 border-b border-slate-200">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                      {STATUS_LABEL[status]}
-                    </h3>
-                    <span className="text-xs font-medium text-slate-400">{columns[status].length}</span>
+          <>
+            {/* Mobile : scroll horizontal (style Trello) */}
+            {/* Desktop : grid 4 colonnes */}
+            <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 overflow-x-auto md:overflow-visible pb-3 md:pb-0 -mx-6 px-6 md:mx-0 md:px-0 snap-x snap-mandatory md:snap-none">
+              {(['pending', 'counter', 'accepted', 'rejected'] as const).map((status) => (
+                <div key={status} className="bg-slate-50 rounded-xl shrink-0 w-[85vw] sm:w-[60vw] md:w-auto snap-start">
+                  <div className="px-4 py-3 border-b border-slate-200">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                        {STATUS_LABEL[status]}
+                      </h3>
+                      <span className="text-xs font-medium text-slate-400">{columns[status].length}</span>
+                    </div>
+                  </div>
+                  <div className="p-2 space-y-2 md:max-h-[calc(100vh-220px)] md:overflow-y-auto">
+                    {columns[status].map((s, i) => {
+                      const name = s.prospect.qualification?.firstName
+                        ? `${s.prospect.qualification.firstName} ${s.prospect.qualification.lastName ?? ''}`.trim()
+                        : s.prospect.email_from_name ?? 'Inconnu'
+
+                      return (
+                        <button
+                          key={`${s.prospect.id}-${i}`}
+                          onClick={() => router.push(`/pro/leads/${s.prospect.id}`)}
+                          className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg p-3 text-left transition-colors"
+                        >
+                          <p className="text-sm font-semibold text-slate-900 truncate mb-1">{s.bank.name}</p>
+                          <p className="text-[11px] text-slate-500 truncate">{name}</p>
+                          <div className="flex items-center justify-between mt-2">
+                            <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded border ${STATUS_COLOR[s.bank.status ?? 'pending']}`}>
+                              {STATUS_LABEL[s.bank.status ?? 'pending']}
+                            </span>
+                            {s.bank.rate && (
+                              <span className="text-[10px] font-mono text-slate-700">{s.bank.rate}%</span>
+                            )}
+                          </div>
+                          {s.bank.submitted_at && (
+                            <p className="text-[10px] text-slate-400 mt-1.5">
+                              Envoyé le {new Date(s.bank.submitted_at).toLocaleDateString('fr-FR')}
+                            </p>
+                          )}
+                        </button>
+                      )
+                    })}
+                    {columns[status].length === 0 && (
+                      <p className="text-[11px] text-slate-400 text-center py-6 px-3">Aucun</p>
+                    )}
                   </div>
                 </div>
-                <div className="p-2 space-y-2 max-h-[calc(100vh-220px)] overflow-y-auto">
-                  {columns[status].map((s, i) => {
-                    const name = s.prospect.qualification?.firstName
-                      ? `${s.prospect.qualification.firstName} ${s.prospect.qualification.lastName ?? ''}`.trim()
-                      : s.prospect.email_from_name ?? 'Inconnu'
-
-                    return (
-                      <button
-                        key={`${s.prospect.id}-${i}`}
-                        onClick={() => router.push(`/pro/leads/${s.prospect.id}`)}
-                        className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg p-3 text-left transition-colors"
-                      >
-                        <p className="text-sm font-semibold text-slate-900 truncate mb-1">{s.bank.name}</p>
-                        <p className="text-[11px] text-slate-500 truncate">{name}</p>
-                        <div className="flex items-center justify-between mt-2">
-                          <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded border ${STATUS_COLOR[s.bank.status ?? 'pending']}`}>
-                            {STATUS_LABEL[s.bank.status ?? 'pending']}
-                          </span>
-                          {s.bank.rate && (
-                            <span className="text-[10px] font-mono text-slate-700">{s.bank.rate}%</span>
-                          )}
-                        </div>
-                        {s.bank.submitted_at && (
-                          <p className="text-[10px] text-slate-400 mt-1.5">
-                            Envoyé le {new Date(s.bank.submitted_at).toLocaleDateString('fr-FR')}
-                          </p>
-                        )}
-                      </button>
-                    )
-                  })}
-                  {columns[status].length === 0 && (
-                    <p className="text-[11px] text-slate-400 text-center py-6 px-3">Aucun</p>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+            <p className="md:hidden text-[10px] text-slate-400 text-center mt-2">← Glissez pour voir les autres colonnes</p>
+          </>
         )}
       </main>
     </div>
