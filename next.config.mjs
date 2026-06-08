@@ -73,4 +73,20 @@ const nextConfig = {
   reactStrictMode: true,
 }
 
-export default nextConfig
+// ════════════════════════════════════════════════════════════════════════
+//  Sentry wrapper — actif uniquement si SENTRY_DSN configuré
+// ════════════════════════════════════════════════════════════════════════
+
+import { withSentryConfig } from '@sentry/nextjs'
+
+const sentryOptions = {
+  silent: !process.env.SENTRY_AUTH_TOKEN,
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  disableLogger: true,
+  hideSourceMaps: true,
+}
+
+export default process.env.SENTRY_DSN
+  ? withSentryConfig(nextConfig, sentryOptions)
+  : nextConfig

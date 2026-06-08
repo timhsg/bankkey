@@ -7,6 +7,7 @@ import { runProspectionAgent } from '@/lib/agents/prospection'
 import { classifyRelevance } from '@/lib/agents/relevance'
 import { detectSource } from '@/lib/sources/detection'
 import { activityEmailReceived, activityFiltered, activityQualified } from '@/lib/activity'
+import { rateLimit } from '@/lib/rate-limit'
 import type { SectorId } from '@/lib/sectors'
 
 /**
@@ -34,6 +35,19 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json().catch(() => ({})) as { userId?: string }
+
+  // Rate limit appels manuels par utilisateur : 6 sync / heure max
+  // (le cron est exempté car déjà espacé naturellement)
+  if (isInternal && body.userId) {
+    const limit = rateLimit(`gmail-sync:${body.userId}`, 6, 60 * 60_000)
+    if (!limit.ok) {
+      return NextResponse.json(
+        { error: 'Limite de synchronisation atteinte (6/heure). Réessayez plus tard.', resetAt: limit.resetAt },
+        { status: 429 },
+      )
+    }
+  }
+
   const supabase = createAdminClient()
 
   // Cibler un utilisateur spécifique ou traiter tout le monde (cron)

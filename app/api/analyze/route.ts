@@ -7,13 +7,22 @@ import { rateLimit, getClientIp } from '@/lib/rate-limit';
 import type { SectorId } from '@/lib/sectors';
 
 export async function POST(request: NextRequest) {
-  // Rate limit : 10 analyses par IP par minute (anti-abus démo publique)
+  // Rate limit en 2 couches contre l'abus de la démo publique :
+  // - 5 analyses / IP / minute (burst protection)
+  // - 30 analyses / IP / heure (cost protection — chaque analyse coûte ~0.005€ en LLM)
   const ip = getClientIp(request.headers);
-  const limit = rateLimit(`analyze:${ip}`, 10, 60_000);
-  if (!limit.ok) {
+  const burst = rateLimit(`analyze:burst:${ip}`, 5, 60_000);
+  if (!burst.ok) {
     return new Response(
       JSON.stringify({ error: 'Trop de requêtes — réessayez dans une minute.' }),
       { status: 429, headers: { 'Content-Type': 'application/json', 'Retry-After': '60' } },
+    );
+  }
+  const hourly = rateLimit(`analyze:hourly:${ip}`, 30, 60 * 60_000);
+  if (!hourly.ok) {
+    return new Response(
+      JSON.stringify({ error: 'Limite horaire atteinte. Créez un compte gratuit pour un usage illimité.' }),
+      { status: 429, headers: { 'Content-Type': 'application/json', 'Retry-After': '3600' } },
     );
   }
 

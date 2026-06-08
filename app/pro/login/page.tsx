@@ -25,11 +25,20 @@ export default function LoginPage() {
         window.location.href = '/pro'
       }
     } else {
-      const { error } = await supabase.auth.signUp({ email, password })
+      const { data, error } = await supabase.auth.signUp({ email, password })
       if (error) {
         setMessage({ type: 'error', text: error.message })
+      } else if (data.session) {
+        // Confirmation email désactivée → session immédiate → on déclenche welcome + redirige
+        try {
+          await fetch('/api/email/welcome', { method: 'POST' })
+        } catch {
+          // Pas bloquant : si Resend pas configuré, on continue
+        }
+        window.location.href = '/pro/onboarding'
       } else {
-        setMessage({ type: 'info', text: 'Vérifiez votre email pour confirmer votre compte.' })
+        // Confirmation email activée → on demande à vérifier
+        setMessage({ type: 'info', text: 'Vérifiez votre email pour confirmer votre compte, puis reconnectez-vous.' })
       }
     }
 
