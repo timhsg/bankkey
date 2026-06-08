@@ -28,7 +28,7 @@ const STATUS_OPTIONS: Array<{ value: BankSubmission['status']; label: string; co
 ]
 
 /**
- * Suivi des soumissions bancaires pour un dossier
+ * Suivi des soumissions bancaires pour un prospect
  */
 export default function BankTracker({ prospectId, initialBanks, qualification }: Props) {
   const supabase = createClient()
@@ -104,7 +104,7 @@ export default function BankTracker({ prospectId, initialBanks, qualification }:
 
       {banks.length === 0 && !adding && (
         <div className="px-5 py-6 text-center">
-          <p className="text-xs text-slate-500 mb-3">Aucune banque sollicitée pour ce dossier.</p>
+          <p className="text-xs text-slate-500 mb-3">Aucune banque sollicitée pour ce prospect.</p>
           <button
             onClick={() => setAdding(true)}
             className="text-xs font-medium bg-slate-900 hover:bg-slate-800 text-white px-3 py-1.5 rounded-lg transition-colors"
@@ -168,7 +168,7 @@ export default function BankTracker({ prospectId, initialBanks, qualification }:
               <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
               </svg>
-              Marquez l&apos;issue dès qu&apos;une banque répond
+              Notez la décision dès qu&apos;une banque répond
             </span>
           )}
         </div>

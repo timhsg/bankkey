@@ -57,7 +57,7 @@ export default function TermsPage() {
           <Section title="5. Tarifs et facturation">
             <ul>
               <li><strong>Essai gratuit</strong> : 30 jours, accès complet, sans carte bancaire requise</li>
-              <li><strong>Abonnement Pro</strong> : 349 € HT / mois (France) ou 379 CHF HT / mois (Suisse)</li>
+              <li><strong>Abonnement Pro</strong> : 199 € HT / mois (France) ou 199 CHF HT / mois (Suisse) — tarif lancement programme pilote</li>
               <li>Facturation mensuelle automatique via Stripe</li>
               <li>Annulation possible à tout moment depuis votre espace facturation</li>
               <li>Aucun remboursement au prorata du mois en cours</li>

@@ -157,7 +157,7 @@ function ProspectsContent() {
         <div className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between gap-4">
           <div className="pl-12 lg:pl-0">
             <h1 className="text-xl font-semibold text-slate-900 tracking-tight">Prospects</h1>
-            <p className="text-xs text-slate-500 mt-0.5">{counts.all} dossiers actifs</p>
+            <p className="text-xs text-slate-500 mt-0.5">{counts.all} prospects actifs</p>
           </div>
           <div className="flex items-center gap-2">
             {gmailConnected && (
@@ -187,7 +187,7 @@ function ProspectsContent() {
                 <line x1="12" y1="5" x2="12" y2="19"/>
                 <line x1="5" y1="12" x2="19" y2="12"/>
               </svg>
-              Ajouter un dossier
+              Ajouter un prospect
             </a>
           </div>
         </div>

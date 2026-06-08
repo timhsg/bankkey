@@ -152,10 +152,10 @@ export default function TodayPage() {
           </h1>
           <p className="text-slate-600 mt-2">
             {stats.hotPending > 0
-              ? `Vous avez ${stats.hotPending} dossier${stats.hotPending > 1 ? 's' : ''} prioritaire${stats.hotPending > 1 ? 's' : ''} à traiter aujourd'hui.`
+              ? `Vous avez ${stats.hotPending} prospect${stats.hotPending > 1 ? 's' : ''} prioritaire${stats.hotPending > 1 ? 's' : ''} à traiter aujourd'hui.`
               : stats.newPending > 0
-                ? `${stats.newPending} nouveaux prospects à qualifier.`
-                : 'Pas de dossier urgent à traiter. Bonne journée.'}
+                ? `${stats.newPending} nouveau${stats.newPending > 1 ? 'x' : ''} prospect${stats.newPending > 1 ? 's' : ''} à qualifier.`
+                : 'Pas de prospect urgent à traiter. Bonne journée.'}
           </p>
         </div>
 

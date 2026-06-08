@@ -8,7 +8,7 @@ interface Props {
 }
 
 // ════════════════════════════════════════════════════════════════════════
-//  Timeline d'activité — chronologie complète d'un dossier
+//  Historique chronologique d'un prospect
 // ════════════════════════════════════════════════════════════════════════
 
 const ICON_BY_TYPE: Record<ActivityType, { bg: string; fg: string; svg: React.ReactNode }> = {
@@ -84,7 +84,7 @@ export default function ActivityTimeline({ activity }: Props) {
           <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Historique</span>
         </div>
         <div className="px-5 py-6 text-center">
-          <p className="text-xs text-slate-500">Aucune activité enregistrée pour ce dossier.</p>
+          <p className="text-xs text-slate-500">Aucune activité enregistrée pour ce prospect.</p>
         </div>
       </div>
     )
@@ -93,7 +93,7 @@ export default function ActivityTimeline({ activity }: Props) {
   return (
     <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
       <div className="bg-slate-50 border-b border-slate-200 px-5 py-2.5 flex items-center justify-between">
-        <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Historique du dossier</span>
+        <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Historique du prospect</span>
         <span className="text-[10px] text-slate-400">{events.length} événement{events.length > 1 ? 's' : ''}</span>
       </div>
 

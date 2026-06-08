@@ -81,19 +81,20 @@ export function formatPrice(amount: number, currency: CurrencyCode): string {
 }
 
 /**
- * Tarification produit en EUR (devise de référence)
- * Conversion en CHF appliquée automatiquement à l'affichage
+ * Tarification produit (devise de référence : EUR)
+ * Tarif lancement programme pilote
  */
 export const PRICING_EUR = {
   trial: 0,
-  pro: 379,  // 379 EUR / ~ 360 CHF (arrondi 379 CHF pour rondeur perçue)
+  pro: 199,
 }
 
 /**
- * Tarifs affichés selon la devise — arrondis pour confort visuel
+ * Tarif lancement : même montant en EUR et CHF.
+ * Le Suisse paie ~5% de plus en valeur réelle, acceptable pour la simplicité.
+ * Sera réévalué après 30 cabinets pilotes signés.
  */
-export function getDisplayPrice(plan: 'trial' | 'pro', currency: CurrencyCode): number {
+export function getDisplayPrice(plan: 'trial' | 'pro', _currency: CurrencyCode): number {
   if (plan === 'trial') return 0
-  if (currency === 'CHF') return 379  // Tarif Suisse "rond"
-  return 349                            // Tarif Europe "rond"
+  return 199
 }

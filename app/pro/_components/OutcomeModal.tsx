@@ -108,8 +108,8 @@ export default function OutcomeModal({
 
         <div className="px-6 py-5 space-y-4">
           <p className="text-xs text-slate-600 leading-relaxed bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
-            <span className="font-semibold text-slate-900">Pourquoi ces informations ?</span><br/>
-            En enregistrant les conditions exactes obtenues, BankKey vous aide à anticiper quelles banques acceptent quels profils à quels taux. Vos données restent privées.
+            <span className="font-semibold text-slate-900">Pourquoi enregistrer ces informations ?</span><br/>
+            En notant les conditions exactes obtenues, BankKey vous aide à anticiper quelles banques acceptent quels profils à quels taux. Vos données restent privées et vous servent pour vos négociations futures.
           </p>
 
           {!isReject ? (
@@ -162,7 +162,7 @@ export default function OutcomeModal({
             disabled={saving}
             className="bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white text-sm font-medium px-5 py-2 rounded-lg transition-base"
           >
-            {saving ? 'Sauvegarde...' : 'Enregistrer l\'issue'}
+            {saving ? 'Sauvegarde...' : 'Enregistrer la décision'}
           </button>
         </div>
       </div>

@@ -91,7 +91,7 @@ const PRIMARY_NAV: NavItem[] = [
   { href: '/pro',           label: 'Aujourd\'hui',   icon: Icons.Home, matchExact: true },
   { href: '/pro/prospects', label: 'Prospects',      icon: Icons.Users },
   { href: '/pro/banks',     label: 'Banques',        icon: Icons.Bank },
-  { href: '/pro/insights',  label: 'Insights',       icon: Icons.Chart },
+  { href: '/pro/statistiques',  label: 'Statistiques',   icon: Icons.Chart },
   { href: '/pro/sources',   label: 'Sources',        icon: Icons.Inbox },
 ]
 

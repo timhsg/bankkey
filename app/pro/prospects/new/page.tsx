@@ -7,9 +7,9 @@ import { createClient } from '@/lib/supabase/client'
 import { activityEmailReceived } from '@/lib/activity'
 
 // ════════════════════════════════════════════════════════════════════════
-//  /pro/prospects/new — Création manuelle d'un dossier
-//  Pour les dossiers qui ne viennent PAS d'un email :
-//  recommandation, agence, téléphone, walk-in, ancien client...
+//  /pro/prospects/new — Création manuelle d'un prospect
+//  Pour les prospects qui ne viennent PAS d'un email :
+//  recommandation, agence, téléphone, rendez-vous direct, ancien client...
 // ════════════════════════════════════════════════════════════════════════
 
 const SOURCES = [
@@ -144,10 +144,10 @@ export default function NewProspectPage() {
       <main className="max-w-2xl mx-auto px-6 py-8 space-y-6">
 
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-2">Nouveau dossier</p>
-          <h1 className="text-2xl font-semibold text-slate-900 tracking-tight mb-2">Ajouter un dossier manuellement</h1>
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-2">Nouveau prospect</p>
+          <h1 className="text-2xl font-semibold text-slate-900 tracking-tight mb-2">Ajouter un prospect manuellement</h1>
           <p className="text-sm text-slate-600 leading-relaxed max-w-xl">
-            Pour les dossiers qui ne viennent pas d&apos;un email : recommandation, agence partenaire, téléphone, ancien client. Vous pourrez ensuite suivre les banques sollicitées et enregistrer l&apos;issue exactement comme un dossier qualifié par l&apos;IA.
+            Pour les prospects qui ne viennent pas d&apos;un email : recommandation, agence partenaire, téléphone, ancien client. Vous pourrez ensuite suivre les banques sollicitées et enregistrer la décision finale comme pour un prospect qualifié par l&apos;IA.
           </p>
         </div>
 
@@ -231,7 +231,7 @@ export default function NewProspectPage() {
               disabled={submitting}
               className="bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-base"
             >
-              {submitting ? 'Création...' : 'Créer le dossier'}
+              {submitting ? 'Création...' : 'Créer le prospect'}
             </button>
           </div>
         </form>

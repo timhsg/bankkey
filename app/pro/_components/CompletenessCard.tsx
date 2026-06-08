@@ -21,10 +21,10 @@ interface Props {
 // ════════════════════════════════════════════════════════════════════════
 
 const TIERS = [
-  { threshold: 0,  label: 'Démarrage',        message: 'Ajoutez vos premiers outcomes pour activer les insights' },
+  { threshold: 0,  label: 'Démarrage',        message: 'Ajoutez vos premiers résultats bancaires pour activer les statistiques' },
   { threshold: 5,  label: 'Aperçu',           message: 'Premières tendances visibles — continuez pour affiner' },
   { threshold: 15, label: 'Pilotage',         message: 'Vous avez assez de données pour piloter vos négociations' },
-  { threshold: 30, label: 'Expertise',        message: 'Vos benchmarks sont robustes — vous êtes en avance' },
+  { threshold: 30, label: 'Expertise',        message: 'Vos repères sont robustes — vous êtes en avance' },
   { threshold: 50, label: 'Mémoire complète', message: 'Votre cabinet a une mémoire institutionnelle complète' },
 ]
 
@@ -47,7 +47,7 @@ export default function CompletenessCard({ totalProspects, withOutcome, incomple
           </div>
           <div className="text-right">
             <p className="text-3xl font-semibold tracking-tight">{withOutcome}</p>
-            <p className="text-[10px] text-slate-400">outcomes enregistrés</p>
+            <p className="text-[10px] text-slate-400">résultats enregistrés</p>
           </div>
         </div>
 
@@ -73,7 +73,7 @@ export default function CompletenessCard({ totalProspects, withOutcome, incomple
       {incompleteWithBanks.length > 0 && (
         <div className="bg-slate-800/60 px-6 py-4 border-t border-slate-700">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-2">
-            {incompleteWithBanks.length} dossier{incompleteWithBanks.length > 1 ? 's' : ''} en attente d&apos;outcome
+            {incompleteWithBanks.length} prospect{incompleteWithBanks.length > 1 ? 's' : ''} en attente de décision bancaire
           </p>
           <div className="space-y-1.5">
             {incompleteWithBanks.slice(0, 3).map(p => (
@@ -92,7 +92,7 @@ export default function CompletenessCard({ totalProspects, withOutcome, incomple
               </Link>
             ))}
             {incompleteWithBanks.length > 3 && (
-              <p className="text-[10px] text-slate-500 mt-2">+ {incompleteWithBanks.length - 3} autres dossiers</p>
+              <p className="text-[10px] text-slate-500 mt-2">+ {incompleteWithBanks.length - 3} autres prospects</p>
             )}
           </div>
         </div>
@@ -101,7 +101,7 @@ export default function CompletenessCard({ totalProspects, withOutcome, incomple
       {totalProspects > 0 && withOutcome === 0 && (
         <div className="bg-slate-800/60 px-6 py-4 border-t border-slate-700 text-xs text-slate-300 leading-relaxed">
           <span className="font-semibold text-white">Comment alimenter cette mémoire ?</span><br/>
-          Quand vous marquez une banque comme <span className="text-emerald-400">Accordée</span> ou <span className="text-red-400">Refusée</span> dans un dossier, BankKey vous demande les conditions exactes. Ces données restent privées et alimentent vos benchmarks personnels.
+          Quand vous marquez une banque comme <span className="text-emerald-400">Accordée</span> ou <span className="text-red-400">Refusée</span> dans un prospect, BankKey vous demande les conditions exactes. Ces données restent privées et alimentent vos repères personnels.
         </div>
       )}
     </div>

@@ -91,6 +91,71 @@ function OnboardingContent() {
     })
   }
 
+  const [demoCreated, setDemoCreated] = useState(false)
+  const [demoCreating, setDemoCreating] = useState(false)
+
+  async function createDemoProspect() {
+    setDemoCreating(true)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setDemoCreating(false); return }
+
+    // Prospect démo réaliste : Camille Martin, score 87
+    const qualification = {
+      type: 'acheteur', firstName: 'Camille', lastName: 'Martin',
+      email: 'camille.martin@exemple.fr', phone: '06 12 34 56 78',
+      contactInfo: null,
+      propertyType: 'Appartement T4', address: 'Genève centre',
+      surface: 95, rooms: 4, price: 850000,
+      monthly_income: 5800, down_payment: 170000, existing_debts_monthly: 0,
+      employment_status: 'cdi', is_couple: true,
+      sell_timeline: null, purchase_timeline: 'less_3_months', financing_status: 'in_progress',
+      description: 'EXEMPLE — Couple CDI Genève, compromis signé, recherche financement urgent',
+      motivationSignals: ['compromis signé'], urgencySignals: ['compromis signé', 'délai serré'],
+    }
+    const scoring = {
+      score: 87, temperature: 'hot',
+      explanation: 'EXEMPLE — Profil très solide : couple CDI à Genève, apport de 20%, compromis déjà signé.',
+      keyFactors: [
+        { factor: 'CDI stable', impact: 'positive', points: 25 },
+        { factor: 'Apport ≥ 20%', impact: 'positive', points: 25 },
+        { factor: 'Aucun endettement', impact: 'positive', points: 20 },
+        { factor: 'Compromis signé', impact: 'positive', points: 17 },
+      ],
+    }
+    const prospection = {
+      email: {
+        subject: 'Votre demande de financement à Genève',
+        body: `Bonjour Camille,\n\nMerci pour votre demande. Au vu de votre profil (CDI, apport solide, compromis signé), votre dossier est très bancable.\n\nPouvons-nous échanger 15 minutes dans la journée pour démarrer ?\n\n[SIGNATURE]`,
+      },
+      callScript: {
+        briefing: 'Couple Genève, CDI, 170k CHF d\'apport, compromis signé sur appartement 850k CHF.',
+        need: 'Démarrer un financement rapidement pour respecter le délai compromis.',
+        keyQuestion: 'Quelle est la date d\'authentique chez le notaire ?',
+      },
+    }
+
+    await supabase.from('prospects').insert({
+      user_id: user.id,
+      source: 'demo',
+      sector: 'credit',
+      email_from_name: 'Camille Martin',
+      email_from: 'camille.martin@exemple.fr',
+      email_subject: 'EXEMPLE — Demande financement Genève',
+      email_body: 'Bonjour,\n\nMon mari et moi venons de signer un compromis pour un appartement à Genève centre (850 000 CHF). Nous disposons de 170 000 CHF d\'apport et sommes tous les deux en CDI (revenus combinés 5800 CHF/mois).\n\nPouvez-vous nous accompagner dans la recherche de financement ?\n\nBonne journée,\nCamille',
+      qualification, scoring, prospection,
+      detected_source: { sourceId: 'demo', sourceName: 'Exemple', confidence: 'high', method: 'manual' },
+      status: 'new',
+      received_at: new Date().toISOString(),
+      activity: [
+        { type: 'email_received', at: new Date().toISOString(), label: 'Email reçu (exemple)' },
+        { type: 'qualified',      at: new Date().toISOString(), label: 'Qualifié · score 87/100 (Prioritaire)' },
+      ],
+    })
+
+    setDemoCreating(false)
+    setDemoCreated(true)
+  }
+
   const currentIdx = STEPS.findIndex(s => s.id === step)
   const progress = ((currentIdx + 1) / STEPS.length) * 100
 
@@ -283,16 +348,48 @@ function OnboardingContent() {
                   Bienvenue dans BankKey{memory.fullName ? `, ${memory.fullName.split(' ')[0]}` : ''}.
                 </h1>
                 <p className="text-slate-600 leading-relaxed max-w-md mx-auto">
-                  Vous recevrez vos premiers prospects qualifiés dès qu&apos;un email arrive. Vous pouvez explorer la démo en attendant.
+                  Avant d&apos;attaquer, voulez-vous voir un exemple de prospect qualifié dans votre tableau de bord ?
                 </p>
               </div>
+
+              {/* Carte option : créer un prospect démo */}
+              {!demoCreated && (
+                <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 text-left max-w-md mx-auto">
+                  <div className="flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-white border border-emerald-200 flex items-center justify-center shrink-0">
+                      <svg className="w-4 h-4 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-slate-900 mb-1">Voir BankKey rempli</p>
+                      <p className="text-xs text-slate-600 leading-relaxed mb-3">
+                        On crée un prospect d&apos;exemple (Camille Martin, score 87) dans votre tableau de bord pour vous montrer à quoi ça ressemble. Vous pourrez le supprimer ensuite.
+                      </p>
+                      <button
+                        onClick={createDemoProspect}
+                        disabled={demoCreating}
+                        className="bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-base"
+                      >
+                        {demoCreating ? 'Création...' : 'Créer un prospect d\'exemple'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {demoCreated && (
+                <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-sm text-emerald-800 max-w-md mx-auto">
+                  ✓ Prospect d&apos;exemple créé. Vous le trouverez dans votre tableau de bord.
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-3 max-w-md mx-auto">
                 <Link href="/pro" className="bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-base">
                   Mon tableau de bord
                 </Link>
-                <Link href="/demo" className="bg-white border border-slate-200 hover:border-slate-300 text-slate-700 text-sm font-medium px-4 py-2.5 rounded-lg transition-base">
-                  Explorer la démo
+                <Link href="/pro/sources" className="bg-white border border-slate-200 hover:border-slate-300 text-slate-700 text-sm font-medium px-4 py-2.5 rounded-lg transition-base">
+                  Connecter Gmail
                 </Link>
               </div>
             </div>

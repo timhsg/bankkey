@@ -60,7 +60,7 @@ export default function NotesEditor({ prospectId, initialNotes }: Props) {
       <textarea
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
-        placeholder="Ajoutez vos notes sur ce dossier : appels passés, points à creuser, négociations en cours…"
+        placeholder="Ajoutez vos notes sur ce prospect : appels passés, points à creuser, négociations en cours…"
         rows={4}
         className="w-full px-5 py-3 text-sm text-slate-700 placeholder-slate-300 focus:outline-none resize-none leading-relaxed"
       />

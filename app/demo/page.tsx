@@ -198,27 +198,29 @@ export default function InteractiveDemo() {
   return (
     <div className="min-h-screen bg-slate-50">
 
-      {/* ── Header ── */}
+      {/* ── Header avec toggle 2 modes ── */}
       <header className="bg-white/80 backdrop-blur-md border-b border-slate-100 sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-5 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-md bg-slate-900 flex items-center justify-center">
-                <span className="text-white text-[10px] font-bold tracking-tighter">BK</span>
-              </div>
-              <span className="font-semibold text-slate-900 tracking-tight">BankKey</span>
-            </Link>
-            <span className="text-slate-200 select-none">|</span>
-            <span className="text-xs font-medium text-slate-500">Démo interactive</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <Link href="/demo/manual" className="text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors">
-              Tester avec mon email →
-            </Link>
-            <Link href="/pro/login" className="text-xs font-medium bg-slate-900 hover:bg-slate-800 text-white px-3 py-1.5 rounded-lg transition-colors">
-              Essai gratuit
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-md bg-slate-900 flex items-center justify-center">
+              <span className="text-white text-[10px] font-bold tracking-tighter">BK</span>
+            </div>
+            <span className="font-semibold text-slate-900 tracking-tight">BankKey</span>
+          </Link>
+
+          {/* Toggle de mode démo */}
+          <div className="inline-flex items-center bg-slate-100 rounded-full p-0.5">
+            <span className="px-3 py-1 text-[11px] font-semibold rounded-full bg-white text-slate-900 shadow-sm">
+              Démo guidée
+            </span>
+            <Link href="/demo/manual" className="px-3 py-1 text-[11px] font-medium text-slate-500 hover:text-slate-700 transition-colors">
+              Testez avec votre email
             </Link>
           </div>
+
+          <Link href="/pro/login" className="text-xs font-medium bg-slate-900 hover:bg-slate-800 text-white px-3 py-1.5 rounded-lg transition-colors">
+            Essai gratuit
+          </Link>
         </div>
 
         {/* Barre de progression discrète pendant l'intro */}

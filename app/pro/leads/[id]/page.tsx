@@ -38,7 +38,7 @@ interface ProspectFull {
   activity: Activity[] | null
 }
 
-type Tab = 'email' | 'call' | 'documents'
+type Tab = 'overview' | 'communication' | 'banks' | 'history'
 
 // ── Config ─────────────────────────────────────────────────────────────────
 
@@ -117,7 +117,7 @@ export default function LeadDetailPage() {
 
   const [prospect, setProspect] = useState<ProspectFull | null>(null)
   const [loading,  setLoading]  = useState(true)
-  const [tab,      setTab]      = useState<Tab>('email')
+  const [tab,      setTab]      = useState<Tab>('overview')
   const [copied,   setCopied]   = useState(false)
   const [sending,  setSending]  = useState(false)
   const [profile,  setProfile]  = useState<{ gmail_access_token: string | null; gmail_refresh_token: string | null } | null>(null)
@@ -157,9 +157,13 @@ export default function LeadDetailPage() {
     [prospect?.qualification]
   )
 
+  const [sentToast, setSentToast] = useState(false)
+  const [sendError, setSendError] = useState<string | null>(null)
+
   async function sendReply() {
     if (!prospect?.prospection || !profile?.gmail_access_token || !profile?.gmail_refresh_token) return
     setSending(true)
+    setSendError(null)
     try {
       const res = await fetch('/api/gmail/reply', {
         method: 'POST',
@@ -174,7 +178,20 @@ export default function LeadDetailPage() {
       if (res.ok) {
         await supabase.from('prospects').update({ status: 'replied' }).eq('id', params.id)
         setProspect(p => p ? { ...p, status: 'replied' } : p)
+        // Log activity
+        const { logActivity, activityEmailSent } = await import('@/lib/activity')
+        await logActivity(supabase, params.id, activityEmailSent())
+        // Toast
+        setSentToast(true)
+        setTimeout(() => setSentToast(false), 4000)
+      } else {
+        const err = await res.json().catch(() => ({ error: 'Erreur d\'envoi' }))
+        setSendError(err.error ?? 'L\'envoi a échoué')
+        setTimeout(() => setSendError(null), 5000)
       }
+    } catch (err) {
+      setSendError(err instanceof Error ? err.message : 'L\'envoi a échoué')
+      setTimeout(() => setSendError(null), 5000)
     } finally {
       setSending(false)
     }
@@ -400,24 +417,15 @@ export default function LeadDetailPage() {
           </div>
         )}
 
-        {/* ── Notes internes ── */}
-        <NotesEditor prospectId={prospect.id} initialNotes={prospect.broker_notes} />
-
-        {/* ── Banques sollicitées ── */}
-        <BankTracker prospectId={prospect.id} initialBanks={prospect.bank_submitted} qualification={prospect.qualification} />
-
-        {/* ── Timeline d'activité ── */}
-        <ActivityTimeline activity={prospect.activity} createdAt={prospect.created_at} />
-
-        {/* ── Tabs ── */}
-        {(p || documents) && (
-          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        {/* ── 4 onglets principaux ── */}
+        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
 
             <div className="flex border-b border-slate-100">
               {([
-                { id: 'email' as const,     label: 'Réponse email',  enabled: !!p, badge: undefined as string | undefined },
-                { id: 'call' as const,      label: 'Briefing appel', enabled: !!p, badge: undefined as string | undefined },
-                { id: 'documents' as const, label: 'Documents',      enabled: !!documents, badge: documents?.urgency === 'urgent' ? 'Urgent' : undefined },
+                { id: 'overview'      as const, label: 'Vue d\'ensemble',  enabled: true,         badge: undefined as string | undefined },
+                { id: 'communication' as const, label: 'Communication',    enabled: !!p,          badge: undefined as string | undefined },
+                { id: 'banks'         as const, label: 'Banques',          enabled: true,         badge: prospect.bank_submitted && prospect.bank_submitted.length > 0 ? String(prospect.bank_submitted.length) : undefined },
+                { id: 'history'       as const, label: 'Historique',       enabled: true,         badge: documents?.urgency === 'urgent' ? 'Urgent' : undefined },
               ]).map(t => (
                 <button
                   key={t.id}
@@ -443,125 +451,179 @@ export default function LeadDetailPage() {
 
             <div className="p-5">
 
-              {tab === 'email' && p && (
-                <div>
-                  <div className="border border-slate-200 rounded-xl overflow-hidden">
-                    <div className="bg-slate-50 border-b border-slate-200 px-4 py-2.5 flex items-baseline gap-2">
-                      <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide w-10 shrink-0">Objet</span>
-                      <span className="text-sm font-medium text-slate-800">{p.email.subject}</span>
-                    </div>
-                    <div className="px-4 py-4">
-                      <pre className="text-sm text-slate-700 whitespace-pre-wrap font-sans leading-relaxed">
-                        {p.email.body}
-                      </pre>
-                    </div>
-                  </div>
-                  <div className="mt-2.5 flex justify-end">
-                    <button onClick={copyEmail} className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600 transition-colors">
-                      <I.Copy />
-                      {copied ? 'Copié' : 'Copier'}
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {tab === 'call' && p && (
-                <div className="space-y-3">
-                  <div className="border border-slate-200 rounded-xl overflow-hidden">
-                    <div className="bg-slate-50 border-b border-slate-200 px-4 py-2">
-                      <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Contexte</span>
-                    </div>
-                    <div className="px-4 py-3">
-                      <p className="text-sm font-medium text-slate-800 leading-relaxed">{p.callScript.briefing}</p>
-                    </div>
-                  </div>
-                  <div className="border border-slate-200 rounded-xl overflow-hidden">
-                    <div className="bg-slate-50 border-b border-slate-200 px-4 py-2">
-                      <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Besoin du prospect</span>
-                    </div>
-                    <div className="px-4 py-3">
-                      <p className="text-sm text-slate-700 leading-relaxed">{p.callScript.need}</p>
-                    </div>
-                  </div>
-                  <div className="border border-emerald-200 rounded-xl overflow-hidden">
-                    <div className="bg-emerald-50 border-b border-emerald-200 px-4 py-2">
-                      <span className="text-[10px] font-semibold text-emerald-700 uppercase tracking-wide">Question clé à poser en premier</span>
-                    </div>
-                    <div className="px-4 py-3">
-                      <p className="text-sm text-slate-700 leading-relaxed italic">« {p.callScript.keyQuestion} »</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {tab === 'documents' && documents && (
+              {/* ─── Onglet : Vue d'ensemble ─── */}
+              {tab === 'overview' && (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-3">
-                      <span className="flex items-center gap-1.5 text-slate-600">
-                        <I.MapPin />
-                        Juridiction : <span className="font-medium text-slate-900">{JURISDICTION_LABEL[documents.jurisdiction]}</span>
-                      </span>
-                      {documents.urgency === 'urgent' && (
-                        <span className="flex items-center gap-1 text-amber-700 font-medium">
-                          <I.Spark />
-                          Compromis signé — priorité haute
-                        </span>
-                      )}
+                  {prospect.email_body ? (
+                    <div className="border border-slate-200 rounded-xl overflow-hidden">
+                      <div className="bg-slate-50 border-b border-slate-200 px-4 py-2.5">
+                        <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Email original reçu</span>
+                      </div>
+                      <div className="px-4 py-3">
+                        <pre className="text-sm text-slate-700 whitespace-pre-wrap font-sans leading-relaxed max-h-64 overflow-y-auto">
+                          {prospect.email_body}
+                        </pre>
+                      </div>
                     </div>
-                    <span className="text-slate-400">
-                      Profil rempli à <span className="font-semibold text-slate-700">{documents.estimatedCompleteness}%</span>
-                    </span>
+                  ) : (
+                    <div className="border border-slate-200 rounded-xl px-4 py-6 text-center">
+                      <p className="text-xs text-slate-500">Prospect ajouté manuellement — pas d&apos;email d&apos;origine.</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ─── Onglet : Communication ─── */}
+              {tab === 'communication' && p && (
+                <div className="space-y-5">
+                  {/* Réponse email rédigée */}
+                  <div>
+                    <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest mb-2">Réponse email rédigée</p>
+                    <div className="border border-slate-200 rounded-xl overflow-hidden">
+                      <div className="bg-slate-50 border-b border-slate-200 px-4 py-2.5 flex items-baseline gap-2">
+                        <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide w-10 shrink-0">Objet</span>
+                        <span className="text-sm font-medium text-slate-800">{p.email.subject}</span>
+                      </div>
+                      <div className="px-4 py-4">
+                        <pre className="text-sm text-slate-700 whitespace-pre-wrap font-sans leading-relaxed">
+                          {p.email.body}
+                        </pre>
+                      </div>
+                    </div>
+                    <div className="mt-2.5 flex justify-end">
+                      <button onClick={copyEmail} className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600 transition-colors">
+                        <I.Copy />
+                        {copied ? 'Copié' : 'Copier'}
+                      </button>
+                    </div>
                   </div>
 
-                  {documents.groups.map((group, gi) => (
-                    <div key={gi} className="border border-slate-200 rounded-xl overflow-hidden">
-                      <div className="bg-slate-50 border-b border-slate-200 px-4 py-2">
-                        <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">{group.category}</span>
+                  {/* Briefing appel */}
+                  <div>
+                    <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest mb-2">Briefing pour l&apos;appel</p>
+                    <div className="space-y-3">
+                      <div className="border border-slate-200 rounded-xl overflow-hidden">
+                        <div className="bg-slate-50 border-b border-slate-200 px-4 py-2">
+                          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Contexte</span>
+                        </div>
+                        <div className="px-4 py-3">
+                          <p className="text-sm font-medium text-slate-800 leading-relaxed">{p.callScript.briefing}</p>
+                        </div>
                       </div>
-                      <ul className="divide-y divide-slate-100">
-                        {group.items.map((item, ii) => (
-                          <li key={ii} className="px-4 py-3 flex items-start gap-3">
-                            <span className={`mt-0.5 shrink-0 ${item.required ? 'text-slate-400' : 'text-slate-300'}`}>
-                              <I.Circle />
-                            </span>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-baseline gap-2 flex-wrap">
-                                <p className="text-sm text-slate-800 leading-snug">{item.name}</p>
-                                {!item.required && (
-                                  <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">Optionnel</span>
-                                )}
-                              </div>
-                              {item.hint && (
-                                <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{item.hint}</p>
-                              )}
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
+                      <div className="border border-slate-200 rounded-xl overflow-hidden">
+                        <div className="bg-slate-50 border-b border-slate-200 px-4 py-2">
+                          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Besoin du prospect</span>
+                        </div>
+                        <div className="px-4 py-3">
+                          <p className="text-sm text-slate-700 leading-relaxed">{p.callScript.need}</p>
+                        </div>
+                      </div>
+                      <div className="border border-emerald-200 rounded-xl overflow-hidden">
+                        <div className="bg-emerald-50 border-b border-emerald-200 px-4 py-2">
+                          <span className="text-[10px] font-semibold text-emerald-700 uppercase tracking-wide">Question clé à poser en premier</span>
+                        </div>
+                        <div className="px-4 py-3">
+                          <p className="text-sm text-slate-700 leading-relaxed italic">« {p.callScript.keyQuestion} »</p>
+                        </div>
+                      </div>
                     </div>
-                  ))}
+                  </div>
+                </div>
+              )}
+
+              {tab === 'communication' && !p && (
+                <div className="border border-slate-200 rounded-xl px-4 py-6 text-center">
+                  <p className="text-xs text-slate-500">Aucune communication générée. Ce prospect a été ajouté manuellement.</p>
+                </div>
+              )}
+
+              {/* ─── Onglet : Banques ─── */}
+              {tab === 'banks' && (
+                <BankTracker prospectId={prospect.id} initialBanks={prospect.bank_submitted} qualification={prospect.qualification} />
+              )}
+
+              {/* ─── Onglet : Historique ─── */}
+              {tab === 'history' && (
+                <div className="space-y-4">
+                  <NotesEditor prospectId={prospect.id} initialNotes={prospect.broker_notes} />
+
+                  {documents && (
+                    <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+                      <div className="bg-slate-50 border-b border-slate-200 px-5 py-2.5 flex items-center justify-between">
+                        <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Documents à demander</span>
+                        <div className="flex items-center gap-3 text-[10px]">
+                          <span className="flex items-center gap-1 text-slate-600">
+                            <I.MapPin />
+                            {JURISDICTION_LABEL[documents.jurisdiction]}
+                          </span>
+                          {documents.urgency === 'urgent' && (
+                            <span className="flex items-center gap-0.5 text-amber-700 font-medium">
+                              <I.Spark />
+                              Compromis signé
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="p-4 space-y-3">
+                        {documents.groups.map((group, gi) => (
+                          <div key={gi} className="border border-slate-200 rounded-xl overflow-hidden">
+                            <div className="bg-slate-50 border-b border-slate-200 px-4 py-2">
+                              <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">{group.category}</span>
+                            </div>
+                            <ul className="divide-y divide-slate-100">
+                              {group.items.map((item, ii) => (
+                                <li key={ii} className="px-4 py-3 flex items-start gap-3">
+                                  <span className={`mt-0.5 shrink-0 ${item.required ? 'text-slate-400' : 'text-slate-300'}`}>
+                                    <I.Circle />
+                                  </span>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-baseline gap-2 flex-wrap">
+                                      <p className="text-sm text-slate-800 leading-snug">{item.name}</p>
+                                      {!item.required && (
+                                        <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">Optionnel</span>
+                                      )}
+                                    </div>
+                                    {item.hint && (
+                                      <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{item.hint}</p>
+                                    )}
+                                  </div>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <ActivityTimeline activity={prospect.activity} createdAt={prospect.created_at} />
                 </div>
               )}
             </div>
           </div>
-        )}
-
-        {/* Email original */}
-        {prospect.email_body && (
-          <details className="bg-white rounded-xl border border-slate-200">
-            <summary className="px-5 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide cursor-pointer hover:text-slate-600 transition-colors">
-              Email original reçu
-            </summary>
-            <div className="px-5 pb-5 pt-0">
-              <pre className="text-xs text-slate-500 whitespace-pre-wrap font-sans leading-relaxed max-h-48 overflow-y-auto">
-                {prospect.email_body}
-              </pre>
-            </div>
-          </details>
-        )}
 
       </main>
+
+      {/* Toast d'envoi email */}
+      {sentToast && (
+        <div className="fixed bottom-5 right-5 z-50 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl px-4 py-3 shadow-lg max-w-sm animate-fade-up flex items-start gap-3">
+          <svg className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <div>
+            <p className="text-sm font-semibold">Réponse envoyée</p>
+            <p className="text-xs text-emerald-700 mt-0.5">Email envoyé à {prospect.email_from}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Toast d'erreur */}
+      {sendError && (
+        <div className="fixed bottom-5 right-5 z-50 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 shadow-lg max-w-sm animate-fade-up">
+          <p className="text-sm font-semibold mb-0.5">Envoi échoué</p>
+          <p className="text-xs">{sendError}</p>
+        </div>
+      )}
     </div>
   )
 }
