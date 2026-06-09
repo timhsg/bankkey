@@ -8,6 +8,7 @@ import type { QualificationResult, ScoringResult, ProspectionResult, DocumentChe
 import NotesEditor from '../../_components/NotesEditor'
 import BankTracker from '../../_components/BankTracker'
 import ActivityTimeline from '../../_components/ActivityTimeline'
+import EditQualificationModal from '../../_components/EditQualificationModal'
 import { logActivity, activityViewed, type Activity } from '@/lib/activity'
 
 interface BankSubmission {
@@ -120,6 +121,7 @@ export default function LeadDetailPage() {
   const [tab,      setTab]      = useState<Tab>('overview')
   const [copied,   setCopied]   = useState(false)
   const [sending,  setSending]  = useState(false)
+  const [editingQual, setEditingQual] = useState(false)
   const [profile,  setProfile]  = useState<{ gmail_access_token: string | null; gmail_refresh_token: string | null } | null>(null)
 
   useEffect(() => {
@@ -337,7 +339,19 @@ export default function LeadDetailPage() {
             {/* Bancabilité */}
             {(q.monthly_income || q.down_payment || q.employment_status) && (
               <div className="px-6 py-5 bg-emerald-50/40 border-b border-slate-100">
-                <p className="text-[10px] font-semibold text-emerald-700 uppercase tracking-widest mb-4">Bancabilité</p>
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-[10px] font-semibold text-emerald-700 uppercase tracking-widest">Bancabilité</p>
+                  <button
+                    onClick={() => setEditingQual(true)}
+                    className="text-[11px] font-medium text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1"
+                  >
+                    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                    Corriger
+                  </button>
+                </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {q.monthly_income && (
                     <div>
@@ -715,6 +729,19 @@ export default function LeadDetailPage() {
           <p className="text-sm font-semibold mb-0.5">Envoi échoué</p>
           <p className="text-xs">{sendError}</p>
         </div>
+      )}
+
+      {/* Modale d'édition qualification */}
+      {editingQual && prospect?.qualification && (
+        <EditQualificationModal
+          prospectId={prospect.id}
+          qualification={prospect.qualification}
+          onClose={() => setEditingQual(false)}
+          onSaved={(updated) => {
+            setProspect(prev => prev ? { ...prev, qualification: updated } : prev)
+            setEditingQual(false)
+          }}
+        />
       )}
     </div>
   )

@@ -1,69 +1,60 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import AdminTable from './_components/AdminTable'
+import type { CabinetRow } from './_types'
 
 // ════════════════════════════════════════════════════════════════════════
-//  /admin — Console interne BankKey (Sandra uniquement)
+//  /admin — Console interne BankKey (super-admin uniquement)
 //
-//  Sécurité : double vérification
-//   1. is_super_admin = true sur le profil utilisateur connecté
-//   2. createAdminClient (service_role) bypasse RLS pour lire toutes données
-//
-//  Données affichées : aggregées par cabinet, pas individu prospect par défaut
-//  Drill-down vers /admin/cabinet/[id] si besoin d'inspecter
+//  Page server qui agrège les KPIs et délègue le rendu interactif
+//  (recherche, filtres, tri) à AdminTable (client component).
 // ════════════════════════════════════════════════════════════════════════
 
 export const dynamic = 'force-dynamic'
 
-interface CabinetRow {
-  id: string
-  email: string
-  agencyName: string | null
-  fullName: string | null
-  createdAt: string
-  plan: string
-  status: string
-  trialEndsAt: string | null
-  gmailEmail: string | null
-  lastSync: string | null
-  prospectCount: number
-  hotCount: number
-  outcomeCount: number
-  acceptedCount: number
-  isAdmin: boolean
-}
-
 export default async function AdminPage() {
-  // 1. Authentifier l'utilisateur
+  // 1. Authentification
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/pro/login')
 
-  // 2. Vérifier le flag super_admin via la propre RLS (l'utilisateur lit son propre profil)
   const { data: me } = await supabase
     .from('profiles')
     .select('is_super_admin, email')
     .eq('id', user.id)
     .single()
 
-  if (!me?.is_super_admin) {
-    redirect('/pro')
-  }
+  if (!me?.is_super_admin) redirect('/pro')
 
-  // 3. Lecture admin — bypass RLS pour récupérer toutes les données
+  // 2. Données admin
   const admin = createAdminClient()
 
-  const [{ data: profiles }, { data: allProspects }, { data: allOutcomes }, { count: leadsCount30d }] = await Promise.all([
+  const [
+    { data: profiles },
+    { data: allProspects },
+    { data: allOutcomes },
+    { count: leadsCount30d },
+    { data: bookings },
+    { count: leadsCount7d },
+  ] = await Promise.all([
     admin.from('profiles')
-      .select('id, email, broker_memory, created_at, subscription_plan, subscription_status, trial_ends_at, current_period_end, gmail_connected_email, gmail_last_processed_at, is_admin, is_super_admin')
+      .select('id, email, broker_memory, created_at, subscription_plan, subscription_status, trial_ends_at, current_period_end, gmail_connected_email, gmail_last_processed_at, is_admin, is_super_admin, forwarding_address')
       .order('created_at', { ascending: false }),
     admin.from('prospects')
-      .select('id, user_id, scoring, status'),
+      .select('id, user_id, scoring, status, created_at, qualification'),
     admin.from('deal_outcomes')
-      .select('id, user_id, status'),
+      .select('id, user_id, status, decided_at, commission_amount'),
     admin.from('prospects')
       .select('id', { count: 'exact', head: true })
       .gte('created_at', new Date(Date.now() - 30 * 24 * 3600_000).toISOString()),
+    admin.from('demo_bookings')
+      .select('id, first_name, last_name, email, agency_name, city, preferred_slot, created_at, status')
+      .order('created_at', { ascending: false })
+      .limit(10),
+    admin.from('prospects')
+      .select('id', { count: 'exact', head: true })
+      .gte('created_at', new Date(Date.now() - 7 * 24 * 3600_000).toISOString()),
   ])
 
   type ProfileRow = {
@@ -79,13 +70,40 @@ export default async function AdminPage() {
     gmail_last_processed_at: string | null
     is_admin: boolean
     is_super_admin: boolean
+    forwarding_address: string | null
   }
-  type ProspectRow = { id: string; user_id: string; scoring: { temperature?: string } | null; status: string }
-  type OutcomeRow  = { id: string; user_id: string; status: string }
+  type ProspectRow = {
+    id: string
+    user_id: string
+    scoring: { temperature?: string; score?: number } | null
+    status: string
+    created_at: string
+    qualification: { firstName?: string; lastName?: string; monthly_income?: number } | null
+  }
+  type OutcomeRow = {
+    id: string
+    user_id: string
+    status: string
+    decided_at: string | null
+    commission_amount: number | null
+  }
+
+  type BookingRow = {
+    id: string
+    first_name: string
+    last_name: string | null
+    email: string
+    agency_name: string
+    city: string | null
+    preferred_slot: string
+    created_at: string
+    status: string | null
+  }
 
   const allProfilesData = (profiles ?? []) as ProfileRow[]
   const prospectsData   = (allProspects ?? []) as ProspectRow[]
   const outcomesData    = (allOutcomes ?? []) as OutcomeRow[]
+  const bookingsData    = (bookings ?? []) as BookingRow[]
 
   // Agréger par cabinet
   const prospectsByUser = new Map<string, ProspectRow[]>()
@@ -99,9 +117,13 @@ export default async function AdminPage() {
     outcomesByUser.get(o.user_id)!.push(o)
   }
 
+  const now = Date.now()
+  const day = 24 * 3600_000
+
   const cabinets: CabinetRow[] = allProfilesData.map(p => {
     const ps = prospectsByUser.get(p.id) ?? []
     const os = outcomesByUser.get(p.id) ?? []
+    const last30d = ps.filter(x => now - new Date(x.created_at).getTime() < 30 * day).length
     return {
       id: p.id,
       email: p.email,
@@ -111,9 +133,12 @@ export default async function AdminPage() {
       plan: p.subscription_plan ?? 'trial',
       status: p.subscription_status ?? 'unknown',
       trialEndsAt: p.trial_ends_at,
+      currentPeriodEnd: p.current_period_end,
       gmailEmail: p.gmail_connected_email,
       lastSync: p.gmail_last_processed_at,
+      forwardingAddress: p.forwarding_address,
       prospectCount: ps.filter(p => p.status !== 'filtered').length,
+      last30Days: last30d,
       hotCount: ps.filter(p => p.scoring?.temperature === 'hot' && p.status !== 'filtered').length,
       outcomeCount: os.length,
       acceptedCount: os.filter(o => o.status === 'accepted').length,
@@ -122,13 +147,11 @@ export default async function AdminPage() {
   })
 
   // KPIs globaux
-  const now = Date.now()
-  const day = 24 * 3600_000
-
-  const totalCabinets = cabinets.length
-  const proCabinets   = cabinets.filter(c => c.plan === 'pro' && c.status !== 'canceled').length
-  const trialActive   = cabinets.filter(c => c.plan === 'trial' && c.trialEndsAt && new Date(c.trialEndsAt).getTime() > now).length
-  const churned       = cabinets.filter(c => c.status === 'canceled').length
+  const totalCabinets  = cabinets.length
+  const proCabinets    = cabinets.filter(c => c.plan === 'pro' && c.status !== 'canceled').length
+  const trialActive    = cabinets.filter(c => c.plan === 'trial' && c.trialEndsAt && new Date(c.trialEndsAt).getTime() > now).length
+  const trialEndingSoon = cabinets.filter(c => c.plan === 'trial' && c.trialEndsAt && new Date(c.trialEndsAt).getTime() > now && new Date(c.trialEndsAt).getTime() < now + 7 * day).length
+  const churned        = cabinets.filter(c => c.status === 'canceled').length
   const gmailConnected = cabinets.filter(c => c.gmailEmail).length
 
   const last7  = cabinets.filter(c => now - new Date(c.createdAt).getTime() < 7 * day).length
@@ -138,13 +161,26 @@ export default async function AdminPage() {
   const totalFiltered  = prospectsData.filter(p => p.status === 'filtered').length
   const totalOutcomes  = outcomesData.length
   const totalAccepted  = outcomesData.filter(o => o.status === 'accepted').length
+  const totalCommission = outcomesData
+    .filter(o => o.status === 'accepted' && o.commission_amount)
+    .reduce((sum, o) => sum + (o.commission_amount ?? 0), 0)
 
-  const mrr = proCabinets * 199  // EUR
+  const mrr = proCabinets * 199
+  const arr = mrr * 12
+  const activationRate = totalCabinets > 0 ? Math.round(100 * gmailConnected / totalCabinets) : 0
+  const conversionTrialToPro = totalCabinets > 0 ? Math.round(100 * proCabinets / Math.max(1, totalCabinets - trialActive)) : 0
+
+  // Top cabinets par activité 30j
+  const topActive = [...cabinets].sort((a, b) => b.last30Days - a.last30Days).slice(0, 5)
+
+  // Activity feed récent
+  const recentSignups = [...cabinets]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 6)
 
   return (
     <div className="min-h-screen bg-slate-50">
 
-      {/* Header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -163,19 +199,21 @@ export default async function AdminPage() {
 
       <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
 
-        {/* Header */}
         <div>
           <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">Vue d&apos;ensemble</h1>
-          <p className="text-sm text-slate-500 mt-1">Toutes les données du projet · mise à jour temps réel</p>
+          <p className="text-sm text-slate-500 mt-1">
+            Toutes les données BankKey · {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+          </p>
         </div>
 
         {/* KPIs financiers */}
         <section>
           <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Business</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Kpi label="MRR estimé" value={`${mrr.toLocaleString('fr-FR')} €`} sub={`${proCabinets} Pro actif${proCabinets > 1 ? 's' : ''}`} accent={proCabinets > 0 ? 'emerald' : undefined} />
-            <Kpi label="Total cabinets" value={totalCabinets} sub={`+${last7} cette semaine · +${last30} ce mois`} />
-            <Kpi label="Essais actifs" value={trialActive} accent="amber" />
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <Kpi label="MRR" value={`${mrr.toLocaleString('fr-FR')} €`} sub={`${proCabinets} Pro`} accent={proCabinets > 0 ? 'emerald' : undefined} />
+            <Kpi label="ARR" value={`${arr.toLocaleString('fr-FR')} €`} sub="projection" />
+            <Kpi label="Commissions" value={`${totalCommission.toLocaleString('fr-FR')} €`} sub={`${totalAccepted} accord${totalAccepted > 1 ? 's' : ''} bancaires`} accent={totalCommission > 0 ? 'emerald' : undefined} />
+            <Kpi label="Essais actifs" value={trialActive} sub={trialEndingSoon > 0 ? `${trialEndingSoon} expirent <7j` : ''} accent={trialEndingSoon > 0 ? 'amber' : undefined} />
             <Kpi label="Churn" value={churned} accent={churned > 0 ? 'red' : undefined} />
           </div>
         </section>
@@ -183,85 +221,110 @@ export default async function AdminPage() {
         {/* KPIs produit */}
         <section>
           <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Produit</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Kpi small label="Prospects analysés" value={totalProspects} sub={`${leadsCount30d ?? 0} ces 30j`} />
-            <Kpi small label="Spam filtré" value={totalFiltered} sub="Économie tokens IA" />
-            <Kpi small label="Gmail connectés" value={gmailConnected} sub={`${totalCabinets > 0 ? Math.round(100 * gmailConnected / totalCabinets) : 0}% activation`} />
-            <Kpi small label="Décisions bancaires" value={totalOutcomes} sub={`${totalAccepted} accord${totalAccepted > 1 ? 's' : ''}`} />
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <Kpi small label="Total cabinets" value={totalCabinets} sub={`+${last7} cette semaine · +${last30} ce mois`} />
+            <Kpi small label="Activation Gmail" value={`${activationRate}%`} sub={`${gmailConnected} sur ${totalCabinets}`} />
+            <Kpi small label="Prospects analysés" value={totalProspects} sub={`${leadsCount30d ?? 0} sur 30j · ${leadsCount7d ?? 0} sur 7j`} />
+            <Kpi small label="Spam filtré" value={totalFiltered} sub="Tokens IA économisés" />
+            <Kpi small label="Conversion → Pro" value={`${conversionTrialToPro}%`} sub="post-essai" />
           </div>
         </section>
 
-        {/* Tableau cabinets */}
+        {/* Démos réservées (récent) */}
+        {bookingsData.length > 0 && (
+          <section>
+            <div className="flex items-baseline justify-between mb-3">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-500">Demandes de démo récentes</h2>
+              <span className="text-xs text-slate-500">{bookingsData.length} dernières</span>
+            </div>
+            <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+              <div className="divide-y divide-slate-100">
+                {bookingsData.map((b) => (
+                  <div key={b.id} className="px-5 py-3 flex items-center gap-4 hover:bg-slate-50">
+                    <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-[10px] font-bold text-blue-700 shrink-0">
+                      {(b.agency_name || b.first_name || '?').slice(0, 2).toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-4 text-xs">
+                      <div className="truncate">
+                        <p className="font-semibold text-slate-900 truncate">{b.first_name} {b.last_name ?? ''}</p>
+                        <p className="text-slate-500 truncate">{b.agency_name}</p>
+                      </div>
+                      <div className="truncate">
+                        <a href={`mailto:${b.email}`} className="text-blue-700 hover:underline truncate block">{b.email}</a>
+                        {b.city && <p className="text-slate-500 truncate">{b.city}</p>}
+                      </div>
+                      <div className="text-slate-600">{b.preferred_slot}</div>
+                      <div className="text-slate-500 text-right">
+                        <span className="text-[10px] font-bold uppercase tracking-widest bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded">{b.status ?? 'à contacter'}</span>
+                        <p className="text-[10px] mt-1">{new Date(b.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Top actifs + signups récents : 2 colonnes */}
+        <div className="grid md:grid-cols-2 gap-6">
+          <section>
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Top 5 cabinets actifs (30j)</h2>
+            <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+              {topActive.length > 0 ? topActive.map((c, i) => (
+                <Link
+                  key={c.id}
+                  href={`/admin/cabinet/${c.id}`}
+                  className={`flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors ${i > 0 ? 'border-t border-slate-100' : ''}`}
+                >
+                  <span className="text-[10px] font-mono text-slate-400">{String(i + 1).padStart(2, '0')}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-slate-900 truncate">{c.agencyName ?? c.email}</p>
+                    <p className="text-[10px] text-slate-500 truncate">{c.fullName ?? c.email}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-sm font-semibold text-slate-900">{c.last30Days}</p>
+                    <p className="text-[9px] text-slate-400 uppercase tracking-wider">prospects/30j</p>
+                  </div>
+                </Link>
+              )) : (
+                <p className="px-4 py-6 text-center text-xs text-slate-500">Pas encore d&apos;activité.</p>
+              )}
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Inscriptions récentes</h2>
+            <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+              {recentSignups.map((c, i) => (
+                <Link
+                  key={c.id}
+                  href={`/admin/cabinet/${c.id}`}
+                  className={`flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors ${i > 0 ? 'border-t border-slate-100' : ''}`}
+                >
+                  <span className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-600 shrink-0">
+                    {(c.agencyName ?? c.email).slice(0, 2).toUpperCase()}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-slate-900 truncate">{c.agencyName ?? c.email}</p>
+                    <p className="text-[10px] text-slate-500 truncate">{c.email}</p>
+                  </div>
+                  <span className="text-[10px] text-slate-400 shrink-0">
+                    {new Date(c.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </section>
+        </div>
+
+        {/* Tableau cabinets interactif */}
         <section>
           <div className="flex items-baseline justify-between mb-3">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-500">Tous les cabinets</h2>
             <span className="text-xs text-slate-500">{totalCabinets} inscrits</span>
           </div>
-          <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-slate-50 border-b border-slate-200">
-                  <tr>
-                    <Th>Cabinet</Th>
-                    <Th>Plan</Th>
-                    <Th>Prospects</Th>
-                    <Th>Hot</Th>
-                    <Th>Décisions</Th>
-                    <Th>Gmail</Th>
-                    <Th>Inscrit</Th>
-                    <Th></Th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {cabinets.map((c) => (
-                    <tr key={c.id} className={c.isAdmin ? 'bg-amber-50/30' : ''}>
-                      <Td>
-                        <div className="flex items-center gap-2">
-                          <span className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-600 shrink-0">
-                            {(c.agencyName ?? c.email).slice(0, 2).toUpperCase()}
-                          </span>
-                          <div className="min-w-0">
-                            <p className="text-xs font-semibold text-slate-900 truncate">{c.agencyName ?? '—'}</p>
-                            <p className="text-[10px] text-slate-500 truncate">{c.fullName ?? c.email}</p>
-                          </div>
-                          {c.isAdmin && <span className="text-[8px] font-bold uppercase tracking-widest text-amber-700 bg-amber-100 px-1 py-0.5 rounded shrink-0">Admin</span>}
-                        </div>
-                      </Td>
-                      <Td><PlanBadge plan={c.plan} status={c.status} /></Td>
-                      <Td><span className="text-xs font-medium text-slate-900">{c.prospectCount}</span></Td>
-                      <Td><span className="text-xs font-medium text-emerald-700">{c.hotCount}</span></Td>
-                      <Td>
-                        <span className="text-xs text-slate-700">{c.outcomeCount}</span>
-                        {c.acceptedCount > 0 && (
-                          <span className="text-[10px] text-emerald-600 ml-1">({c.acceptedCount} ✓)</span>
-                        )}
-                      </Td>
-                      <Td>
-                        {c.gmailEmail
-                          ? <span className="text-xs text-emerald-600">✓</span>
-                          : <span className="text-xs text-slate-300">—</span>}
-                      </Td>
-                      <Td>
-                        <span className="text-xs text-slate-500">
-                          {new Date(c.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
-                        </span>
-                      </Td>
-                      <Td>
-                        <Link href={`/admin/cabinet/${c.id}`} className="text-xs text-slate-500 hover:text-slate-900 underline">
-                          Voir
-                        </Link>
-                      </Td>
-                    </tr>
-                  ))}
-                  {totalCabinets === 0 && (
-                    <tr><td colSpan={8} className="px-5 py-8 text-center text-xs text-slate-500">
-                      Aucun cabinet inscrit pour l&apos;instant.
-                    </td></tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <AdminTable cabinets={cabinets} />
         </section>
 
         <p className="text-[11px] text-slate-400 text-center pt-4">
@@ -293,21 +356,4 @@ function Kpi({ label, value, sub, accent, small }: {
       {sub && <p className="text-[10px] text-slate-400 mt-0.5">{sub}</p>}
     </div>
   )
-}
-
-function Th({ children }: { children?: React.ReactNode }) {
-  return <th className="text-left text-[10px] font-semibold text-slate-500 uppercase tracking-widest px-4 py-2.5">{children}</th>
-}
-function Td({ children }: { children: React.ReactNode }) {
-  return <td className="px-4 py-3">{children}</td>
-}
-
-function PlanBadge({ plan, status }: { plan: string; status: string }) {
-  if (plan === 'pro' && status !== 'canceled') {
-    return <span className="text-[10px] font-bold uppercase tracking-widest bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded-full">Pro</span>
-  }
-  if (status === 'canceled') {
-    return <span className="text-[10px] font-bold uppercase tracking-widest bg-red-50 text-red-700 border border-red-200 px-1.5 py-0.5 rounded-full">Churn</span>
-  }
-  return <span className="text-[10px] font-bold uppercase tracking-widest bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-full">Trial</span>
 }

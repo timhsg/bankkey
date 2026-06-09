@@ -103,6 +103,51 @@ function ProspectsContent() {
     } finally { setSyncing(false) }
   }
 
+  // ── Export CSV ──
+  function exportCsv() {
+    const headers = [
+      'Date', 'Nom', 'Email', 'Téléphone', 'Score', 'Température', 'Statut',
+      'Type bien', 'Localisation', 'Prix', 'Revenus mensuels', 'Apport',
+      'Situation pro', 'Description',
+    ]
+    const escape = (v: unknown) => {
+      const s = v == null ? '' : String(v)
+      return /[",;\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
+    }
+    const rows = filtered.map(p => {
+      const q = p.qualification
+      const s = p.scoring
+      const dateStr = new Date(p.received_at ?? p.created_at).toLocaleDateString('fr-FR')
+      const fullName = [q?.firstName, q?.lastName].filter(Boolean).join(' ') || p.email_from_name || ''
+      return [
+        dateStr,
+        fullName,
+        q?.email ?? p.email_from ?? '',
+        q?.phone ?? '',
+        s?.score ?? '',
+        s?.temperature ?? '',
+        p.status,
+        q?.propertyType ?? '',
+        q?.address ?? '',
+        q?.price ?? '',
+        q?.monthly_income ?? '',
+        q?.down_payment ?? '',
+        q?.employment_status ?? '',
+        q?.description ?? '',
+      ].map(escape).join(';')
+    })
+    const csv = '﻿' + [headers.join(';'), ...rows].join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `bankkey-prospects-${new Date().toISOString().slice(0, 10)}.csv`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
   // ── Recherche + filtre + tri ──
   const filtered = useMemo(() => {
     let list = prospects
@@ -178,6 +223,21 @@ function ProspectsContent() {
                     </svg>
                   )}
                 <span className="hidden sm:inline">{syncing ? 'Synchronisation' : 'Synchroniser'}</span>
+              </button>
+            )}
+            {filtered.length > 0 && (
+              <button
+                onClick={exportCsv}
+                className="hidden md:flex items-center gap-1.5 text-xs font-medium bg-white border border-slate-200 hover:border-slate-300 text-slate-700 px-3 py-1.5 rounded-lg transition-colors"
+                aria-label="Exporter en CSV"
+                title="Exporter les prospects affichés en CSV"
+              >
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Exporter
               </button>
             )}
             <a

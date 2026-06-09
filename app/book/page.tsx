@@ -1,22 +1,37 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import Link from 'next/link'
 
-const SLOTS = [
-  'Lundi matin (9h-12h)',
-  'Lundi après-midi (14h-18h)',
-  'Mardi matin (9h-12h)',
-  'Mardi après-midi (14h-18h)',
-  'Mercredi matin (9h-12h)',
-  'Mercredi après-midi (14h-18h)',
-  'Jeudi matin (9h-12h)',
-  'Jeudi après-midi (14h-18h)',
-  'Vendredi matin (9h-12h)',
-  'Vendredi après-midi (14h-18h)',
-]
+// Génère les 10 prochains créneaux ouvrés (lundi-vendredi, matin/après-midi)
+// — exclut les créneaux déjà passés dans la journée en cours
+function generateUpcomingSlots(): string[] {
+  const slots: string[] = []
+  const now = new Date()
+  const dayLabels = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi']
+  const monthLabels = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.']
+  let dayOffset = 0
+  while (slots.length < 10 && dayOffset < 21) {
+    const day = new Date(now)
+    day.setHours(0, 0, 0, 0)
+    day.setDate(day.getDate() + dayOffset)
+    const weekday = day.getDay()
+    if (weekday >= 1 && weekday <= 5) {
+      const isToday = dayOffset === 0
+      const dateLabel = `${dayLabels[weekday]} ${day.getDate()} ${monthLabels[day.getMonth()]}`
+      const cap = dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1)
+      const morningPossible = !isToday || now.getHours() < 11
+      const afternoonPossible = !isToday || now.getHours() < 17
+      if (morningPossible) slots.push(`${cap} — matin (9h–12h)`)
+      if (afternoonPossible) slots.push(`${cap} — après-midi (14h–18h)`)
+    }
+    dayOffset++
+  }
+  return slots
+}
 
 export default function BookPage() {
+  const SLOTS = useMemo(generateUpcomingSlots, [])
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState(false)
   const [error, setError] = useState<string | null>(null)
