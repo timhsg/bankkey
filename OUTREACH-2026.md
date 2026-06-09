@@ -142,6 +142,14 @@ Stratégie : **LinkedIn pour repérer (jamais pour vendre)** + **téléphone pou
 
 **Double choice = closing rate +40%.** Ne lui demande pas "vous voulez bien ?", impose le format.
 
+### Variante closing — si l'on te demande "vous êtes qui exactement ?"
+
+C'est là que tu joues la **carte fondateur transparente** (cf. §11 pour le détail) :
+
+> *"On a lancé BankKey il y a quelques semaines. Je suis le fondateur. On ouvre un programme pilote pour **20 cabinets fondateurs** — tarif bloqué à vie, ma ligne directe, et vous prio sur les features. C'est exactement pour ça que je vous appelle moi-même. Mardi 14h ou jeudi 10h pour la démo ?"*
+
+**Pourquoi ça marche** : tu reconnais que tu es nouveau, tu retournes l'objection en argument d'exclusivité, et tu reposes la question fermée. Tu domines la conversation.
+
 ### Si tu n'arrives pas à parler à la bonne personne (gatekeeper / secrétaire)
 
 > *"Bonjour, c'est Tim de BankKey. Je peux parler à [Prénom Nom] s'il vous plaît ? C'est concernant la qualification des leads de son cabinet."*
@@ -277,6 +285,57 @@ Semaine N — du JJ/MM au JJ/MM
 ```
 
 Tu m'envoies ce bilan. Je te dirai ce qu'il faut ajuster dans le script et le ciblage.
+
+---
+
+## 11. La carte "fondateur transparent" — ton arme principale
+
+> **À 18 ans, ta meilleure arme c'est l'authenticité.** Mais joue-la avec précision.
+
+### La règle d'or : remplace "nouveau" par "fondateur"
+
+| ❌ À bannir | ✅ À utiliser |
+|-------------|---------------|
+| "Nouvelle startup" | "Programme pilote 2026" |
+| "On débute" | "On lance" |
+| "On a pas encore de clients" | "Vous seriez parmi les 20 premiers" |
+| "Je teste" | "Je co-construis avec mes pilotes" |
+| "C'est risqué pour vous" | "C'est exclusif pour vous" |
+| "Désolé je suis jeune" | "J'ai 18 ans, je suis dispo direct" |
+
+**Même réalité. Framing opposé. Conversion ×3.**
+
+### Quand tu peux JOUER la carte
+
+✅ **Au closing** : *"Vous seriez l'un des 20 cabinets fondateurs"*
+✅ **Si on demande "vous avez combien de clients ?"** : *"On démarre le pilote, vous seriez parmi les 20 premiers — c'est exactement pour ça que le tarif est à 199 au lieu de 349"*
+✅ **Si on demande "vous êtes jeune ?"** : *"Oui, 18 ans, fondateur solo. Le risque pour vous c'est 199€ annulables en 1 clic. En échange : ma ligne directe, tarif bloqué à vie, vous façonnez les features"*
+✅ **Si le courtier hésite** : *"Honnêtement je vais pas vous embobiner — on lance. Si vous voulez la solution archi-rodée c'est pas nous. Si vous voulez peser dans l'outil que vous utilisez tous les jours, c'est maintenant"*
+
+### Quand tu DOIS PAS la jouer
+
+❌ **Dans les 60 premières secondes** → tu te grilles avant qu'on t'écoute
+❌ **Avant la démo** → le courtier refuse la démo
+❌ **Quand on te parle sécurité** → là tu réponds solide : "Hébergement européen, RGPD, chiffrement AES-256"
+❌ **Quand on demande financement / runway** → réponse courte : *"Je suis bootstrappé, je gère mon temps et mon budget"*. Pas plus.
+
+### La phrase magique à mémoriser
+
+Quand le courtier demande *"Mais vous existez depuis quand ?"* :
+
+> *"On a lancé en {mois} 2026. C'est pour ça qu'on ouvre un programme pilote — je veux pas grossir vite avec 100 cabinets mal servis. Je préfère **20 cabinets fondateurs** qui me poussent à construire le bon outil. Concrètement pour vous : tarif bloqué à vie, ma ligne directe, et vous prio sur toutes les features qu'on ajoute. Et si dans 30 jours c'est pas pour vous, vous annulez en 1 clic."*
+
+**Pourquoi ça marche** :
+- Tu reconnais → désamorce le mensonge
+- Tu retournes en avantage → "c'est PARCE QU'on est nouveau que vous avez ce deal"
+- Tu donnes 3 vrais bénéfices concrets (prix, accès, prio)
+- Tu rappelles la sortie (annulable) → baisse le risque perçu
+
+### L'argument de rassurance "et si vous disparaissez ?"
+
+À garder en réserve pour les courtiers prudents :
+
+> *"Bonne question. Trois choses : un, votre data est exportable en CSV en 1 clic à tout moment — vous ne dépendez de personne. Deux, si BankKey ferme demain, vous gardez tout ce qui est déjà dans votre CRM grâce à l'export. Trois, je travaille à temps plein dessus, c'est pas un side-project. Vous prenez 199€ de risque sur 1 mois — c'est moins que 1 dossier."*
 
 ---
 

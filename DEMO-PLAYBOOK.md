@@ -33,7 +33,9 @@ Cette phrase **dit tout** :
 - Vous délimitez votre expertise (tech, pas courtage) → honnête
 - Vous positionnez le rendez-vous comme un échange (pas un pitch) → ouvre la conversation
 
-**Mémorisez-la. Servez-la dans les 60 premières secondes de chaque démo.**
+**Mémorisez-la. Servez-la dans les 60 premières secondes d'une démo bookée** (cadre déjà posé, courtier engagé).
+
+⚠️ **Au téléphone en cold call : NE l'utilisez PAS dans les 60 premières secondes** — vous vous grillez avant qu'on vous écoute. Au téléphone, vous menez d'abord avec le pitch produit et la valeur, et vous gardez la révélation de votre âge pour le moment où on vous demande ou pour le closing. Voir Partie 3 bis.
 
 ### Les 3 phrases d'industrie à mémoriser PAR CŒUR
 
@@ -114,10 +116,12 @@ Objection probable : ________________________
 
 **Note** : ils diront "ok ça me va". Continuez.
 
-### Minute 2-3 : Le placement de votre crédibilité
+### Minute 2-3 : Le placement de votre crédibilité (carte fondateur)
 
 **Vous** :
-> *"Avant qu'on commence, juste pour cadrer : j'ai 18 ans, je suis fondateur de BankKey. Je connais pas votre métier mieux que vous — par contre ce que je sais bien c'est la tech qu'on a construite. C'est pour ça que les 2 prochaines minutes je vais surtout écouter."*
+> *"Avant qu'on commence, juste pour cadrer : j'ai 18 ans, fondateur de BankKey. On vient de lancer — on ouvre un **programme pilote de 20 cabinets fondateurs** qui co-construisent l'outil avec nous. Je connais pas votre métier mieux que vous — par contre la tech qu'on a construite, je la connais. C'est pour ça que les 2 prochaines minutes je vais surtout écouter."*
+
+**Pourquoi cette version est puissante** : vous reconnaissez la nouveauté **en la transformant en exclusivité** ("20 cabinets fondateurs" > "on est nouveaux"). Le courtier pense "OK je peux faire partie d'un truc" au lieu de "OK c'est risqué". Voir Partie 3 bis pour le détail.
 
 **Tu attends 1 seconde**, puis :
 
@@ -247,6 +251,68 @@ Ils vont probablement dire un truc du genre :
 
 ---
 
+## PARTIE 3 bis — Le moment "je suis nouveau" : quand et comment le jouer
+
+> **À 18 ans, l'authenticité est votre arme principale.** Mais joué mal, ça vous grille.
+> Cette section vous dit exactement QUAND lever le voile, et avec QUELS mots.
+
+### La règle d'or : remplacez "nouveau" par "fondateur"
+
+| ❌ À bannir | ✅ À utiliser |
+|-------------|---------------|
+| "Nouvelle startup" | "Programme pilote 2026" |
+| "On débute" | "On lance" |
+| "On a pas encore de clients" | "Vous seriez parmi les 20 premiers" |
+| "Je teste" | "Je co-construis avec mes pilotes" |
+| "C'est risqué pour vous" | "C'est exclusif pour vous" |
+| "Désolé je suis jeune" | "J'ai 18 ans, je suis dispo direct" |
+
+**Même réalité. Framing opposé. Conversion ×3.**
+
+### Quand vous DEVEZ jouer la carte (4 moments précis)
+
+#### Moment 1 : Au début, en mode crédibilité (minute 2-3)
+> *"Avant qu'on commence, juste pour cadrer : j'ai 18 ans, fondateur de BankKey. On vient de lancer. Je connais pas votre métier mieux que vous — par contre la tech qu'on a construite, je la connais. C'est pour ça que les 2 prochaines minutes je vais surtout écouter."*
+
+**Pourquoi** : vous prenez les devants au lieu de vous faire démasquer. Vous transformez la jeunesse en humilité posée.
+
+#### Moment 2 : Au closing, en mode exclusivité (minute 18-20)
+> *"Vous seriez l'un des **20 cabinets fondateurs** du programme pilote. Tarif bloqué à vie, ma ligne directe, et vous prio sur les features qu'on ajoute."*
+
+**Pourquoi** : "fondateur" donne du poids, "20" crée de la rareté.
+
+#### Moment 3 : Si on demande "combien vous avez de clients ?"
+> *"On démarre le pilote — vous seriez parmi les 20 premiers. C'est exactement pour ça que le tarif est à 199 au lieu de 349 et qu'il sera bloqué à vie. Je veux pas 1 000 clients, je veux 20 cabinets fondateurs qui m'aident à construire le bon outil."*
+
+#### Moment 4 : Si le courtier hésite à la fin
+> *"Honnêtement je vais pas vous embobiner — on lance. Si vous voulez la solution archi-rodée c'est pas nous. Si vous voulez peser dans l'outil que vous utilisez tous les jours, c'est maintenant."*
+
+### Quand vous DEVEZ PAS la jouer
+
+❌ **Dans les 60 premières secondes** — vous vous grillez avant qu'on vous écoute
+❌ **Avant la démo** — le courtier refuse la démo
+❌ **Quand on vous parle sécurité** — là vous répondez solide : "Hébergement européen, RGPD, chiffrement AES-256, isolation par cabinet"
+❌ **Quand on demande financement / runway** — réponse courte : *"Je suis bootstrappé, je gère mon temps et mon budget"*. Pas plus.
+❌ **Quand on vous demande "c'est légal RGPD ?"** — vous répondez factuel, pas timide
+
+### La phrase magique à mémoriser PAR CŒUR
+
+Quand le courtier demande *"Mais vous existez depuis quand ?"* — c'est LE moment :
+
+> *"On a lancé en {mois} 2026. C'est pour ça qu'on ouvre un programme pilote — je veux pas grossir vite avec 100 cabinets mal servis. Je préfère **20 cabinets fondateurs** qui me poussent à construire le bon outil. Concrètement pour vous : tarif bloqué à vie, ma ligne directe, et vous prio sur toutes les features qu'on ajoute. Et si dans 30 jours c'est pas pour vous, vous annulez en 1 clic."*
+
+**Pourquoi ça marche** :
+- Vous reconnaissez → désamorce
+- Vous retournez en avantage → "c'est PARCE QU'on est nouveau que vous avez ce deal"
+- Vous donnez 3 vrais bénéfices concrets (prix, accès, prio)
+- Vous rappelez la sortie (annulable) → baisse le risque perçu
+
+### Cas extrême : "Et si vous disparaissez dans 6 mois ?"
+
+Voir l'Objection 9 dans la Partie 4.
+
+---
+
 ## PARTIE 4 — Les 8 objections fréquentes (et vos réponses)
 
 ### Objection 1 : *"C'est trop cher"*
@@ -274,16 +340,23 @@ Ils vont probablement dire un truc du genre :
 ### Objection 5 : *"Vous êtes jeune, est-ce sérieux ?"*
 
 **Votre réponse** :
-> *"Honnêtement c'est une vraie question. Voilà ce que je peux vous dire : j'ai 18 ans, je suis seule sur le projet pour l'instant, mais le code et la tech sont solides. Si vous voulez voir les coulisses je peux vous montrer le tableau de bord interne. Le risque pour vous c'est 199€/mois, annulables en 1 clic, sans engagement. Et en échange, vous avez quelqu'un qui vous répond personnellement quand vous appelez."*
+> *"Oui, 18 ans, fondateur solo, je travaille à temps plein dessus. Voilà comment je vous dé-risque : le code et la tech sont solides — je peux vous montrer les coulisses. Vos données s'exportent en CSV en 1 clic, vous ne dépendez de personne. 199€/mois annulables en 1 clic, sans engagement. Et en échange vous avez quelqu'un qui vous répond personnellement quand vous appelez — pas un commercial à l'autre bout d'un funnel. Plus jeune que vos clients lambda, mais plus dispo qu'aucun éditeur."*
 
-**Ne vous excusez jamais d'avoir 18 ans.** Vous le reconnaissez, vous transformez ça en proximité ("quelqu'un qui vous répond perso").
+**Ne vous excusez jamais d'avoir 18 ans.** Vous le reconnaissez, vous transformez ça en proximité et en disponibilité (ce qu'aucun éditeur établi ne peut promettre).
 
 ### Objection 6 : *"Combien vous avez de clients ?"*
 
-**Votre réponse honnête** :
-> *"On lance le programme pilote — vous seriez parmi les 20 premiers. C'est exactement pour ça que le tarif est à 199 au lieu de 349. Vous prenez le risque d'être early adopter, en échange vous avez : tarif réduit à vie, ma ligne directe pour les questions, et vos retours guident les prochaines features."*
+**Votre réponse honnête (et puissante)** :
+> *"On lance le programme pilote — vous seriez parmi les **20 cabinets fondateurs**. C'est exactement pour ça que le tarif est à 199 au lieu de 349 et qu'il sera bloqué à vie. Vous prenez le risque d'être early adopter, en échange vous avez : tarif réduit à vie, ma ligne directe pour vos questions, prio sur toutes les features qu'on ajoute, et vos retours guident le produit. Je veux pas 1 000 clients, je veux 20 cabinets qui m'aident à construire le bon outil."*
 
-**Ne mentez JAMAIS sur le nombre de clients.** Si on vous attrape, c'est mort.
+**Ne mentez JAMAIS sur le nombre de clients.** Si on vous attrape, c'est mort. Le bon framing : *"20 cabinets fondateurs"* > *"on a 0 clients"*.
+
+### Objection 9 (BONUS) : *"Et si vous disparaissez dans 6 mois ?"*
+
+**Votre réponse :**
+> *"Bonne question, c'est légitime. Trois choses : un, votre data est exportable en CSV en 1 clic à tout moment — vous ne dépendez de personne. Deux, si BankKey ferme, vous gardez tout ce qui est déjà dans votre CRM grâce à l'export. Trois, je travaille à temps plein dessus, c'est pas un side-project. Vous prenez 199€ de risque sur 1 mois — c'est moins que 1 dossier."*
+
+**Pourquoi ça marche** : vous transformez "et si vous disparaissez" en "regardez comme c'est dé-risqué". Le 1 dossier = ancre psychologique parfaite chez un courtier.
 
 ### Objection 7 : *"Je vais réfléchir / Je vais en parler à mon associé"*
 
