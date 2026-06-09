@@ -138,18 +138,22 @@ function getCompleteScoringWeights(weights?: BrokerMemory['scoring_weights']): C
   return distributeWeights(sanitized, Object.keys(SCORING_DEFAULT_WEIGHTS) as ScoringWeightKey[], 100)
 }
 
+// Met à jour librement un curseur sans toucher aux autres.
+// La normalisation se fait uniquement à la sauvegarde.
 function updateScoringWeight(
   weights: CompleteScoringWeights,
   key: ScoringWeightKey,
   value: number,
 ): CompleteScoringWeights {
-  const otherKeys = (Object.keys(SCORING_DEFAULT_WEIGHTS) as ScoringWeightKey[]).filter((item) => item !== key)
-  const current = getCompleteScoringWeights(weights)
-  const otherTotal = otherKeys.reduce((sum, item) => sum + current[item], 0)
-  const nextValue = Math.min(clampWeight(value), current[key] + otherTotal)
-  const next = { ...current, [key]: nextValue }
+  return { ...weights, [key]: clampWeight(value) }
+}
 
-  return distributeWeights(next, otherKeys, 100 - nextValue)
+// Normalise le total à 100 de façon proportionnelle (appelé avant save)
+function normalizeScoringWeights(weights: CompleteScoringWeights): CompleteScoringWeights {
+  const total = Object.values(weights).reduce((s, v) => s + v, 0)
+  if (total === 100) return weights
+  if (total === 0) return { ...SCORING_DEFAULT_WEIGHTS }
+  return distributeWeights(weights, Object.keys(SCORING_DEFAULT_WEIGHTS) as ScoringWeightKey[], 100)
 }
 
 export default function SettingsPage() {
@@ -187,10 +191,22 @@ export default function SettingsPage() {
   async function save() {
     setSaving(true)
     setSaved(false)
+
+    // Normalise les poids à 100 avant sauvegarde
+    const normalizedWeights = memory.scoring_weights
+      ? normalizeScoringWeights(getCompleteScoringWeights(memory.scoring_weights))
+      : undefined
+
+    const memoryToSave: BrokerMemory = {
+      ...memory,
+      ...(normalizedWeights ? { scoring_weights: normalizedWeights } : {}),
+    }
+    if (normalizedWeights) setMemory(m => ({ ...m, scoring_weights: normalizedWeights }))
+
     await supabase
       .from('profiles')
       .update({
-        broker_memory: { ...memory, updatedAt: new Date().toISOString() },
+        broker_memory: { ...memoryToSave, updatedAt: new Date().toISOString() },
         email_hot_notifications: hotNotif,
       })
       .eq('id', (await supabase.auth.getUser()).data.user?.id)
@@ -352,27 +368,46 @@ export default function SettingsPage() {
         </Section>
 
         {/* ── Section: Pondération scoring ── */}
-        <Section title="Scoring personnalisé" desc="Répartissez 100 points entre vos critères. Plus un critère reçoit de points, plus il pèse dans la note finale.">
+        <Section title="Scoring personnalisé" desc="Ajustez librement l'importance de chaque critère. La normalisation à 100 se fait automatiquement à la sauvegarde.">
           {(() => {
             const weights = getCompleteScoringWeights(memory.scoring_weights)
             const total = Object.values(weights).reduce((sum, value) => sum + value, 0)
+            const isBalanced = total === 100
             return (
               <div className="space-y-5">
                 <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
                   <div className="flex items-center justify-between gap-4 mb-3">
                     <div>
                       <p className="text-sm font-semibold text-slate-900">Répartition du score</p>
-                      <p className="text-xs text-slate-500 mt-0.5">Le total reste toujours à 100 points.</p>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {isBalanced
+                          ? 'Équilibré. Chaque curseur est indépendant — aucun autre ne bouge quand vous en touchez un.'
+                          : 'Total ≠ 100 — sera normalisé automatiquement à la sauvegarde.'}
+                      </p>
                     </div>
-                    <span className="text-sm font-semibold text-slate-900 tabular-nums">{total}/100</span>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {!isBalanced && (
+                        <button
+                          onClick={() => update('scoring_weights', normalizeScoringWeights(weights))}
+                          className="text-[11px] font-medium text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-lg hover:bg-amber-100 transition-colors"
+                        >
+                          Normaliser
+                        </button>
+                      )}
+                      <span className={`text-sm font-semibold tabular-nums px-2.5 py-1 rounded-lg ${
+                        isBalanced ? 'text-emerald-700 bg-emerald-50' : 'text-amber-700 bg-amber-50'
+                      }`}>
+                        {total}/100
+                      </span>
+                    </div>
                   </div>
                   <div className="flex h-2.5 overflow-hidden rounded-full bg-white ring-1 ring-slate-200">
                     {SCORING_ITEMS.map((item) => (
                       <div
                         key={item.key}
                         className={`${item.tone} transition-all duration-300`}
-                        style={{ width: `${weights[item.key]}%` }}
-                        title={`${item.label} : ${weights[item.key]} points`}
+                        style={{ width: `${total > 0 ? (weights[item.key] / total) * 100 : 20}%` }}
+                        title={`${item.label} : ${weights[item.key]} pts`}
                       />
                     ))}
                   </div>
@@ -410,15 +445,12 @@ export default function SettingsPage() {
                     </div>
                   )
                 })}
-                <div className="flex items-center justify-between gap-4">
-                  <p className="text-[11px] leading-relaxed text-slate-500">
-                    Exemple : si vous montez “Apport personnel”, BankKey réduit automatiquement les autres critères pour garder un total de 100.
-                  </p>
+                <div className="flex items-center justify-end">
                   <button
                     onClick={() => update('scoring_weights', undefined)}
-                    className="shrink-0 text-[11px] font-medium text-slate-500 hover:text-slate-900 transition-colors"
+                    className="text-[11px] font-medium text-slate-500 hover:text-slate-900 transition-colors"
                   >
-                    Réinitialiser
+                    Réinitialiser les valeurs par défaut
                   </button>
                 </div>
               </div>
