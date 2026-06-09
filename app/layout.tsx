@@ -8,6 +8,7 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://bankkey.ch'),
   title: 'BankKey — Qualification automatique pour courtiers crédit',
   description: 'Chaque demande de financement reçue par email qualifiée, scorée et préparée en moins de 60 secondes. Pour les cabinets de courtage en crédit immobilier.',
   openGraph: {

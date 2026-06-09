@@ -36,6 +36,7 @@ function OnboardingContent() {
   const [forwardingAddress, setForwardingAddress] = useState<string | null>(null)
   const [saving, setSaving]           = useState(false)
   const [copied, setCopied]           = useState(false)
+  const [validationError, setValidationError] = useState<string | null>(null)
 
   const error = searchParams.get('error')
 
@@ -71,7 +72,16 @@ function OnboardingContent() {
   }
 
   async function next() {
+    setValidationError(null)
     if (step === 'profile') {
+      if (!memory.agencyName?.trim()) {
+        setValidationError('Veuillez entrer le nom de votre cabinet.')
+        return
+      }
+      if (!memory.fullName?.trim()) {
+        setValidationError('Veuillez entrer votre prénom et nom.')
+        return
+      }
       await saveProfile()
     }
     const idx = STEPS.findIndex(s => s.id === step)
@@ -201,6 +211,12 @@ function OnboardingContent() {
               {error === 'oauth_failed'      && 'La connexion Gmail a échoué. Réessayez.'}
               {error === 'token_save_failed' && 'Erreur lors de la sauvegarde. Réessayez.'}
               {!['oauth_failed', 'token_save_failed'].includes(error) && `Erreur : ${error}`}
+            </div>
+          )}
+
+          {validationError && (
+            <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700 mb-6">
+              {validationError}
             </div>
           )}
 

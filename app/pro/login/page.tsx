@@ -1,12 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-export default function LoginPage() {
+function LoginInner() {
+  const searchParams = useSearchParams()
+  const initialMode = searchParams.get('mode') === 'signup' ? 'signup' : searchParams.get('mode') === 'reset' ? 'reset' : 'login'
+
   const [email,    setEmail]    = useState('')
   const [password, setPassword] = useState('')
-  const [mode,     setMode]     = useState<'login' | 'signup'>('login')
+  const [mode,     setMode]     = useState<'login' | 'signup' | 'reset'>(initialMode)
   const [loading,  setLoading]  = useState(false)
   const [message,  setMessage]  = useState<{ type: 'error' | 'info'; text: string } | null>(null)
 
@@ -23,6 +27,15 @@ export default function LoginPage() {
         setMessage({ type: 'error', text: 'Email ou mot de passe incorrect.' })
       } else {
         window.location.href = '/pro'
+      }
+    } else if (mode === 'reset') {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${typeof window !== 'undefined' ? window.location.origin : 'https://bankkey.ch'}/pro/login?mode=update`,
+      })
+      if (error) {
+        setMessage({ type: 'error', text: error.message })
+      } else {
+        setMessage({ type: 'info', text: 'Vérifiez votre email pour réinitialiser votre mot de passe.' })
       }
     } else {
       const { data, error } = await supabase.auth.signUp({ email, password })
@@ -55,21 +68,30 @@ export default function LoginPage() {
         </div>
 
         <div className="bg-white rounded-xl border border-slate-200 p-6">
-          <div className="flex gap-2 mb-6">
-            {(['login', 'signup'] as const).map(m => (
-              <button
-                key={m}
-                onClick={() => { setMode(m); setMessage(null) }}
-                className={`flex-1 py-1.5 text-sm font-medium rounded-lg transition-colors ${
-                  mode === m
-                    ? 'bg-slate-900 text-white'
-                    : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
-                }`}
-              >
-                {m === 'login' ? 'Connexion' : 'Créer un compte'}
-              </button>
-            ))}
-          </div>
+          {mode !== 'reset' && (
+            <div className="flex gap-2 mb-6">
+              {(['login', 'signup'] as const).map(m => (
+                <button
+                  key={m}
+                  onClick={() => { setMode(m); setMessage(null) }}
+                  className={`flex-1 py-1.5 text-sm font-medium rounded-lg transition-colors ${
+                    mode === m
+                      ? 'bg-slate-900 text-white'
+                      : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
+                  }`}
+                >
+                  {m === 'login' ? 'Connexion' : 'Créer un compte'}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {mode === 'reset' && (
+            <div className="mb-6">
+              <h2 className="text-sm font-semibold text-slate-900 mb-1">Réinitialiser mot de passe</h2>
+              <p className="text-xs text-slate-500">Entrez votre email pour recevoir un lien de réinitialisation.</p>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -84,18 +106,20 @@ export default function LoginPage() {
               />
             </div>
 
-            <div>
-              <label className="text-xs font-medium text-slate-500 mb-1 block">Mot de passe</label>
-              <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                required
-                minLength={6}
-                placeholder="••••••••"
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900"
-              />
-            </div>
+            {mode !== 'reset' && (
+              <div>
+                <label className="text-xs font-medium text-slate-500 mb-1 block">Mot de passe</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  placeholder="••••••••"
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900"
+                />
+              </div>
+            )}
 
             {message && (
               <p className={`text-xs px-3 py-2 rounded-lg ${
@@ -113,9 +137,20 @@ export default function LoginPage() {
               className="w-full bg-slate-900 hover:bg-slate-700 disabled:bg-slate-300
                          text-white text-sm font-medium py-2 rounded-lg transition-colors"
             >
-              {loading ? '...' : mode === 'login' ? 'Se connecter' : 'Créer le compte'}
+              {loading ? '...' : mode === 'login' ? 'Se connecter' : mode === 'reset' ? 'Envoyer le lien' : 'Créer le compte'}
             </button>
           </form>
+
+          {mode === 'login' && (
+            <p className="text-center mt-4">
+              <button
+                onClick={() => { setMode('reset'); setMessage(null) }}
+                className="text-xs text-slate-500 hover:text-slate-700"
+              >
+                Mot de passe oublié ?
+              </button>
+            </p>
+          )}
         </div>
 
         <p className="text-center mt-6">
@@ -125,5 +160,17 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="w-5 h-5 border-2 border-slate-200 border-t-slate-600 rounded-full animate-spin" />
+      </div>
+    }>
+      <LoginInner />
+    </Suspense>
   )
 }

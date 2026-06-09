@@ -222,7 +222,7 @@ export default function SecurityPage() {
       {/* Footer minimal */}
       <footer className="bg-slate-900 border-t border-slate-800 text-slate-400 py-8 text-xs">
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-2">
-          <p>© 2025 BankKey. Tous droits réservés.</p>
+          <p>© 2026 BankKey. Tous droits réservés.</p>
           <div className="flex items-center gap-5">
             <Link href="/" className="hover:text-white transition-colors">Accueil</Link>
             <Link href="/book" className="hover:text-white transition-colors">Réserver une démo</Link>

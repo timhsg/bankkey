@@ -105,6 +105,7 @@ interface NavItem {
 const PRIMARY_NAV: NavItem[] = [
   { href: '/pro',           label: 'Aujourd\'hui',   icon: Icons.Home, matchExact: true },
   { href: '/pro/prospects', label: 'Prospects',      icon: Icons.Users },
+  { href: '/pro/filtered',  label: 'Emails filtrés', icon: Icons.Inbox },
   { href: '/pro/banks',     label: 'Banques',        icon: Icons.Bank },
   { href: '/pro/bilan',         label: 'Bilan du mois',  icon: Icons.Calendar },
   { href: '/pro/statistiques',  label: 'Statistiques',   icon: Icons.Chart },
@@ -214,7 +215,7 @@ export default function Sidebar() {
       `}>
         {/* Brand + close mobile */}
         <div className="flex items-center justify-between px-4 h-14 border-b border-slate-100">
-          <Link href="/pro" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2 hover:opacity-75 transition-opacity">
             <div className="w-6 h-6 rounded-md bg-slate-900 flex items-center justify-center">
               <span className="text-white text-[10px] font-bold tracking-tighter">BK</span>
             </div>

@@ -130,9 +130,24 @@ export default function LandingPage() {
             <a href="#pricing" className="hover:text-slate-900 transition-colors">Tarifs</a>
             <a href="#faq" className="hover:text-slate-900 transition-colors">FAQ</a>
           </nav>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <span className="hidden md:inline"><CurrencyToggle /></span>
-            <Link href="/book" className="text-sm bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+            <Link
+              href="/pro/login"
+              className="hidden sm:inline-flex text-sm text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg font-medium transition-colors"
+            >
+              Se connecter
+            </Link>
+            <Link
+              href="/pro/login?mode=signup"
+              className="hidden lg:inline-flex text-sm text-slate-700 hover:text-slate-900 border border-slate-200 hover:border-slate-300 px-3 py-2 rounded-lg font-medium transition-colors"
+            >
+              Créer un compte
+            </Link>
+            <Link
+              href="/book"
+              className="text-sm bg-slate-900 hover:bg-slate-800 text-white px-3 sm:px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
+            >
               Réserver une démo
             </Link>
           </div>
@@ -539,7 +554,7 @@ export default function LandingPage() {
           </div>
 
           <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
-            <p>© 2025 BankKey. Tous droits réservés.</p>
+            <p>© 2026 BankKey. Tous droits réservés.</p>
             <p className="text-slate-500">Pour les courtiers en crédit immobilier · France & Suisse</p>
           </div>
         </div>
