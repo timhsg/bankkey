@@ -244,7 +244,7 @@ export default function SettingsPage() {
           <button
             onClick={save}
             disabled={saving}
-            className="text-xs bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white px-4 py-1.5 rounded-lg transition-colors font-medium"
+            className="text-xs bg-blue-900 hover:bg-blue-800 disabled:bg-slate-300 text-white px-4 py-1.5 rounded-lg transition-colors font-medium"
           >
             {saving ? 'Sauvegarde...' : saved ? 'Sauvegardé' : 'Sauvegarder'}
           </button>
@@ -340,7 +340,7 @@ export default function SettingsPage() {
                   onClick={() => update('tone', t.id as BrokerMemory['tone'])}
                   className={`text-left p-3 rounded-xl border transition-colors ${
                     memory.tone === t.id
-                      ? 'bg-slate-900 text-white border-slate-900'
+                      ? 'bg-blue-900 text-white border-blue-900'
                       : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
                   }`}
                 >
@@ -358,7 +358,7 @@ export default function SettingsPage() {
             </div>
             <button
               onClick={() => update('vouvoiement', !(memory.vouvoiement ?? true))}
-              className={`relative w-10 h-5 rounded-full transition-colors ${memory.vouvoiement === false ? 'bg-slate-200' : 'bg-slate-900'}`}
+              className={`relative w-10 h-5 rounded-full transition-colors ${memory.vouvoiement === false ? 'bg-slate-200' : 'bg-blue-900'}`}
             >
               <span
                 className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-all ${memory.vouvoiement === false ? 'left-0.5' : 'left-5'}`}
@@ -436,11 +436,11 @@ export default function SettingsPage() {
                         step={1}
                         value={value}
                         onChange={(e) => update('scoring_weights', updateScoringWeight(weights, item.key, Number(e.target.value)))}
-                        className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-slate-900
+                        className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-blue-900
                                    [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4
                                    [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full
                                    [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2
-                                   [&::-webkit-slider-thumb]:border-slate-900 [&::-webkit-slider-thumb]:cursor-pointer"
+                                   [&::-webkit-slider-thumb]:border-blue-900 [&::-webkit-slider-thumb]:cursor-pointer"
                       />
                     </div>
                   )
@@ -521,7 +521,7 @@ export default function SettingsPage() {
             <button
               onClick={save}
               disabled={saving}
-              className="text-xs bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white px-5 py-2 rounded-lg transition-colors font-medium"
+              className="text-xs bg-blue-900 hover:bg-blue-800 disabled:bg-slate-300 text-white px-5 py-2 rounded-lg transition-colors font-medium"
             >
               {saving ? 'Sauvegarde...' : saved ? '✓ Sauvegardé' : 'Sauvegarder'}
             </button>
@@ -561,7 +561,7 @@ function Field({ label, value, onChange, placeholder, type = 'text' }: {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all placeholder-slate-300"
+        className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent transition-all placeholder-slate-300"
       />
     </div>
   )
@@ -583,7 +583,7 @@ function Textarea({ label, value, onChange, placeholder, hint, rows = 4 }: {
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         rows={rows}
-        className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all resize-none placeholder-slate-300 leading-relaxed"
+        className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent transition-all resize-none placeholder-slate-300 leading-relaxed"
       />
       {hint && <p className="text-[11px] text-slate-400 mt-1.5">{hint}</p>}
     </div>

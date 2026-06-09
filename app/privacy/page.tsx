@@ -13,7 +13,7 @@ export default function PrivacyPage() {
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
         <div className="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-md bg-slate-900 flex items-center justify-center">
+            <div className="w-7 h-7 rounded-md bg-blue-900 flex items-center justify-center">
               <span className="text-white text-xs font-bold tracking-tighter">BK</span>
             </div>
             <span className="font-semibold text-slate-900 tracking-tight">BankKey</span>

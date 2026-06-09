@@ -67,7 +67,7 @@ export default function BookPage() {
       <header className="bg-white/80 backdrop-blur-md border-b border-slate-100 sticky top-0 z-20">
         <div className="max-w-6xl mx-auto px-5 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-slate-900 flex items-center justify-center">
+            <div className="w-6 h-6 rounded-md bg-blue-900 flex items-center justify-center">
               <span className="text-white text-[10px] font-bold tracking-tighter">BK</span>
             </div>
             <span className="font-semibold text-slate-900 tracking-tight">BankKey</span>
@@ -98,7 +98,7 @@ export default function BookPage() {
               <Link href="/demo" className="text-sm font-medium border border-slate-300 hover:border-slate-400 text-slate-700 px-4 py-2 rounded-lg transition-colors">
                 Revoir la démo
               </Link>
-              <Link href="/" className="text-sm font-medium bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg transition-colors">
+              <Link href="/" className="text-sm font-medium bg-blue-900 hover:bg-blue-800 text-white px-4 py-2 rounded-lg transition-colors">
                 Retour à l&apos;accueil
               </Link>
             </div>
@@ -141,7 +141,7 @@ export default function BookPage() {
                 <select
                   value={form.preferredSlot}
                   onChange={(e) => update('preferredSlot', e.target.value)}
-                  className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all bg-white"
+                  className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent transition-all bg-white"
                 >
                   {SLOTS.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
@@ -157,7 +157,7 @@ export default function BookPage() {
                   onChange={(e) => update('message', e.target.value)}
                   rows={3}
                   placeholder="Combien de leads recevez-vous par mois ? Quels outils utilisez-vous actuellement ?"
-                  className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all resize-none placeholder-slate-300"
+                  className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent transition-all resize-none placeholder-slate-300"
                 />
               </div>
 
@@ -170,7 +170,7 @@ export default function BookPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white font-medium py-3 rounded-lg transition-colors"
+                className="w-full bg-blue-900 hover:bg-blue-800 disabled:bg-slate-300 text-white font-medium py-3 rounded-lg transition-colors"
               >
                 {submitting ? 'Envoi...' : 'Réserver ma démo'}
               </button>
@@ -223,7 +223,7 @@ function Input({
         onChange={(e) => onChange(e.target.value)}
         required={required}
         placeholder={placeholder}
-        className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all placeholder-slate-300"
+        className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent transition-all placeholder-slate-300"
       />
     </div>
   )

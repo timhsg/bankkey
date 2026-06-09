@@ -76,7 +76,7 @@ function LoginInner() {
                   onClick={() => { setMode(m); setMessage(null) }}
                   className={`flex-1 py-1.5 text-sm font-medium rounded-lg transition-colors ${
                     mode === m
-                      ? 'bg-slate-900 text-white'
+                      ? 'bg-blue-900 text-white'
                       : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
                   }`}
                 >
@@ -102,7 +102,7 @@ function LoginInner() {
                 onChange={e => setEmail(e.target.value)}
                 required
                 placeholder="vous@agence.fr"
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900"
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900"
               />
             </div>
 
@@ -116,7 +116,7 @@ function LoginInner() {
                   required
                   minLength={6}
                   placeholder="••••••••"
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900"
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900"
                 />
               </div>
             )}
@@ -134,7 +134,7 @@ function LoginInner() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-slate-900 hover:bg-slate-700 disabled:bg-slate-300
+              className="w-full bg-blue-900 hover:bg-slate-700 disabled:bg-slate-300
                          text-white text-sm font-medium py-2 rounded-lg transition-colors"
             >
               {loading ? '...' : mode === 'login' ? 'Se connecter' : mode === 'reset' ? 'Envoyer le lien' : 'Créer le compte'}

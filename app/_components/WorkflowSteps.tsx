@@ -142,7 +142,7 @@ export default function WorkflowSteps() {
             </div>
 
             <div className="flex items-center gap-1.5">
-              <div className="flex-1 bg-slate-900 text-white text-center py-1.5 rounded-md text-[10px] font-medium">
+              <div className="flex-1 bg-blue-900 text-white text-center py-1.5 rounded-md text-[10px] font-medium">
                 Envoyer réponse
               </div>
               <div className="px-2 py-1.5 border border-slate-200 rounded-md text-[10px] text-slate-700">

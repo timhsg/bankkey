@@ -202,7 +202,7 @@ export default function InteractiveDemo() {
       <header className="bg-white/80 backdrop-blur-md border-b border-slate-100 sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-5 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-slate-900 flex items-center justify-center">
+            <div className="w-6 h-6 rounded-md bg-blue-900 flex items-center justify-center">
               <span className="text-white text-[10px] font-bold tracking-tighter">BK</span>
             </div>
             <span className="font-semibold text-slate-900 tracking-tight">BankKey</span>
@@ -218,7 +218,7 @@ export default function InteractiveDemo() {
             </Link>
           </div>
 
-          <Link href="/pro/login" className="text-xs font-medium bg-slate-900 hover:bg-slate-800 text-white px-3 py-1.5 rounded-lg transition-colors">
+          <Link href="/pro/login" className="text-xs font-medium bg-blue-900 hover:bg-blue-800 text-white px-3 py-1.5 rounded-lg transition-colors">
             Essai gratuit
           </Link>
         </div>
@@ -304,7 +304,7 @@ export default function InteractiveDemo() {
                     >
                       {/* Indicateur de sélection sur la gauche */}
                       {isSelected && (
-                        <span className="absolute left-0 top-2.5 bottom-2.5 w-0.5 bg-slate-900 rounded-r" />
+                        <span className="absolute left-0 top-2.5 bottom-2.5 w-0.5 bg-blue-900 rounded-r" />
                       )}
                       <MiniScore score={p.scoring.score} temp={p.scoring.temperature} />
                       <div className="flex-1 min-w-0">
@@ -354,7 +354,7 @@ export default function InteractiveDemo() {
 
         {/* ── CTA Footer ── */}
         {stage === 'complete' && (
-          <div className="mt-12 bg-slate-900 text-white rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-4 animate-fade-up">
+          <div className="mt-12 bg-blue-900 text-white rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-4 animate-fade-up">
             <div>
               <p className="text-base font-semibold mb-1">Voilà ce que BankKey fait pour vous, chaque jour.</p>
               <p className="text-sm text-slate-400">Imaginez ce même process appliqué à toute votre boîte mail.</p>
@@ -607,7 +607,7 @@ function ProspectDetail({
                 key={t.id}
                 onClick={() => setTab(t.id)}
                 className={`flex-1 py-3 text-xs font-semibold uppercase tracking-wide transition-colors flex items-center justify-center gap-2 ${
-                  tab === t.id ? 'text-slate-900 border-b-2 border-slate-900' : 'text-slate-400 hover:text-slate-600'
+                  tab === t.id ? 'text-slate-900 border-b-2 border-blue-900' : 'text-slate-400 hover:text-slate-600'
                 }`}
               >
                 {t.label}

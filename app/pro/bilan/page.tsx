@@ -285,7 +285,7 @@ export default function BilanPage() {
                       {stats.avgRate ? `${stats.avgRate.toFixed(2)}%` : '—'}
                     </p>
                   </div>
-                  <div className="bg-slate-900 text-white rounded-xl px-4 py-3">
+                  <div className="bg-blue-900 text-white rounded-xl px-4 py-3">
                     <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Montant total accordé</p>
                     <p className="text-2xl font-semibold tracking-tight mt-1">
                       {stats.totalLoanAmount > 0 ? formatMoney(stats.totalLoanAmount) : '—'}
@@ -352,7 +352,7 @@ function DigestPreviewCard() {
           <button
             onClick={sendPreview}
             disabled={sending}
-            className="text-xs font-medium bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white px-3 py-1.5 rounded-lg transition-base"
+            className="text-xs font-medium bg-blue-900 hover:bg-blue-800 disabled:bg-slate-300 text-white px-3 py-1.5 rounded-lg transition-base"
           >
             {sending ? 'Envoi...' : 'M\'envoyer un aperçu'}
           </button>

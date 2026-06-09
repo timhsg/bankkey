@@ -194,7 +194,7 @@ function SliderField({
       </div>
       <div className="relative h-1.5 bg-slate-200 rounded-full">
         <div
-          className="absolute h-full bg-slate-900 rounded-full pointer-events-none"
+          className="absolute h-full bg-blue-900 rounded-full pointer-events-none"
           style={{ width: `${pct}%` }}
         />
         <input
@@ -207,7 +207,7 @@ function SliderField({
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
         />
         <div
-          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 bg-white border-2 border-slate-900 rounded-full pointer-events-none shadow-sm"
+          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 bg-white border-2 border-blue-900 rounded-full pointer-events-none shadow-sm"
           style={{ left: `${pct}%` }}
         />
       </div>

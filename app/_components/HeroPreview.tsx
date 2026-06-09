@@ -89,7 +89,7 @@ export default function HeroPreview() {
           {/* Sidebar */}
           <div className="col-span-3 bg-white border-r border-slate-100 p-3">
             <div className="flex items-center gap-2 mb-5 pb-3 border-b border-slate-100">
-              <div className="w-6 h-6 rounded-md bg-slate-900 flex items-center justify-center">
+              <div className="w-6 h-6 rounded-md bg-blue-900 flex items-center justify-center">
                 <span className="text-white text-[10px] font-bold tracking-tighter">BK</span>
               </div>
               <span className="font-semibold text-slate-900 text-sm">BankKey</span>
@@ -113,7 +113,7 @@ export default function HeroPreview() {
                   <span className="text-[9px] font-mono text-slate-400">{item.count}</span>
                 )}
                 {item.active && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-slate-900 rounded-r" />
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-blue-900 rounded-r" />
                 )}
               </div>
             ))}

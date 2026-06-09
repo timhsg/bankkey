@@ -273,7 +273,7 @@ export default function LeadDetailPage() {
               <button
                 onClick={sendReply}
                 disabled={sending || !profile?.gmail_access_token}
-                className="text-xs bg-slate-900 hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-400 text-white px-3 py-1.5 rounded-lg transition-colors font-medium"
+                className="text-xs bg-blue-900 hover:bg-blue-800 disabled:bg-slate-200 disabled:text-slate-400 text-white px-3 py-1.5 rounded-lg transition-colors font-medium"
               >
                 <span className="sm:hidden">{sending ? 'Envoi…' : 'Envoyer'}</span>
                 <span className="hidden sm:inline">{sending ? 'Envoi...' : 'Envoyer la réponse'}</span>
@@ -446,7 +446,7 @@ export default function LeadDetailPage() {
                   disabled={!t.enabled}
                   className={`flex-1 min-w-[80px] py-3 px-2 text-[10px] sm:text-xs font-semibold uppercase tracking-wide transition-colors flex items-center justify-center gap-1.5 sm:gap-2 whitespace-nowrap ${
                     tab === t.id
-                      ? 'text-slate-900 border-b-2 border-slate-900'
+                      ? 'text-slate-900 border-b-2 border-blue-900'
                       : t.enabled
                         ? 'text-slate-400 hover:text-slate-600'
                         : 'text-slate-200 cursor-not-allowed'
@@ -538,7 +538,7 @@ export default function LeadDetailPage() {
                         <button
                           onClick={sendReply}
                           disabled={sending || prospect.status === 'replied' || !profile?.gmail_access_token || !prospect.email_from}
-                          className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white text-sm font-medium px-4 py-2 rounded-lg transition-base"
+                          className="inline-flex items-center gap-2 bg-blue-900 hover:bg-blue-800 disabled:bg-slate-300 text-white text-sm font-medium px-4 py-2 rounded-lg transition-base"
                         >
                           {sending ? (
                             <>

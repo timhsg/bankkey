@@ -37,7 +37,7 @@ export default function CompletenessCard({ totalProspects, withOutcome, incomple
     : 100
 
   return (
-    <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl overflow-hidden">
+    <div className="bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white rounded-2xl overflow-hidden">
 
       <div className="px-6 py-5">
         <div className="flex items-baseline justify-between mb-3">

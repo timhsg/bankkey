@@ -132,7 +132,7 @@ export default function OutcomeModal({
                 <div className="space-y-1.5">
                   {REJECTION_REASONS.map(r => (
                     <label key={r.value} className={`flex items-center gap-2.5 px-3 py-2 rounded-lg border cursor-pointer transition-base ${
-                      rejectReason === r.value ? 'bg-slate-900 text-white border-slate-900' : 'bg-white border-slate-200 hover:border-slate-300'
+                      rejectReason === r.value ? 'bg-blue-900 text-white border-blue-900' : 'bg-white border-slate-200 hover:border-slate-300'
                     }`}>
                       <input
                         type="radio"
@@ -160,7 +160,7 @@ export default function OutcomeModal({
           <button
             onClick={save}
             disabled={saving}
-            className="bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white text-sm font-medium px-5 py-2 rounded-lg transition-base"
+            className="bg-blue-900 hover:bg-blue-800 disabled:bg-slate-300 text-white text-sm font-medium px-5 py-2 rounded-lg transition-base"
           >
             {saving ? 'Sauvegarde...' : 'Enregistrer la décision'}
           </button>
@@ -189,7 +189,7 @@ function Field({ label, value, onChange, placeholder, type = 'text', step }: {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-base placeholder-slate-300"
+        className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent transition-base placeholder-slate-300"
       />
     </div>
   )
@@ -209,7 +209,7 @@ function TextArea({ label, value, onChange, placeholder }: {
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         rows={2}
-        className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-base resize-none placeholder-slate-300"
+        className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent transition-base resize-none placeholder-slate-300"
       />
     </div>
   )

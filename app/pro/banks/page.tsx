@@ -131,7 +131,7 @@ export default function BanksPage() {
             <p className="text-xs text-slate-500 mb-5 max-w-md mx-auto">
               Quand vous ouvrirez un prospect et noterez les banques sollicitées, le suivi apparaîtra ici.
             </p>
-            <Link href="/pro/prospects" className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+            <Link href="/pro/prospects" className="inline-flex items-center gap-2 bg-blue-900 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
               Voir mes prospects
             </Link>
           </div>

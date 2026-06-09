@@ -182,7 +182,7 @@ function ProspectsContent() {
             )}
             <a
               href="/pro/prospects/new"
-              className="flex items-center gap-1.5 text-xs font-medium bg-slate-900 hover:bg-slate-800 text-white px-2.5 py-1.5 sm:px-3 rounded-lg transition-base"
+              className="flex items-center gap-1.5 text-xs font-medium bg-blue-900 hover:bg-blue-800 text-white px-2.5 py-1.5 sm:px-3 rounded-lg transition-base"
               aria-label="Ajouter un prospect"
             >
               <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
@@ -213,7 +213,7 @@ function ProspectsContent() {
             </div>
             <a
               href="/pro/onboarding"
-              className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shrink-0"
+              className="inline-flex items-center gap-2 bg-blue-900 hover:bg-slate-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shrink-0"
             >
               Connecter Gmail
             </a>
@@ -234,13 +234,13 @@ function ProspectsContent() {
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   placeholder="Rechercher un prospect..."
-                  className="w-full bg-white border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all"
+                  className="w-full bg-white border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent transition-all"
                 />
               </div>
               <select
                 value={sort}
                 onChange={e => setSort(e.target.value as 'recent' | 'score')}
-                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900 cursor-pointer"
+                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-900 cursor-pointer"
               >
                 <option value="recent">Récents</option>
                 <option value="score">Score</option>
@@ -260,7 +260,7 @@ function ProspectsContent() {
                   onClick={() => setFilter(f.key)}
                   className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors flex items-center gap-1.5 ${
                     filter === f.key
-                      ? 'bg-slate-900 text-white'
+                      ? 'bg-blue-900 text-white'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-white border border-transparent hover:border-slate-200'
                   }`}
                 >

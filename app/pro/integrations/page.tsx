@@ -182,7 +182,7 @@ function WebsiteEmbedPath({ appUrl, ingestKey }: { appUrl: string; ingestKey: st
 
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-2">Code à coller</p>
-        <div className="bg-slate-900 text-emerald-300 rounded-xl px-4 py-3 relative">
+        <div className="bg-blue-900 text-emerald-300 rounded-xl px-4 py-3 relative">
           <code className="text-xs font-mono break-all">{code}</code>
           <button
             onClick={() => { navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 2500) }}
@@ -307,7 +307,7 @@ function CsvImportPath() {
             if (file) onFile(file)
           }}
           className={`block border-2 border-dashed rounded-xl px-6 py-12 text-center cursor-pointer transition-colors ${
-            dragOver ? 'border-slate-900 bg-slate-50' : 'border-slate-300 hover:border-slate-400'
+            dragOver ? 'border-blue-900 bg-slate-50' : 'border-slate-300 hover:border-slate-400'
           }`}
         >
           <svg className="w-10 h-10 text-slate-400 mx-auto mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -354,7 +354,7 @@ function CsvImportPath() {
                   <select
                     value={mapping[header] ?? ''}
                     onChange={(e) => setMapping(m => ({ ...m, [header]: e.target.value }))}
-                    className="text-xs border border-slate-200 rounded-md px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 shrink-0 w-48"
+                    className="text-xs border border-slate-200 rounded-md px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-900 shrink-0 w-48"
                   >
                     {BANKKEY_FIELDS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
                   </select>
@@ -388,7 +388,7 @@ function CsvImportPath() {
             <button
               onClick={doImport}
               disabled={importing || Object.values(mapping).filter(v => v).length === 0}
-              className="bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-base"
+              className="bg-blue-900 hover:bg-blue-800 disabled:bg-slate-300 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-base"
             >
               {importing ? `Import en cours... (${parsed.rows.length} lignes)` : `Importer ${parsed.rows.length} prospect${parsed.rows.length > 1 ? 's' : ''}`}
             </button>
@@ -497,7 +497,7 @@ function AdvancedWebhookPath({ appUrl, ingestKey }: { appUrl: string; ingestKey:
         qui peut envoyer un POST JSON.
       </p>
 
-      <div className="bg-slate-900 text-white rounded-xl p-4">
+      <div className="bg-blue-900 text-white rounded-xl p-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">URL Webhook POST</span>
           <button onClick={() => copy('url', webhookUrl)} className="text-xs bg-white/10 hover:bg-white/20 px-2 py-1 rounded transition-base">
@@ -540,7 +540,7 @@ function PathCard({ id, active, onClick, icon, title, desc, difficulty, time }: 
       onClick={onClick}
       className={`text-left p-5 rounded-2xl border transition-base ${
         active
-          ? 'bg-slate-900 text-white border-slate-900 shadow-lg'
+          ? 'bg-blue-900 text-white border-blue-900 shadow-lg'
           : 'bg-white border-slate-200 hover:border-slate-300 hover-lift'
       }`}
     >

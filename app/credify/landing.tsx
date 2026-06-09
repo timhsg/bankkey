@@ -10,7 +10,7 @@ export default function CredifyLanding() {
           <div className="flex items-center gap-4">
             <a href="#features" className="text-sm text-slate-600 hover:text-slate-900">Fonctionnalités</a>
             <a href="#pricing" className="text-sm text-slate-600 hover:text-slate-900">Tarifs</a>
-            <a href="/pro/login" className="text-sm bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-700">
+            <a href="/pro/login" className="text-sm bg-blue-900 text-white px-4 py-2 rounded-lg hover:bg-slate-700">
               Se connecter
             </a>
           </div>
@@ -245,7 +245,7 @@ export default function CredifyLanding() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-slate-900 text-slate-300 py-8 text-center text-sm">
+      <footer className="bg-blue-900 text-slate-300 py-8 text-center text-sm">
         <div className="max-w-6xl mx-auto px-5">
           <p>Credify © 2025 — Qualification IA pour courtiers crédit immobilier</p>
           <div className="flex items-center justify-center gap-6 mt-4">

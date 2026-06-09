@@ -56,7 +56,7 @@ export default function SecurityPage() {
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-md bg-slate-900 flex items-center justify-center">
+            <div className="w-7 h-7 rounded-md bg-blue-900 flex items-center justify-center">
               <span className="text-white text-xs font-bold tracking-tighter">BK</span>
             </div>
             <span className="font-semibold text-slate-900 tracking-tight">BankKey</span>
@@ -68,7 +68,7 @@ export default function SecurityPage() {
             <Link href="/#faq"      className="hover:text-slate-900 transition-colors">FAQ</Link>
           </nav>
           <div className="flex items-center gap-3">
-            <Link href="/pro/login" className="text-sm bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+            <Link href="/pro/login" className="text-sm bg-blue-900 hover:bg-blue-800 text-white px-4 py-2 rounded-lg font-medium transition-colors">
               Essai gratuit
             </Link>
           </div>
@@ -125,7 +125,7 @@ export default function SecurityPage() {
             { step: '5', title: 'Action',    desc: 'Vous validez la réponse pré-rédigée. L\'envoi se fait depuis votre compte Gmail directement, jamais en notre nom.' },
           ].map((s, i) => (
             <div key={i} className="flex items-start gap-5 bg-white border border-slate-200 rounded-xl p-5">
-              <div className="w-9 h-9 rounded-full bg-slate-900 text-white flex items-center justify-center font-semibold text-sm shrink-0">
+              <div className="w-9 h-9 rounded-full bg-blue-900 text-white flex items-center justify-center font-semibold text-sm shrink-0">
                 {s.step}
               </div>
               <div>
@@ -201,7 +201,7 @@ export default function SecurityPage() {
       </section>
 
       {/* DPO Contact */}
-      <section className="bg-slate-900 text-white py-16">
+      <section className="bg-blue-900 text-white py-16">
         <div className="max-w-3xl mx-auto px-6 text-center">
           <h2 className="text-2xl md:text-3xl font-semibold tracking-tight mb-4">
             Une question sur la confidentialité ?
@@ -220,7 +220,7 @@ export default function SecurityPage() {
       </section>
 
       {/* Footer minimal */}
-      <footer className="bg-slate-900 border-t border-slate-800 text-slate-400 py-8 text-xs">
+      <footer className="bg-blue-900 border-t border-slate-800 text-slate-400 py-8 text-xs">
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-2">
           <p>© 2026 BankKey. Tous droits réservés.</p>
           <div className="flex items-center gap-5">

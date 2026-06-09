@@ -148,7 +148,7 @@ export default async function AdminPage() {
       <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-6 h-6 rounded-md bg-slate-900 flex items-center justify-center">
+            <div className="w-6 h-6 rounded-md bg-blue-900 flex items-center justify-center">
               <span className="text-white text-[10px] font-bold tracking-tighter">BK</span>
             </div>
             <span className="font-semibold text-slate-900 tracking-tight text-sm">Console interne</span>

@@ -85,7 +85,7 @@ function Cell({ value, accent }: { value: boolean | 'manual' | string; accent?: 
   if (value === true) {
     return (
       <td className={`py-3 px-4 text-center ${bgClass}`}>
-        <span className={`inline-flex w-5 h-5 items-center justify-center rounded-full ${accent ? 'bg-slate-900 text-white' : 'bg-emerald-50 text-emerald-600'}`}>
+        <span className={`inline-flex w-5 h-5 items-center justify-center rounded-full ${accent ? 'bg-blue-900 text-white' : 'bg-emerald-50 text-emerald-600'}`}>
           <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
         </span>
       </td>
@@ -118,7 +118,7 @@ export default function LandingPage() {
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-md bg-slate-900 flex items-center justify-center">
+            <div className="w-7 h-7 rounded-md bg-blue-900 flex items-center justify-center">
               <span className="text-white text-xs font-bold tracking-tighter">BK</span>
             </div>
             <span className="font-semibold text-slate-900 tracking-tight">BankKey</span>
@@ -146,7 +146,7 @@ export default function LandingPage() {
             </Link>
             <Link
               href="/book"
-              className="text-sm bg-slate-900 hover:bg-slate-800 text-white px-3 sm:px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
+              className="text-sm bg-blue-900 hover:bg-blue-800 text-white px-3 sm:px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
             >
               Réserver une démo
             </Link>
@@ -184,7 +184,7 @@ export default function LandingPage() {
               </p>
 
               <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-3 mb-5">
-                <Link href="/book" className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-medium px-6 py-3 rounded-lg transition-base hover-lift w-full sm:w-auto">
+                <Link href="/book" className="inline-flex items-center justify-center gap-2 bg-blue-900 hover:bg-blue-800 text-white font-medium px-6 py-3 rounded-lg transition-base hover-lift w-full sm:w-auto">
                   Réserver une démo
                   <Icons.ArrowRight />
                 </Link>
@@ -299,7 +299,7 @@ export default function LandingPage() {
                 <th className="text-center py-4 px-4 font-semibold text-slate-700">CRM courtage spécialisé</th>
                 <th className="text-center py-4 px-4 font-semibold text-slate-900 bg-slate-900/5 rounded-t-lg">
                   <span className="inline-flex items-center gap-1.5">
-                    <span className="w-3 h-3 rounded-sm bg-slate-900 flex items-center justify-center">
+                    <span className="w-3 h-3 rounded-sm bg-blue-900 flex items-center justify-center">
                       <span className="text-white text-[7px] font-bold">BK</span>
                     </span>
                     BankKey
@@ -365,7 +365,7 @@ export default function LandingPage() {
             ))}
           </div>
 
-          <Link href="/book" className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors">
+          <Link href="/book" className="inline-flex items-center gap-2 bg-blue-900 hover:bg-blue-800 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors">
             Postuler au programme pilote
             <Icons.ArrowRight />
           </Link>
@@ -468,7 +468,7 @@ export default function LandingPage() {
       </section>
 
       {/* ───── Final CTA — chaude, gradient ───── */}
-      <section className="relative border-t border-slate-100 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white overflow-hidden">
+      <section className="relative border-t border-slate-100 bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white overflow-hidden">
 
         {/* Ambiance gradient + grain subtil */}
         <div className="absolute inset-0 pointer-events-none">
@@ -507,7 +507,7 @@ export default function LandingPage() {
       </section>
 
       {/* ───── Footer ───── */}
-      <footer className="bg-slate-900 text-slate-400 border-t border-slate-200">
+      <footer className="bg-blue-900 text-slate-400 border-t border-slate-200">
         <div className="max-w-6xl mx-auto px-6 py-14">
           <div className="grid md:grid-cols-4 gap-10 mb-12">
             <div>

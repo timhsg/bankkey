@@ -231,7 +231,7 @@ export default function TodayPage() {
             </div>
             <Link
               href="/pro/onboarding"
-              className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shrink-0"
+              className="inline-flex items-center gap-2 bg-blue-900 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shrink-0"
             >
               Connecter
             </Link>

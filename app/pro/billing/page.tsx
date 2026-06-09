@@ -165,7 +165,7 @@ function BillingContent() {
               <button
                 onClick={startCheckout}
                 disabled={submitting}
-                className="text-xs bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white px-4 py-2 rounded-lg transition-colors font-medium"
+                className="text-xs bg-blue-900 hover:bg-blue-800 disabled:bg-slate-300 text-white px-4 py-2 rounded-lg transition-colors font-medium"
               >
                 {submitting ? '...' : 'Passer à Pro'}
               </button>
@@ -185,7 +185,7 @@ function BillingContent() {
 
         {/* CTA Pro si trial */}
         {isTrial && (
-          <div className="bg-slate-900 text-white rounded-2xl p-7">
+          <div className="bg-blue-900 text-white rounded-2xl p-7">
             <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-3">Passer à Pro</p>
             <div className="flex items-baseline gap-2 mb-3">
               <span className="text-4xl font-semibold tracking-tight">{format(getPrice('pro'))}</span>

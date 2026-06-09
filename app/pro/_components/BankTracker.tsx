@@ -107,7 +107,7 @@ export default function BankTracker({ prospectId, initialBanks, qualification }:
           <p className="text-xs text-slate-500 mb-3">Aucune banque sollicitée pour ce prospect.</p>
           <button
             onClick={() => setAdding(true)}
-            className="text-xs font-medium bg-slate-900 hover:bg-slate-800 text-white px-3 py-1.5 rounded-lg transition-colors"
+            className="text-xs font-medium bg-blue-900 hover:bg-blue-800 text-white px-3 py-1.5 rounded-lg transition-colors"
           >
             + Ajouter une banque
           </button>
@@ -137,12 +137,12 @@ export default function BankTracker({ prospectId, initialBanks, qualification }:
             onKeyDown={(e) => e.key === 'Enter' && addBank()}
             placeholder="BNP Paribas, Crédit Agricole, etc."
             autoFocus
-            className="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900"
+            className="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-900"
           />
           <button
             onClick={addBank}
             disabled={!newBankName.trim()}
-            className="text-xs font-medium bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white px-3 py-1.5 rounded-lg transition-colors"
+            className="text-xs font-medium bg-blue-900 hover:bg-blue-800 disabled:bg-slate-300 text-white px-3 py-1.5 rounded-lg transition-colors"
           >
             Ajouter
           </button>
@@ -251,7 +251,7 @@ function BankRow({ bank, onUpdate, onRemove }: {
                 value={bank.rate ?? ''}
                 onChange={(e) => onUpdate({ rate: e.target.value ? Number(e.target.value) : undefined })}
                 placeholder="3.50"
-                className="w-full text-sm border border-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent"
+                className="w-full text-sm border border-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent"
               />
             </div>
             <div>
@@ -262,7 +262,7 @@ function BankRow({ bank, onUpdate, onRemove }: {
                 type="date"
                 value={bank.submitted_at?.slice(0, 10) ?? ''}
                 onChange={(e) => onUpdate({ submitted_at: e.target.value ? new Date(e.target.value).toISOString() : undefined })}
-                className="w-full text-sm border border-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent"
+                className="w-full text-sm border border-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent"
               />
             </div>
           </div>
@@ -276,7 +276,7 @@ function BankRow({ bank, onUpdate, onRemove }: {
               onChange={(e) => onUpdate({ notes: e.target.value })}
               rows={2}
               placeholder="Contre-offre attendue, contact bancaire, conditions particulières..."
-              className="w-full text-sm border border-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent resize-none placeholder-slate-300"
+              className="w-full text-sm border border-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent resize-none placeholder-slate-300"
             />
           </div>
 

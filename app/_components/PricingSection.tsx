@@ -66,7 +66,7 @@ export default function PricingSection() {
           </div>
 
           {/* Pro (plus prominent) */}
-          <div className="md:col-span-7 bg-slate-900 text-white rounded-2xl p-8 flex flex-col relative shadow-xl">
+          <div className="md:col-span-7 bg-blue-900 text-white rounded-2xl p-8 flex flex-col relative shadow-xl">
             <div className="absolute -top-3 left-6 bg-emerald-500 text-white text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full">
               Pour usage régulier
             </div>

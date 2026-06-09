@@ -114,12 +114,12 @@ function PipelineProgress({ step }: { step: PipelineStep }) {
               )}
               <div className="flex flex-col items-center gap-1.5 shrink-0">
                 <div className={`w-5 h-5 rounded-full flex items-center justify-center transition-all duration-300 ${
-                  status === 'done'   ? 'bg-slate-900' :
-                  status === 'active' ? 'border-2 border-slate-900 bg-white' :
+                  status === 'done'   ? 'bg-blue-900' :
+                  status === 'active' ? 'border-2 border-blue-900 bg-white' :
                                         'border-2 border-slate-200 bg-white'
                 }`}>
                   {status === 'done'   && <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
-                  {status === 'active' && <span className="w-1.5 h-1.5 rounded-full bg-slate-900 animate-pulse" />}
+                  {status === 'active' && <span className="w-1.5 h-1.5 rounded-full bg-blue-900 animate-pulse" />}
                 </div>
                 <span className={`text-[10px] font-medium ${status === 'pending' ? 'text-slate-300' : 'text-slate-600'}`}>
                   {s.label}
@@ -414,7 +414,7 @@ export default function DemoPage() {
       <header className="bg-white/80 backdrop-blur-md border-b border-slate-100 sticky top-0 z-20">
         <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
           <a href="/" className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-slate-900 flex items-center justify-center">
+            <div className="w-6 h-6 rounded-md bg-blue-900 flex items-center justify-center">
               <span className="text-white text-[10px] font-bold tracking-tighter">BK</span>
             </div>
             <span className="font-semibold text-slate-900 tracking-tight">BankKey</span>
@@ -430,7 +430,7 @@ export default function DemoPage() {
             </span>
           </div>
 
-          <a href="/pro/login" className="text-xs font-medium bg-slate-900 hover:bg-slate-800 text-white px-3 py-1.5 rounded-lg transition-colors">
+          <a href="/pro/login" className="text-xs font-medium bg-blue-900 hover:bg-blue-800 text-white px-3 py-1.5 rounded-lg transition-colors">
             Essai gratuit
           </a>
         </div>
@@ -470,7 +470,7 @@ export default function DemoPage() {
               rows={6}
               className="w-full text-sm text-slate-700 placeholder-slate-300 border border-slate-200
                          rounded-lg px-3.5 py-3 resize-none focus:outline-none focus:ring-2
-                         focus:ring-slate-900 focus:border-transparent leading-relaxed"
+                         focus:ring-blue-900 focus:border-transparent leading-relaxed"
             />
             <div className="mt-3 flex items-center justify-between">
               <span className="text-[11px] text-slate-400">
@@ -479,7 +479,7 @@ export default function DemoPage() {
               <button
                 onClick={analyze}
                 disabled={!listing.trim()}
-                className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800
+                className="flex items-center gap-2 bg-blue-900 hover:bg-blue-800
                            disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed
                            text-white text-sm font-medium px-5 py-2 rounded-lg transition-colors"
               >
@@ -525,7 +525,7 @@ export default function DemoPage() {
                   disabled={!t.enabled}
                   className={`flex-1 py-3 text-xs font-semibold uppercase tracking-wide transition-colors flex items-center justify-center gap-2 ${
                     tab === t.id
-                      ? 'text-slate-900 border-b-2 border-slate-900'
+                      ? 'text-slate-900 border-b-2 border-blue-900'
                       : t.enabled
                         ? 'text-slate-400 hover:text-slate-600'
                         : 'text-slate-200 cursor-not-allowed'

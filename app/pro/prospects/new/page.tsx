@@ -163,7 +163,7 @@ export default function NewProspectPage() {
                   onClick={() => set('source', s.value)}
                   className={`text-left px-3 py-2.5 rounded-lg border transition-base ${
                     form.source === s.value
-                      ? 'bg-slate-900 text-white border-slate-900'
+                      ? 'bg-blue-900 text-white border-blue-900'
                       : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
                   }`}
                 >
@@ -195,7 +195,7 @@ export default function NewProspectPage() {
               <select
                 value={form.employment}
                 onChange={(e) => set('employment', e.target.value)}
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 bg-white"
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900 bg-white"
               >
                 {EMPLOYMENT.map(e => <option key={e.value} value={e.value}>{e.label}</option>)}
               </select>
@@ -218,7 +218,7 @@ export default function NewProspectPage() {
               onChange={(e) => set('notes', e.target.value)}
               placeholder="Détails sur le client, contexte, urgence, recommandeur..."
               rows={3}
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900 resize-none placeholder-slate-300"
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-900 resize-none placeholder-slate-300"
             />
           </Section>
 
@@ -229,7 +229,7 @@ export default function NewProspectPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-base"
+              className="bg-blue-900 hover:bg-blue-800 disabled:bg-slate-300 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-base"
             >
               {submitting ? 'Création...' : 'Créer le prospect'}
             </button>
@@ -270,7 +270,7 @@ function Input({ label, value, onChange, placeholder, type = 'text', required }:
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         required={required}
-        className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900 transition-base placeholder-slate-300"
+        className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-900 transition-base placeholder-slate-300"
       />
     </div>
   )
@@ -291,7 +291,7 @@ function Toggle({ label, value, onChange, desc }: {
       <button
         type="button"
         onClick={() => onChange(!value)}
-        className={`relative w-10 h-5 rounded-full transition-base ${value ? 'bg-slate-900' : 'bg-slate-200'}`}
+        className={`relative w-10 h-5 rounded-full transition-base ${value ? 'bg-blue-900' : 'bg-slate-200'}`}
       >
         <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-base ${value ? 'left-5' : 'left-0.5'}`} />
       </button>

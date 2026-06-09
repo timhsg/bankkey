@@ -175,7 +175,7 @@ function OnboardingContent() {
       <header className="bg-white border-b border-slate-100">
         <div className="max-w-3xl mx-auto px-6 h-14 flex items-center justify-between">
           <Link href="/pro" className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-slate-900 flex items-center justify-center">
+            <div className="w-6 h-6 rounded-md bg-blue-900 flex items-center justify-center">
               <span className="text-white text-[10px] font-bold tracking-tighter">BK</span>
             </div>
             <span className="font-semibold text-slate-900 tracking-tight">BankKey</span>
@@ -186,7 +186,7 @@ function OnboardingContent() {
         </div>
         <div className="h-px bg-slate-100">
           <div
-            className="h-px bg-slate-900 transition-all duration-500"
+            className="h-px bg-blue-900 transition-all duration-500"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -199,9 +199,9 @@ function OnboardingContent() {
             {STEPS.map((s, i) => (
               <div key={s.id} className="flex items-center gap-2">
                 <div className={`w-2 h-2 rounded-full transition-colors ${
-                  i <= currentIdx ? 'bg-slate-900' : 'bg-slate-200'
+                  i <= currentIdx ? 'bg-blue-900' : 'bg-slate-200'
                 }`} />
-                {i < STEPS.length - 1 && <div className={`w-8 h-px ${i < currentIdx ? 'bg-slate-900' : 'bg-slate-200'}`} />}
+                {i < STEPS.length - 1 && <div className={`w-8 h-px ${i < currentIdx ? 'bg-blue-900' : 'bg-slate-200'}`} />}
               </div>
             ))}
           </div>
@@ -249,7 +249,7 @@ function OnboardingContent() {
 
               <button
                 onClick={next}
-                className="bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-6 py-2.5 rounded-lg transition-base"
+                className="bg-blue-900 hover:bg-blue-800 text-white text-sm font-medium px-6 py-2.5 rounded-lg transition-base"
               >
                 Commencer
               </button>
@@ -329,7 +329,7 @@ function OnboardingContent() {
               </a>
 
               {forwardingAddress && (
-                <div className="bg-slate-900 text-white rounded-2xl p-5">
+                <div className="bg-blue-900 text-white rounded-2xl p-5">
                   <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">Ou utilisez votre adresse BankKey</p>
                   <p className="text-base font-mono font-semibold mb-2 break-all">{forwardingAddress}</p>
                   <p className="text-xs text-slate-300 leading-relaxed mb-3">
@@ -385,7 +385,7 @@ function OnboardingContent() {
                       <button
                         onClick={createDemoProspect}
                         disabled={demoCreating}
-                        className="bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-base"
+                        className="bg-blue-900 hover:bg-blue-800 disabled:bg-slate-300 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-base"
                       >
                         {demoCreating ? 'Création...' : 'Créer un prospect d\'exemple'}
                       </button>
@@ -401,7 +401,7 @@ function OnboardingContent() {
               )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md mx-auto">
-                <Link href="/pro" className="bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-base">
+                <Link href="/pro" className="bg-blue-900 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-base">
                   Mon tableau de bord
                 </Link>
                 <Link href="/pro/sources" className="bg-white border border-slate-200 hover:border-slate-300 text-slate-700 text-sm font-medium px-4 py-2.5 rounded-lg transition-base">
@@ -423,7 +423,7 @@ function OnboardingContent() {
               <button
                 onClick={next}
                 disabled={saving}
-                className="bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white text-sm font-medium px-5 py-2 rounded-lg transition-base"
+                className="bg-blue-900 hover:bg-blue-800 disabled:bg-slate-300 text-white text-sm font-medium px-5 py-2 rounded-lg transition-base"
               >
                 {saving ? 'Sauvegarde...' : 'Continuer'}
               </button>
@@ -452,7 +452,7 @@ function Field({ label, value, onChange, placeholder, type = 'text', autoFocus }
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         autoFocus={autoFocus}
-        className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all placeholder-slate-300"
+        className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent transition-all placeholder-slate-300"
       />
     </div>
   )

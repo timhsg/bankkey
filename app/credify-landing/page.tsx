@@ -196,7 +196,7 @@ export default function CredifyLanding() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-slate-900 text-slate-400 py-12">
+      <footer className="bg-blue-900 text-slate-400 py-12">
         <div className="max-w-6xl mx-auto px-5">
           <div className="flex items-center justify-between mb-8">
             <span className="font-bold text-white text-lg">Credify</span>

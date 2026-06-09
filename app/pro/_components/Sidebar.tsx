@@ -179,7 +179,7 @@ export default function Sidebar() {
         </span>
         {item.label}
         {active && (
-          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-slate-900 rounded-r" />
+          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-blue-900 rounded-r" />
         )}
       </Link>
     )
@@ -216,7 +216,7 @@ export default function Sidebar() {
         {/* Brand + close mobile */}
         <div className="flex items-center justify-between px-4 h-14 border-b border-slate-100">
           <Link href="/" className="flex items-center gap-2 hover:opacity-75 transition-opacity">
-            <div className="w-6 h-6 rounded-md bg-slate-900 flex items-center justify-center">
+            <div className="w-6 h-6 rounded-md bg-blue-900 flex items-center justify-center">
               <span className="text-white text-[10px] font-bold tracking-tighter">BK</span>
             </div>
             <span className="font-semibold text-slate-900 tracking-tight text-sm">BankKey</span>
@@ -258,7 +258,7 @@ export default function Sidebar() {
             </p>
             <Link
               href="/pro/billing"
-              className="block text-center text-[11px] font-medium bg-slate-900 hover:bg-slate-800 text-white py-1.5 rounded transition-colors"
+              className="block text-center text-[11px] font-medium bg-blue-900 hover:bg-blue-800 text-white py-1.5 rounded transition-colors"
             >
               Passer à Pro
             </Link>
