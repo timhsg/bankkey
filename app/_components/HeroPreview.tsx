@@ -4,16 +4,17 @@ import { useEffect, useState } from 'react'
 import { LogoMark } from './Logo'
 
 // ════════════════════════════════════════════════════════════════════════
-//  HeroPreview — Mockup réaliste du produit dans le hero
-//  Pas une capture : du HTML pour que ça reste vivant et adaptable
-//  Anime un nouvel email qui apparaît + sa fiche client construite en direct
+//  HeroPreview — Mini-dashboard reproduit fidèlement
+//  Reprend l'architecture exacte de /pro pour que ce qu'on voit
+//  corresponde à ce qu'on aura après l'inscription.
 // ════════════════════════════════════════════════════════════════════════
 
+// Échantillon des prospects réels du dataset démo
 const PROSPECTS = [
-  { name: 'Camille Martin', city: 'Genève',   score: 87, temp: 'hot',  status: 'new',     desc: 'Couple CDI, apport 20%, compromis signé' },
-  { name: 'Sophie Lefèvre', city: 'Lyon',     score: 72, temp: 'hot',  status: 'viewed',  desc: 'Primo-accédante tech, T3 280k' },
-  { name: 'Marc Dubois',    city: 'Bordeaux', score: 65, temp: 'hot',  status: 'replied', desc: 'Fonctionnaire, refinancement 220k' },
-  { name: 'Lisa Moreau',    city: 'Paris',    score: 48, temp: 'warm', status: 'new',     desc: 'Profil à clarifier' },
+  { name: 'Camille Martin', city: 'Genève',     score: 87, temp: 'hot' as const,  status: 'new',     desc: 'Couple CDI · compromis signé · 850k CHF' },
+  { name: 'Thomas Bernard', city: 'Toulouse',   score: 92, temp: 'hot' as const,  status: 'viewed',  desc: 'Couple cadres · T4 Carmes · apport 26%' },
+  { name: 'Sophie Lefèvre', city: 'Lyon',       score: 72, temp: 'hot' as const,  status: 'replied', desc: 'Primo · ingé tech · T3 280k' },
+  { name: 'Margaux Lambert',city: 'Strasbourg', score: 68, temp: 'hot' as const,  status: 'viewed',  desc: 'Couple FPH+ingé · T3 250k' },
 ]
 
 const TEMP_RING: Record<string, string> = {
@@ -52,23 +53,22 @@ function MiniScore({ score, temp }: { score: number; temp: string }) {
 export default function HeroPreview() {
   const [pulseIndex, setPulseIndex] = useState(0)
 
-  // Indicateur subtil de "nouveau" qui clignote sur Camille
   useEffect(() => {
     const interval = setInterval(() => {
-      setPulseIndex(i => (i + 1) % 4)
-    }, 1500)
+      setPulseIndex(i => (i + 1) % PROSPECTS.length)
+    }, 1800)
     return () => clearInterval(interval)
   }, [])
 
   return (
     <div className="relative">
 
-      {/* ── Glow / gradient ambiance derrière le mockup ── */}
+      {/* Halo de fond */}
       <div className="absolute -inset-x-20 -top-12 -bottom-12 pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-gradient-to-br from-emerald-200/40 via-blue-200/30 to-transparent rounded-full blur-3xl" />
       </div>
 
-      {/* ── Frame de browser stylisé ── */}
+      {/* Frame navigateur */}
       <div className="relative bg-white rounded-2xl shadow-2xl border border-slate-200/80 overflow-hidden">
 
         {/* Browser bar */}
@@ -84,22 +84,22 @@ export default function HeroPreview() {
           <span className="text-[10px] font-mono text-slate-400">⌘K</span>
         </div>
 
-        {/* App content */}
         <div className="grid grid-cols-12">
 
           {/* Sidebar */}
           <div className="col-span-3 bg-white border-r border-slate-100 p-3">
             <div className="flex items-center gap-2 mb-5 pb-3 border-b border-slate-100">
-              <LogoMark size={24} />
+              <LogoMark size={22} />
               <span className="font-semibold text-slate-900 text-sm">BankKey</span>
             </div>
 
             <p className="text-[9px] font-semibold uppercase tracking-widest text-slate-400 px-2 mb-1.5">Navigation</p>
             {[
               { label: 'Aujourd\'hui', active: true },
-              { label: 'Prospects',    count: 4 },
+              { label: 'Prospects',    count: 10 },
               { label: 'Banques' },
-              { label: 'Sources' },
+              { label: 'Bilan' },
+              { label: 'Statistiques' },
             ].map(item => (
               <div
                 key={item.label}
@@ -117,7 +117,7 @@ export default function HeroPreview() {
               </div>
             ))}
 
-            <div className="mt-4 mb-1 pt-3 border-t border-slate-100">
+            <div className="mt-4 pt-3 border-t border-slate-100">
               <p className="text-[9px] font-semibold uppercase tracking-widest text-slate-400 px-2 mb-1.5">Cabinet</p>
               {['Mon profil', 'Abonnement'].map(item => (
                 <div key={item} className="px-2 py-1.5 text-[11px] text-slate-600 mb-0.5">{item}</div>
@@ -125,23 +125,23 @@ export default function HeroPreview() {
             </div>
           </div>
 
-          {/* Main content */}
+          {/* Contenu principal */}
           <div className="col-span-9 bg-slate-50/50">
 
-            {/* Top bar with greeting */}
+            {/* En-tête salutation */}
             <div className="px-5 pt-5 pb-3">
-              <p className="text-[9px] font-semibold uppercase tracking-widest text-slate-400 mb-1">Mardi 14 mai</p>
-              <h2 className="text-base font-semibold text-slate-900 mb-0.5">Bonjour Marie.</h2>
-              <p className="text-[11px] text-slate-500">Vous avez 3 dossiers prioritaires à traiter aujourd&apos;hui.</p>
+              <p className="text-[9px] font-semibold uppercase tracking-widest text-slate-400 mb-1">Mardi 9 juin</p>
+              <h2 className="font-display text-lg font-medium text-slate-900 mb-0.5 tracking-tight">Bonjour Marie.</h2>
+              <p className="text-[11px] text-slate-500">4 prospects prioritaires à traiter aujourd&apos;hui.</p>
             </div>
 
             {/* Stats */}
             <div className="px-5 pb-3 grid grid-cols-4 gap-2">
               {[
-                { label: 'Reçus', value: 4, accent: '' },
-                { label: 'Prioritaires', value: 3, accent: 'text-emerald-700' },
-                { label: 'En attente', value: 2, accent: '' },
-                { label: 'Répondus', value: 1, accent: '' },
+                { label: 'Reçus',        value: 7, accent: '' },
+                { label: 'Prioritaires', value: 4, accent: 'text-emerald-700' },
+                { label: 'En attente',   value: 3, accent: '' },
+                { label: 'Répondus',     value: 2, accent: '' },
               ].map((s, i) => (
                 <div key={i} className="bg-white border border-slate-200 rounded-lg px-2 py-1.5">
                   <p className="text-[8px] font-medium text-slate-400 uppercase tracking-widest">{s.label}</p>
@@ -150,26 +150,25 @@ export default function HeroPreview() {
               ))}
             </div>
 
-            {/* Section header */}
             <div className="px-5 pb-2 pt-1 flex items-center justify-between">
               <h3 className="text-[11px] font-semibold text-slate-900">À traiter en priorité</h3>
               <span className="text-[9px] text-slate-400">Voir tous →</span>
             </div>
 
-            {/* Prospects list */}
             <div className="px-5 pb-5">
               <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
                 {PROSPECTS.map((p, idx) => (
                   <div
                     key={p.name}
-                    className={`flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 transition-colors ${
+                    className={`flex items-center gap-3 px-3 py-2.5 transition-colors ${
                       idx > 0 ? 'border-t border-slate-100' : ''
-                    } ${pulseIndex === idx ? 'bg-emerald-50/30' : ''}`}
+                    } ${pulseIndex === idx ? 'bg-emerald-50/40' : ''}`}
                   >
                     <MiniScore score={p.score} temp={p.temp} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 mb-0.5">
                         <span className="text-[11px] font-semibold text-slate-900">{p.name}</span>
+                        <span className="text-[10px] text-slate-400">· {p.city}</span>
                         {idx === 0 && (
                           <span className="text-[8px] font-bold uppercase tracking-widest bg-blue-50 text-blue-700 px-1 py-0.5 rounded">
                             Nouveau
@@ -192,18 +191,39 @@ export default function HeroPreview() {
         </div>
       </div>
 
-      {/* Notification flottante "nouvel email" */}
+      {/* Notification flottante */}
       <div className="absolute -right-6 top-20 hidden md:block">
-        <div className="bg-white border border-slate-200 rounded-xl shadow-xl p-3 w-56 animate-fade-up">
+        <div className="bg-white border border-slate-200 rounded-xl shadow-xl p-3 w-60 animate-fade-up">
           <div className="flex items-start gap-2">
             <div className="relative shrink-0">
               <div className="w-2 h-2 rounded-full bg-emerald-500 mt-1.5" />
               <div className="absolute inset-0 w-2 h-2 mt-1.5 rounded-full bg-emerald-500 animate-soft-pulse" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-semibold text-slate-900 mb-0.5">Nouveau prospect qualifié</p>
-              <p className="text-[10px] text-slate-500 leading-snug">Camille Martin · Genève · Score 87</p>
-              <p className="text-[9px] text-slate-400 mt-1">À l&apos;instant</p>
+              <p className="text-[10px] font-semibold text-slate-900 mb-0.5">Lead chaud · Score 87</p>
+              <p className="text-[10px] text-slate-500 leading-snug">Camille Martin · Genève · CDI compromis signé</p>
+              <p className="text-[9px] text-slate-400 mt-1">À l&apos;instant · email envoyé à marie@</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Petit indicateur "Banques" en bas */}
+      <div className="absolute -left-4 -bottom-6 hidden md:block">
+        <div className="bg-white border border-slate-200 rounded-xl shadow-xl p-3 w-44 animate-fade-up">
+          <p className="text-[9px] font-semibold uppercase tracking-widest text-slate-400 mb-1.5">Banques · ce mois</p>
+          <div className="space-y-1">
+            <div className="flex items-center justify-between text-[10px]">
+              <span className="text-slate-700">CIC</span>
+              <span className="text-emerald-700 font-semibold">3 accords</span>
+            </div>
+            <div className="flex items-center justify-between text-[10px]">
+              <span className="text-slate-700">BNP</span>
+              <span className="text-amber-700 font-semibold">2 en cours</span>
+            </div>
+            <div className="flex items-center justify-between text-[10px]">
+              <span className="text-slate-700">Crédit Agricole</span>
+              <span className="text-slate-500 font-semibold">1 refus</span>
             </div>
           </div>
         </div>

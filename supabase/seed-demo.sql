@@ -1,0 +1,160 @@
+-- ════════════════════════════════════════════════════════════════════════
+-- SEED — Compte démo BankKey
+-- À exécuter manuellement dans Supabase SQL editor.
+--
+-- 1. Créer manuellement l'utilisateur Supabase Auth :
+--    demo@bankkey.ch / DemoBankKey2026
+--    (via Auth → Users → Add user → "Create new user")
+--    Cocher "Auto Confirm User".
+--
+-- 2. Récupérer son user_id dans auth.users
+--
+-- 3. Remplacer DEMO_USER_ID ci-dessous avant d'exécuter ce script
+--
+-- 4. Idéalement, programmer une réinitialisation nocturne via pg_cron
+--    (qui supprime + re-seed les prospects à 3h du matin).
+-- ════════════════════════════════════════════════════════════════════════
+
+-- ► À PERSONNALISER avant exécution
+DO $$
+DECLARE
+  demo_user_id UUID := '00000000-0000-0000-0000-000000000000'; -- ◄ remplace par le vrai
+BEGIN
+
+  -- 1) Mettre à jour le profil
+  UPDATE profiles SET
+    email = 'demo@bankkey.ch',
+    agency_name = 'Cabinet Lefèvre Courtage',
+    broker_memory = jsonb_build_object(
+      'fullName', 'Marie Lefèvre',
+      'jobTitle', 'Courtière en crédit immobilier',
+      'agencyName', 'Cabinet Lefèvre Courtage',
+      'agencyAddress', '12 rue de la République, 69002 Lyon',
+      'iobspNumber', '22000456',
+      'websiteUrl', 'https://lefevre-courtage.fr',
+      'signaturePhone', '04 78 12 34 56',
+      'signatureEmail', 'marie@lefevre-courtage.fr',
+      'zones', ARRAY['Lyon', 'Villeurbanne', 'Caluire'],
+      'specialties', ARRAY['Primo-accédants', 'Refinancement', 'Investissement locatif'],
+      'bankPartners', ARRAY['CIC', 'Crédit Mutuel', 'BNP', 'Crédit Agricole', 'Société Générale'],
+      'tone', 'formal',
+      'vouvoiement', true
+    ),
+    subscription_plan = 'pro',
+    subscription_status = 'active',
+    trial_ends_at = NULL,
+    current_period_end = (NOW() + INTERVAL '30 days')::timestamptz
+  WHERE id = demo_user_id;
+
+  -- 2) Vider les prospects existants pour repartir propre
+  DELETE FROM deal_outcomes WHERE user_id = demo_user_id;
+  DELETE FROM prospects     WHERE user_id = demo_user_id;
+
+  -- 3) Insérer 10 prospects réalistes (échantillon — voir app/demo/_data.ts pour la liste complète)
+  --    Les profils sont les mêmes que ceux de la démo guidée /demo
+
+  INSERT INTO prospects (user_id, source, sector, email_from_name, email_from, email_subject, email_body,
+                         qualification, scoring, prospection, status, received_at)
+  VALUES
+    -- Thomas Bernard · score 92 · HOT
+    (demo_user_id, 'gmail', 'credit', 'Thomas Bernard', 'thomas.bernard@laposte.net',
+     'Premier achat — couple cadre Toulouse',
+     'Bonjour, avec ma femme nous cherchons à acheter notre première résidence à Toulouse (T4, 425k€). Cadres CDI, revenus combinés 7200€, apport 110k.',
+     '{"type":"acheteur","firstName":"Thomas","lastName":"Bernard","email":"thomas.bernard@laposte.net","phone":"06 65 43 21 09","propertyType":"T4 105m²","address":"Toulouse — Carmes","price":425000,"monthly_income":7200,"down_payment":110000,"existing_debts_monthly":0,"employment_status":"cdi","is_couple":true,"purchase_timeline":"less_3_months","description":"Couple cadre Toulouse"}'::jsonb,
+     '{"score":92,"temperature":"hot","explanation":"Profil de référence : couple cadres CDI, apport 26%, aucun endettement"}'::jsonb,
+     '{"email":{"subject":"Votre T4 aux Carmes","body":"Bonjour Thomas, excellent profil..."}}'::jsonb,
+     'new', NOW() - INTERVAL '2 hours'),
+
+    -- Camille Martin · score 87 · HOT
+    (demo_user_id, 'gmail', 'credit', 'Camille Martin', 'camille.martin@email.fr',
+     'Recherche financement résidence principale — délai 45 jours',
+     'Bonjour, nous cherchons un courtier pour financer notre résidence principale à Genève. CDI tous les deux, revenus 5800 CHF, apport 170k CHF.',
+     '{"type":"acheteur","firstName":"Camille","lastName":"Martin","email":"camille.martin@email.fr","phone":"07 89 87 65 43","propertyType":"4 pièces 95m²","address":"Genève centre","price":850000,"monthly_income":5800,"down_payment":170000,"existing_debts_monthly":0,"employment_status":"cdi","is_couple":true,"purchase_timeline":"less_3_months","description":"Couple CDI Genève"}'::jsonb,
+     '{"score":87,"temperature":"hot","explanation":"Couple CDI, apport 20%, compromis signé"}'::jsonb,
+     '{"email":{"subject":"Votre projet de financement à Genève","body":"Bonjour Camille, merci pour votre message..."}}'::jsonb,
+     'viewed', NOW() - INTERVAL '4 hours'),
+
+    -- Pierre Garcia · score 78 · HOT
+    (demo_user_id, 'gmail', 'credit', 'Pierre Garcia', 'p.garcia@bluemail.ch',
+     'Financement immeuble de rendement Lausanne',
+     'Bonjour, je m''intéresse à un immeuble de rendement à Lausanne (1,85M CHF, rendement brut 4,2%). Cadre supérieur pharma.',
+     '{"type":"acheteur","firstName":"Pierre","lastName":"Garcia","email":"p.garcia@bluemail.ch","phone":"+41 79 234 56 78","propertyType":"Immeuble 3 appartements","address":"Lausanne","price":1850000,"monthly_income":12500,"down_payment":555000,"existing_debts_monthly":2800,"employment_status":"cdi","is_couple":false,"purchase_timeline":"less_3_months","description":"Cadre pharma Lausanne"}'::jsonb,
+     '{"score":78,"temperature":"hot","explanation":"Revenus élevés, apport 30%, endettement RP à surveiller"}'::jsonb,
+     '{"email":{"subject":"Votre immeuble Lausanne","body":"Bonjour Pierre, votre dossier coche les bonnes cases..."}}'::jsonb,
+     'replied', NOW() - INTERVAL '6 hours'),
+
+    -- Sophie Lefèvre · score 72 · HOT
+    (demo_user_id, 'gmail', 'credit', 'Sophie Lefèvre', 'sophie.lefevre@gmail.com',
+     'Demande de financement — premier achat à Lyon',
+     'Bonjour, je souhaite acheter mon premier T3 à Lyon (280k). Ingénieure CDI, 4200€ net, apport 50k (18%).',
+     '{"type":"acheteur","firstName":"Sophie","lastName":"Lefèvre","email":"sophie.lefevre@gmail.com","phone":"06 12 34 56 78","propertyType":"T3","address":"Lyon","price":280000,"monthly_income":4200,"down_payment":50000,"existing_debts_monthly":0,"employment_status":"cdi","is_couple":false,"purchase_timeline":"less_3_months","description":"Primo CDI tech Lyon"}'::jsonb,
+     '{"score":72,"temperature":"hot","explanation":"CDI tech 4 ans, apport 18%, aucun crédit"}'::jsonb,
+     '{"email":{"subject":"Votre premier achat à Lyon","body":"Bonjour Sophie, votre profil tech est typiquement bien accueilli..."}}'::jsonb,
+     'viewed', NOW() - INTERVAL '8 hours'),
+
+    -- Margaux Lambert · score 68 · HOT
+    (demo_user_id, 'gmail', 'credit', 'Margaux Lambert', 'margaux.lambert@gmail.com',
+     'Premier appartement Strasbourg',
+     'Bonjour, couple ingé + infirmière FPH, primo accession Strasbourg T3 250k, apport 38k (15%).',
+     '{"type":"acheteur","firstName":"Margaux","lastName":"Lambert","email":"margaux.lambert@gmail.com","phone":"06 78 90 12 34","propertyType":"T3","address":"Strasbourg","price":250000,"monthly_income":4800,"down_payment":38000,"existing_debts_monthly":0,"employment_status":"cdi","is_couple":true,"purchase_timeline":"3_to_6_months","description":"Couple CDI+FPH Strasbourg"}'::jsonb,
+     '{"score":68,"temperature":"hot","explanation":"Couple CDI dont FPH, apport correct"}'::jsonb,
+     '{"email":{"subject":"Votre projet Strasbourg","body":"Bonjour Margaux, profil très solide..."}}'::jsonb,
+     'replied', NOW() - INTERVAL '1 day'),
+
+    -- Marc Dubois · score 65 · HOT
+    (demo_user_id, 'gmail', 'credit', 'Marc Dubois', 'm.dubois@orange.fr',
+     'Renégociation de mon prêt immobilier',
+     'Bonjour, prêt 2020 à 2,8% sur 220k, je veux renégocier. Fonctionnaire enseignant 12 ans, 3200€ net.',
+     '{"type":"acheteur","firstName":"Marc","lastName":"Dubois","email":"m.dubois@orange.fr","phone":"05 56 78 90 12","propertyType":"Refinancement","address":"Bordeaux","price":220000,"monthly_income":3200,"down_payment":null,"existing_debts_monthly":1380,"employment_status":"fonctionnaire","is_couple":false,"description":"Fonctionnaire refi"}'::jsonb,
+     '{"score":65,"temperature":"hot","explanation":"Fonctionnaire titulaire, refinancement classique"}'::jsonb,
+     '{"email":{"subject":"Étude renégociation","body":"Bonjour Marc..."}}'::jsonb,
+     'replied', NOW() - INTERVAL '2 days'),
+
+    -- Antoine Rousseau · score 55 · WARM
+    (demo_user_id, 'gmail', 'credit', 'Antoine Rousseau', 'antoine.rousseau@orange.fr',
+     'Rachat de crédit immobilier — artisan',
+     'Artisan plombier 8 ans Lille, refinancement RP + trésorerie pro. Prêt actuel 1,9% sur 165k.',
+     '{"type":"acheteur","firstName":"Antoine","lastName":"Rousseau","email":"antoine.rousseau@orange.fr","phone":"06 23 45 67 89","propertyType":"Refi + trésorerie","address":"Roubaix","price":165000,"monthly_income":4200,"existing_debts_monthly":1050,"employment_status":"independant","is_couple":false,"description":"Artisan refi"}'::jsonb,
+     '{"score":55,"temperature":"warm","explanation":"Indépendant solide mais prêt actuel à très bon taux"}'::jsonb,
+     '{"email":{"subject":"Étude de votre rachat","body":"Bonjour Antoine..."}}'::jsonb,
+     'viewed', NOW() - INTERVAL '3 days'),
+
+    -- Lisa Moreau · score 48 · WARM
+    (demo_user_id, 'gmail', 'credit', 'Lisa Moreau', 'lisa.m1992@yahoo.fr',
+     'Question sur l''apport pour un crédit',
+     'CDI 2 ans Paris, 2800€ net, 12k d''épargne, projet 250k banlieue.',
+     '{"type":"acheteur","firstName":"Lisa","lastName":"Moreau","email":"lisa.m1992@yahoo.fr","propertyType":"Indéterminé","address":"Paris/94/93","price":250000,"monthly_income":2800,"down_payment":12000,"employment_status":"cdi","is_couple":false,"purchase_timeline":"more_6_months","description":"CDI 2 ans Paris apport limité"}'::jsonb,
+     '{"score":48,"temperature":"warm","explanation":"CDI mais apport très limité (5%)"}'::jsonb,
+     '{"email":{"subject":"Votre projet à Paris","body":"Bonjour Lisa..."}}'::jsonb,
+     'new', NOW() - INTERVAL '4 days'),
+
+    -- Léa Moreau · score 45 · WARM
+    (demo_user_id, 'gmail', 'credit', 'Léa Moreau', 'lea.m@protonmail.com',
+     'Possibilités de prêt jeune actif',
+     '26 ans CDD Annecy, 2100€ net, 8k d''épargne, projet studio 175k à 1-2 ans.',
+     '{"type":"acheteur","firstName":"Léa","lastName":"Moreau","email":"lea.m@protonmail.com","propertyType":"Studio","address":"Annecy","price":175000,"monthly_income":2100,"down_payment":8000,"employment_status":"cdd","is_couple":false,"purchase_timeline":"more_6_months","description":"CDD jeune Annecy"}'::jsonb,
+     '{"score":45,"temperature":"warm","explanation":"Jeune CDD, apport limité"}'::jsonb,
+     '{"email":{"subject":"Votre projet Annecy","body":"Bonjour Léa..."}}'::jsonb,
+     'new', NOW() - INTERVAL '5 days'),
+
+    -- Alex Bernard · score 32 · COLD
+    (demo_user_id, 'gmail', 'credit', 'Alex Bernard', 'alex.bernard@protonmail.com',
+     'Renseignements sur les crédits immobiliers',
+     'Freelance graphiste Nantes 1,5 an, CA variable, sans apport, phase exploratoire.',
+     '{"type":"acheteur","firstName":"Alex","lastName":"Bernard","email":"alex.bernard@protonmail.com","propertyType":null,"address":"Nantes","monthly_income":3000,"down_payment":0,"employment_status":"independant","is_couple":false,"purchase_timeline":"more_6_months","description":"Freelance jeune sans apport"}'::jsonb,
+     '{"score":32,"temperature":"cold","explanation":"Indépendant jeune, sans apport"}'::jsonb,
+     '{"email":{"subject":"Vos questions sur le crédit","body":"Bonjour Alex..."}}'::jsonb,
+     'archived', NOW() - INTERVAL '7 days');
+
+  -- 4) Quelques décisions bancaires (outcomes) pour alimenter le bilan
+  INSERT INTO deal_outcomes (user_id, status, bank_name, interest_rate, commission_amount, decided_at, notes)
+  VALUES
+    (demo_user_id, 'accepted', 'CIC',             3.28, 2520, NOW() - INTERVAL '10 days', 'Margaux Lambert · T3 Strasbourg'),
+    (demo_user_id, 'accepted', 'Crédit du Nord',  3.45, 1980, NOW() - INTERVAL '12 days', 'Antoine Rousseau · refi'),
+    (demo_user_id, 'accepted', 'BNP',             3.18, 2750, NOW() - INTERVAL '15 days', 'Sophie Lefèvre · primo T3'),
+    (demo_user_id, 'rejected', 'Société Générale', NULL,  NULL, NOW() - INTERVAL '18 days', 'Lisa Moreau · taux d''effort trop élevé'),
+    (demo_user_id, 'pending',  'BCV',             NULL,  NULL, NOW() - INTERVAL '4 days',  'Camille Martin · dossier envoyé'),
+    (demo_user_id, 'pending',  'Crédit Mutuel',   NULL,  NULL, NOW() - INTERVAL '2 days',  'Sophie Lefèvre · attente compromis');
+
+  RAISE NOTICE 'Compte démo seedé pour user_id %', demo_user_id;
+END $$;

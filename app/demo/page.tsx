@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { LogoMark } from '@/app/_components/Logo';
 import { generateDocumentChecklist } from '@/lib/documents/checklist';
 import { MOCK_PROSPECTS, NEW_PROSPECT_ID, type MockProspect } from './_data';
+import BanksKanban from './_BanksKanban';
+import BilanSnapshot from './_BilanSnapshot';
 import type { QualificationResult, ScoringResult } from '@/types';
 
 // ════════════════════════════════════════════════════════════════════════
@@ -353,20 +355,40 @@ export default function InteractiveDemo() {
 
         {/* ── CTA Footer ── */}
         {stage === 'complete' && (
-          <div className="mt-12 bg-blue-900 text-white rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-4 animate-fade-up">
-            <div>
-              <p className="text-base font-semibold mb-1">Voilà ce que BankKey fait pour vous, chaque jour.</p>
-              <p className="text-sm text-slate-400">Imaginez ce même process appliqué à toute votre boîte mail.</p>
+          <>
+            {/* Sections "le reste de l'app" */}
+            <div className="mt-16 space-y-8 animate-fade-up">
+
+              <div className="text-center">
+                <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-2">Le reste de l&apos;app</p>
+                <h2 className="font-display text-2xl md:text-3xl font-medium tracking-tight text-slate-900">
+                  Ce que vous voyez après quelques semaines d&apos;utilisation.
+                </h2>
+                <p className="text-sm text-slate-600 mt-3 max-w-xl mx-auto">
+                  BankKey ne s&apos;arrête pas à la qualification. Voici à quoi ressemble votre tableau de bord une fois les dossiers en mouvement.
+                </p>
+              </div>
+
+              <BanksKanban />
+
+              <BilanSnapshot />
             </div>
-            <div className="flex items-center gap-3">
-              <Link href="/demo/manual" className="text-sm text-slate-300 hover:text-white transition-colors">
-                Tester avec votre email →
-              </Link>
-              <Link href="/pro/login" className="bg-white hover:bg-slate-100 text-slate-900 text-sm font-medium px-4 py-2 rounded-lg transition-colors">
-                Démarrer l&apos;essai 30 jours
-              </Link>
+
+            <div className="mt-12 bg-blue-900 text-white rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-4">
+              <div>
+                <p className="text-base font-semibold mb-1">Vous voyez tout ce que BankKey fait.</p>
+                <p className="text-sm text-slate-400">Reste à le faire tourner sur vos vrais emails.</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <Link href="/demo/manual" className="text-sm text-slate-300 hover:text-white transition-colors">
+                  Tester avec votre email →
+                </Link>
+                <Link href="/pro/login?mode=signup" className="bg-white hover:bg-slate-100 text-slate-900 text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+                  Commencer l&apos;essai 30 jours
+                </Link>
+              </div>
             </div>
-          </div>
+          </>
         )}
       </main>
 

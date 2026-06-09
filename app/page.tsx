@@ -182,15 +182,22 @@ export default function LandingPage() {
                 BankKey lit vos emails entrants, extrait le profil emprunteur et prépare votre réponse en moins d&apos;une minute. Vous gardez la main, vous arrivez juste avant les autres.
               </p>
 
-              <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-3 mb-5">
+              <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-3 mb-3">
                 <Link href="/book" className="inline-flex items-center justify-center gap-2 bg-blue-900 hover:bg-blue-800 text-white font-medium px-6 py-3 rounded-lg transition-base hover-lift w-full sm:w-auto">
                   Réserver une démo
                   <Icons.ArrowRight />
                 </Link>
                 <Link href="/demo" className="inline-flex items-center justify-center gap-2 text-slate-700 hover:text-slate-900 font-medium px-6 py-3 rounded-lg border border-slate-200 hover:border-slate-300 transition-base w-full sm:w-auto">
-                  Voir la démo
+                  Voir la démo guidée
                 </Link>
               </div>
+              <p className="text-xs text-slate-500 mb-5 text-center lg:text-left">
+                Ou{' '}
+                <Link href="/demo/access" className="text-blue-900 underline hover:text-blue-800 font-medium">
+                  connectez-vous directement à un compte démo pré-rempli
+                </Link>
+                .
+              </p>
 
               {/* Mini stats / proof */}
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-2 text-xs text-slate-500">
