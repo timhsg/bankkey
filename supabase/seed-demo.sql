@@ -18,7 +18,7 @@
 -- ► À PERSONNALISER avant exécution
 DO $$
 DECLARE
-  demo_user_id UUID := '00000000-0000-0000-0000-000000000000'; -- ◄ remplace par le vrai
+  demo_user_id UUID := '9b0939f6-4e5b-459e-87bb-5a1a8c3c39cc'; -- ◄ remplace par le vrai
 BEGIN
 
   -- 1) Mettre à jour le profil
@@ -147,14 +147,35 @@ BEGIN
      'archived', NOW() - INTERVAL '7 days');
 
   -- 4) Quelques décisions bancaires (outcomes) pour alimenter le bilan
-  INSERT INTO deal_outcomes (user_id, status, bank_name, interest_rate, commission_amount, decided_at, notes)
+  --    Statuts valides : 'accepted' | 'rejected' | 'counter' | 'withdrawn'
+  INSERT INTO deal_outcomes
+    (user_id, bank_name, status, rate_pct, loan_amount, duration_years,
+     conditions, decided_at, snapshot)
   VALUES
-    (demo_user_id, 'accepted', 'CIC',             3.28, 2520, NOW() - INTERVAL '10 days', 'Margaux Lambert · T3 Strasbourg'),
-    (demo_user_id, 'accepted', 'Crédit du Nord',  3.45, 1980, NOW() - INTERVAL '12 days', 'Antoine Rousseau · refi'),
-    (demo_user_id, 'accepted', 'BNP',             3.18, 2750, NOW() - INTERVAL '15 days', 'Sophie Lefèvre · primo T3'),
-    (demo_user_id, 'rejected', 'Société Générale', NULL,  NULL, NOW() - INTERVAL '18 days', 'Lisa Moreau · taux d''effort trop élevé'),
-    (demo_user_id, 'pending',  'BCV',             NULL,  NULL, NOW() - INTERVAL '4 days',  'Camille Martin · dossier envoyé'),
-    (demo_user_id, 'pending',  'Crédit Mutuel',   NULL,  NULL, NOW() - INTERVAL '2 days',  'Sophie Lefèvre · attente compromis');
+    (demo_user_id, 'CIC',              'accepted', 3.28, 212500, 25,
+     'Édition d''offre la semaine prochaine. Domiciliation revenus requise.',
+     NOW() - INTERVAL '10 days',
+     '{"city":"Strasbourg","prospect":"Margaux Lambert","commission":2520}'::jsonb),
+    (demo_user_id, 'Crédit du Nord',   'accepted', 3.45, 170000, 19,
+     'Validé · acceptation client OK',
+     NOW() - INTERVAL '12 days',
+     '{"city":"Roubaix","prospect":"Antoine Rousseau","commission":1980}'::jsonb),
+    (demo_user_id, 'BNP',              'accepted', 3.18, 230000, 25,
+     'Taux préférentiel jeune actif tech',
+     NOW() - INTERVAL '15 days',
+     '{"city":"Lyon","prospect":"Sophie Lefèvre","commission":2750}'::jsonb),
+    (demo_user_id, 'Société Générale', 'rejected', NULL, NULL, NULL,
+     'Taux d''effort > 35%',
+     NOW() - INTERVAL '18 days',
+     '{"city":"Paris","prospect":"Lisa Moreau","rejection_reason":"debt_ratio"}'::jsonb),
+    (demo_user_id, 'BCV',              'counter',  2.10, 1295000, 25,
+     'Conditions à finaliser sur LTV',
+     NOW() - INTERVAL '4 days',
+     '{"city":"Lausanne","prospect":"Pierre Garcia","commission_estimate":12950}'::jsonb),
+    (demo_user_id, 'Crédit Mutuel',    'counter',  3.35, 230000, 25,
+     'Analyste demande compromis signé',
+     NOW() - INTERVAL '2 days',
+     '{"city":"Lyon","prospect":"Sophie Lefèvre","commission_estimate":2300}'::jsonb);
 
   RAISE NOTICE 'Compte démo seedé pour user_id %', demo_user_id;
 END $$;

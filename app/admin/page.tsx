@@ -45,7 +45,7 @@ export default async function AdminPage() {
     admin.from('prospects')
       .select('id, user_id, scoring, status, created_at, qualification'),
     admin.from('deal_outcomes')
-      .select('id, user_id, status, decided_at, commission_amount'),
+      .select('id, user_id, status, decided_at, loan_amount, snapshot'),
     admin.from('prospects')
       .select('id', { count: 'exact', head: true })
       .gte('created_at', new Date(Date.now() - 30 * 24 * 3600_000).toISOString()),
@@ -86,7 +86,8 @@ export default async function AdminPage() {
     user_id: string
     status: string
     decided_at: string | null
-    commission_amount: number | null
+    loan_amount: number | null
+    snapshot: { commission?: number; commission_estimate?: number } | null
   }
 
   type BookingRow = {
@@ -163,8 +164,8 @@ export default async function AdminPage() {
   const totalOutcomes  = outcomesData.length
   const totalAccepted  = outcomesData.filter(o => o.status === 'accepted').length
   const totalCommission = outcomesData
-    .filter(o => o.status === 'accepted' && o.commission_amount)
-    .reduce((sum, o) => sum + (o.commission_amount ?? 0), 0)
+    .filter(o => o.status === 'accepted')
+    .reduce((sum, o) => sum + (o.snapshot?.commission ?? (o.loan_amount ? o.loan_amount * 0.01 : 0)), 0)
 
   const mrr = proCabinets * 199
   const arr = mrr * 12
