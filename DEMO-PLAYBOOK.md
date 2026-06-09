@@ -1,4 +1,4 @@
-# Demo Playbook BankKey — pour Sandra (18 ans, fondatrice)
+# Demo Playbook BankKey — pour Tim (18 ans, fondateur)
 
 > Document à imprimer ou avoir ouvert sur un 2ème écran pendant chaque démo.
 > Ce playbook est conçu pour quelqu'un qui n'a PAS 20 ans d'expérience en courtage.
@@ -14,7 +14,7 @@ Vous allez parler à des courtiers de 35-55 ans qui connaissent leur métier mie
 
 ### Votre vrai atout
 
-Vous êtes **technique, fondatrice, et vous avez observé leur métier de près**. Vous proposez un outil — pas une leçon de courtage. C'est très différent et beaucoup plus crédible.
+Vous êtes **technique, fondateur, et vous avez observé leur métier de près**. Vous proposez un outil — pas une leçon de courtage. C'est très différent et beaucoup plus crédible.
 
 ### La règle d'or : reformulez votre âge en atout
 
@@ -103,7 +103,7 @@ Objection probable : ________________________
 
 ### Minute 0-2 : Accueil et agenda
 
-**Vous (souriante, posée)** :
+**Vous (posé, souriant)** :
 > *"Bonjour [Prénom], merci pour ces 20 minutes. Avant de commencer, je vous propose qu'on fasse 3 choses : d'abord vous me dites en 2 min comment vous gérez vos leads aujourd'hui, ensuite je vous montre concrètement BankKey, et à la fin on voit si ça vous parle ou pas — sans pression. Ça vous va ?"*
 
 **Pourquoi cette intro marche** :
@@ -117,7 +117,7 @@ Objection probable : ________________________
 ### Minute 2-3 : Le placement de votre crédibilité
 
 **Vous** :
-> *"Avant qu'on commence, juste pour cadrer : j'ai 18 ans, je suis fondatrice de BankKey. Je connais pas votre métier mieux que vous — par contre ce que je sais bien c'est la tech qu'on a construite. C'est pour ça que les 2 prochaines minutes je vais surtout écouter."*
+> *"Avant qu'on commence, juste pour cadrer : j'ai 18 ans, je suis fondateur de BankKey. Je connais pas votre métier mieux que vous — par contre ce que je sais bien c'est la tech qu'on a construite. C'est pour ça que les 2 prochaines minutes je vais surtout écouter."*
 
 **Tu attends 1 seconde**, puis :
 
@@ -187,18 +187,34 @@ S'ils acceptent : utilisez `/demo/manual`, collez leur email réel, montrez l'an
 
 S'ils refusent (RGPD) : utilisez un email exemple préparé.
 
-#### Étape 5 (1 min) — La partie "qui n'utilise pas Gmail"
+#### Étape 5 (1 min) — Le bouton "Corriger" (rassure énormément)
 
-> *"Vous m'avez dit tout à l'heure que beaucoup de vos leads viennent par [WhatsApp / votre formulaire / votre CRM]. Pour ça on a aussi :"*
+Reviens sur la fiche Camille Martin → onglet Vue d'ensemble. Pointe le bouton **"Corriger"** en haut à droite du bloc Bancabilité.
+
+> *"Et si l'IA s'est plantée sur un chiffre ? Vous cliquez ici, vous modifiez en 30 secondes, et le score se recalcule. Vous gardez la main à 100%."*
+
+**Pourquoi cette étape compte** : la peur n°1 du courtier c'est *"et si l'IA m'envoie un faux profil chez la banque ?"*. Ce bouton lève cette peur visuellement.
+
+#### Étape 6 (1 min) — Les 4 portes d'entrée
+
+> *"Vous m'avez dit tout à l'heure que beaucoup de vos leads viennent par [WhatsApp / votre formulaire / votre CRM]. Pour ça on a 4 façons d'ingérer un lead :"*
 
 Ouvrez `/pro/integrations`.
 
-> *"3 chemins simples : un formulaire à coller sur votre site, un import d'Excel pour démarrer avec votre base actuelle, et la connexion Gmail. Il y a aussi un webhook pour les courtiers tech mais c'est caché."*
+> *"1) Connexion Gmail en 1 clic — vous voyez, ça prend 10 secondes. 2) Une adresse de transfert email type **dossiers-votre-cabinet@inbound.bankkey.ch** — vous mettez un transfert auto depuis Empruntis ou votre Outlook, ça arrive ici. Ça marche avec n'importe quel mail. 3) Un formulaire à coller sur votre site web. 4) Import Excel pour démarrer avec votre base actuelle. Pas besoin d'API."*
+
+#### Étape 7 (30 sec) — L'inscription en 1 clic
+
+Ouvrez **bankkey.ch/pro/login** dans un nouvel onglet.
+
+> *"Pour démarrer, c'est ce bouton : **'Continuer avec Google'**. Vous cliquez, vous validez votre compte Google, vous êtes dedans. 10 secondes chrono. Aucun mot de passe à mémoriser."*
+
+**Pourquoi le montrer en démo** : ça lève la friction "ça va être long à installer".
 
 ### Minute 15-18 : Pricing + programme pilote
 
 **Vous** :
-> *"OK [Prénom], maintenant le tarif. Le prix public sera 349€ par mois. Mais on lance un programme pilote pour 20 cabinets : 199€/mois, tarif bloqué à vie, et on vous accompagne perso pendant 3 mois. Vous êtes parmi les premiers à nous donner des retours, et en échange vous gardez le tarif réduit même quand on augmente."*
+> *"OK [Prénom], maintenant le tarif. Le prix public sera 349€ par mois. Mais on lance un programme pilote pour 20 cabinets : **199€/mois tarif bloqué à vie**, essai gratuit de 30 jours sans carte bancaire, et je vous accompagne perso pendant 3 mois — ma ligne directe pour toutes vos questions. Vous êtes parmi les premiers à nous donner des retours, en échange vous gardez le tarif réduit même quand on monte à 349€."*
 
 **ATTENDEZ.** Silence. Laissez-les digérer.
 
@@ -298,24 +314,25 @@ qu'ils ont citée].
 
 Trois points pour la suite :
 
-1. Récap de la démo : [lien vers bankkey.ch/demo si jamais ils veulent
-   revoir l'auto-démo en autonomie]
+1. Vous pouvez démarrer votre essai gratuit 30 jours en 10 secondes
+   ici : https://bankkey.ch/pro/login?mode=signup
+   → Bouton "Continuer avec Google", pas de mot de passe à créer.
 
-2. Le programme pilote (199€/mois bloqués à vie pour les 20 premiers
-   cabinets) reste ouvert. Vous pouvez démarrer l'essai gratuit ici :
-   bankkey.ch/pro/login
+2. Le tarif pilote (199€/mois bloqué à vie pour les 20 premiers
+   cabinets) reste ouvert cette semaine. Sans engagement,
+   annulable en 1 clic.
 
-3. Si vous voulez tester avec 3 vrais emails sans rien installer,
-   envoyez-les moi en retour — je vous renvoie l'analyse BankKey
-   sous 24h.
+3. Si vous voulez d'abord tester sur 3 vrais emails sans rien
+   installer, transférez-les moi à tim@bankkey.ch — je vous renvoie
+   l'analyse BankKey sous 24h.
 
-Je vous laisse digérer. Je vous re-écris vendredi pour savoir où
-vous en êtes.
+Je vous laisse digérer. Je vous rappelle vendredi à 14h pour savoir
+où vous en êtes — si ça ne vous va pas dites-moi.
 
 Bien à vous,
-Sandra
-06 XX XX XX XX
-bankkey.ch
+Tim Hänggi
+Fondateur BankKey
+06 XX XX XX XX · bankkey.ch
 ```
 
 **Pourquoi ce mail marche** :
@@ -344,7 +361,7 @@ Une lettre suffit en réponse !
 [Prénom], dernière relance promis. Si pas mon truc je ferme votre
 dossier. Sinon on cale 10 min cette semaine pour démarrer ?
 
-Sandra
+Tim
 ```
 
 **Après J+7 sans réponse** : marquer Ghosted dans votre tracker. Ne plus relancer. Re-contacter dans 6 mois.
@@ -423,7 +440,7 @@ Sandra
 
 ## En résumé
 
-À 18 ans, vous gagnez **PAR L'HONNÊTETÉ, LA PRÉPARATION ET L'ÉCOUTE**, pas par le bagout. Vous ne pourrez jamais jouer le pro de 20 ans d'expérience — mais vous pouvez jouer la fondatrice tech qui écoute, qui prend des notes, qui répond personnellement aux appels, et qui propose un outil concret pour un problème précis.
+À 18 ans, vous gagnez **PAR L'HONNÊTETÉ, LA PRÉPARATION ET L'ÉCOUTE**, pas par le bagout. Vous ne pourrez jamais jouer le pro de 20 ans d'expérience — mais vous pouvez jouer la fondateur tech qui écoute, qui prend des notes, qui répond personnellement aux appels, et qui propose un outil concret pour un problème précis.
 
 C'est plus rare et plus précieux que vous ne le pensez.
 

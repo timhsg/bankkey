@@ -1,350 +1,291 @@
-# Outreach BankKey — Plan d'action concret
+# Outreach BankKey — Plan 7 jours pour décrocher tes 3 premiers appels
 
-> Document actionnable : à utiliser tel quel cette semaine.
-> Objectif Q2 2026 : signer 5 cabinets pilotes.
-
----
-
-## 1. Cible précise : qui chercher
-
-### Profil parfait (haute conversion)
-
-- **Courtier crédit immobilier** (IOBSP en France, indépendant en Suisse)
-- **1-5 personnes** dans le cabinet (les structures plus grosses ont déjà des CRMs lourds)
-- **Activité depuis 1 à 8 ans** (moins ouverts si > 15 ans, pas de signal si < 1 an)
-- **Présence LinkedIn active** (signe d'ouverture aux outils)
-- **Site web propre** (signe d'investissement, peut intégrer notre widget)
-- **Localisation** : Lyon, Bordeaux, Nantes, Toulouse, Genève, Lausanne (cabinets moyens), **éviter Paris** (saturé, cycles longs)
-
-### Anti-cible (ne pas perdre de temps)
-
-- Réseaux franchisés (Cafpi, Empruntis filiales) — décision centralisée
-- > 20 personnes — cycle de vente trop long
-- Pas de site web visible — signal qu'ils ne digitalisent pas
-- Profil 100% "assurance" — leur crédit est accessoire
+> Document opérationnel. Lis-le 1 fois, puis exécute. À utiliser tel quel à partir de demain.
+> Objectif J+7 : **3 appels téléphoniques pris** avec des courtiers.
+> Objectif J+30 : **5 cabinets pilotes signés**.
 
 ---
 
-## 2. Sources concrètes pour trouver 50 cibles
+## 0. Pourquoi le téléphone gagne contre le mail froid
 
-### A. LinkedIn Sales Navigator (méthode #1 — recommandée)
+Tu as 18 ans. Les courtiers ont 35-55 ans. **Ils répondent au téléphone, pas aux DM LinkedIn.**
 
-**Essai gratuit 30 jours** : https://business.linkedin.com/sales-solutions/sales-navigator
+Un appel = 90 secondes pour qualifier ou disqualifier.
+Un DM = 3-7 jours d'attente, taux de réponse 15%, taux de démo 2%.
 
-Recherche avancée à coller :
-
-```
-Title: "courtier crédit immobilier" OR "courtière crédit immobilier" OR "broker crédit"
-Country: France OR Switzerland
-Industry: Financial Services
-Company size: 1-10
-Tenure at company: 1-5 years
-```
-
-**Filtres bonus** :
-- Géographie : Lyon, Bordeaux, Nantes, Genève, Lausanne
-- Posted on LinkedIn in last 30 days = TRUE (montre qu'ils sont actifs)
-
-→ Sauver la recherche. Exporter en CSV via [Apollo](https://apollo.io) (gratuit 50 leads/mois) ou [Lemlist](https://www.lemlist.com).
-
-### B. Google Maps (méthode #2 — pour ceux qui veulent éviter LinkedIn payant)
-
-Recherche : `"courtier crédit immobilier" Lyon` (puis Bordeaux, Nantes, etc.)
-
-Pour chaque résultat avec ≤ 10 employés :
-- Visite site web → trouve le contact principal
-- Note dans le tracker
-- Cherche le profil LinkedIn de la personne via : `[Prénom] [Nom] "courtier" site:linkedin.com`
-
-### C. ORIAS (France uniquement, base officielle IOBSP)
-
-https://www.orias.fr/web/guest/search
-
-Cherche par catégorie "IOBSP". Donne nom + adresse cabinet. Croise avec LinkedIn pour trouver les profils individuels.
-
-### D. Empruntis Partenaires + Pretto Pro
-
-Ces plateformes listent des courtiers partenaires :
-- https://www.empruntis.com/courtier/trouver-courtier.php
-- https://pretto.fr/pro
-
-Sources gratuites pour récupérer nom + ville + spécialités.
+Stratégie : **LinkedIn pour repérer (jamais pour vendre)** + **téléphone pour décrocher la démo**.
 
 ---
 
-## 3. Tracker Google Sheets — colonnes minimum
+## 1. Cible précise
 
-Créez un Google Sheet "BankKey Outreach 2026" avec ces colonnes :
+### Profil parfait
+- Courtier crédit immobilier indépendant (IOBSP en France)
+- Cabinet **1-5 personnes**
+- **1 à 8 ans** d'activité (assez mature pour avoir le problème, pas trop pour avoir des process figés)
+- **Site web propre** (signe qu'ils digitalisent)
+- **Présence LinkedIn ou Google Business active**
+- Lyon, Bordeaux, Nantes, Toulouse, Genève, Lausanne. **Évite Paris** (saturé).
 
-| Colonne | Type | Exemples |
-|---------|------|----------|
-| Date ajout | Date | 8/6/2026 |
-| Prénom | Texte | Marie |
-| Nom | Texte | Lefèvre |
-| Cabinet | Texte | Cabinet Lefèvre Courtage |
-| Ville | Texte | Lyon |
-| LinkedIn URL | Lien | linkedin.com/in/marie-lefevre |
-| Email | Email | marie@lefevre-courtage.fr |
-| Téléphone | Texte | 04 78 12 34 56 |
-| Site web | Lien | lefevre-courtage.fr |
-| Source du contact | Liste | LinkedIn Sales Nav / Google Maps / ORIAS / Pretto |
-| Statut | Liste | À contacter / Contacté / Répondu / Démo bookée / Pilote signé / Refusé / Ghosted |
-| Date dernier contact | Date | 10/6/2026 |
-| Date prochain follow-up | Date | 14/6/2026 |
-| Notes | Texte | Mention "perd des leads le weekend" dans son post LinkedIn |
-| Email outreach utilisé | Liste | A / B / C |
-
-**Tip Google Sheets** : conditional formatting sur la colonne "Statut" pour voir en rouge/vert/orange instantanément.
+### Anti-cible
+- Franchises Cafpi/Empruntis (décision centralisée)
+- > 15 personnes (cycle 6 mois)
+- Pas de site web (pas notre profil)
 
 ---
 
-## 4. Templates LinkedIn DM — par ordre d'efficacité
+## 2. Construire ta liste de 50 cibles en 1 journée (J-1, dimanche)
 
-### Template A — Le plus simple, le plus performant
+### Méthode rapide : Google Maps + ORIAS (gratuit, 4h)
 
-> **Pas de pitch dans le 1er message.** Curiosité + crédibilité.
+**Étape A — Google Maps (2h)**
+1. Recherche : `courtier crédit immobilier Lyon` (puis Bordeaux, Nantes, Toulouse)
+2. Pour chaque résultat avec **avis Google récents** :
+   - Nom du cabinet → Google Sheets
+   - Téléphone affiché → Google Sheets (**c'est ton arme principale**)
+   - Site web → vérifie qu'il existe (sinon skip)
+   - Cherche le **dirigeant** sur LinkedIn : `[Cabinet] courtier site:linkedin.com`
 
-```
-Bonjour [Prénom],
+**Étape B — ORIAS (1h, France uniquement)**
+1. https://www.orias.fr/web/guest/search
+2. Filtre catégorie "IOBSP", département par département
+3. Récupère nom + adresse → cherche le téléphone sur leur site
 
-Je vois que vous êtes courtier crédit immobilier à [Ville]. Question rapide :
-combien de leads recevez-vous par mois (Empruntis, SeLoger, direct), et combien
-arrivez-vous à traiter sérieusement ?
+**Étape C — Pretto Pro + Empruntis Partenaires (1h)**
+- https://pretto.fr/pro et https://www.empruntis.com/courtier
+- Listes publiques de courtiers partenaires avec ville et nom
 
-Je développe BankKey, un outil qui qualifie ces leads automatiquement.
-Je cherche à comprendre la réalité terrain avant de finaliser.
-
-Merci,
-Sandra — bankkey.ch
-```
-
-**Pourquoi ça marche** :
-- Pas perçu comme commercial → taux de réponse 3x supérieur
-- Question ouverte → ils aiment partager leur quotidien
-- Crédibilité via le projet réel
-- Pas d'engagement demandé
-
-**Taux de réponse attendu** : 15-25%
-
-### Template B — Si ils ont posté récemment
-
-Cherchez leurs posts LinkedIn récents (clic sur leur profil → onglet Activity). Si ils parlent de :
-- Gestion des leads → utilisez ce template
-- Difficultés à qualifier → idem
-- Outils tech → idem
-
-```
-Bonjour [Prénom],
-
-J'ai vu votre post sur [sujet précis du post — "perdre des dossiers le weekend",
-"trier 80 emails/jour", etc.]. C'est exactement le problème qu'on résout avec
-BankKey : qualifier vos emails entrants en 60 secondes pour ne plus rater de
-dossiers urgents.
-
-Programme pilote ouvert, places limitées. Démo de 20 min sur vos vrais emails ?
-
-Sandra — bankkey.ch
-```
-
-**Pourquoi** : personnalisation forte → ils sentent que vous les avez vraiment lus.
-
-**Taux de réponse attendu** : 25-40%
-
-### Template C — Direct mais pas commercial
-
-```
-Bonjour [Prénom],
-
-Je lance BankKey : un outil qui lit vos emails Gmail/Outlook entrants, qualifie
-chaque demande de financement en 60 secondes, score la bancabilité et rédige
-votre réponse.
-
-J'ouvre un programme pilote pour 20 cabinets en France et Suisse romande.
-Tarif préférentiel à vie, accompagnement perso.
-
-5 min en visio cette semaine pour voir si ça vous parle ?
-
-Sandra — bankkey.ch
-```
-
-**Quand utiliser** : si A et B ne marchent pas après 2 essais.
-
-**Taux de réponse attendu** : 8-15%
+**Objectif fin de journée : 50 lignes** dans ton Google Sheets, dont **30 avec numéro de téléphone direct**.
 
 ---
 
-## 5. Email outreach (si pas répondu sur LinkedIn après 7 jours)
+## 3. Le tracker Google Sheets (10 colonnes essentielles)
 
-**Objet** : `[Prénom], j'ai vu votre profil de courtier crédit à [Ville]`
+| Colonne | Exemple |
+|---------|---------|
+| Date ajout | 14/06/2026 |
+| Cabinet | Cabinet Lefèvre Courtage |
+| Prénom contact | Marie |
+| Téléphone | 04 78 12 34 56 |
+| LinkedIn URL | linkedin.com/in/marie-lefevre |
+| Site web | lefevre-courtage.fr |
+| Ville | Lyon |
+| Statut | À appeler / Appelé pas joint / RDV pris / Démo faite / Pilote signé / Refusé |
+| Date prochaine action | 16/06/2026 |
+| Notes | "Mentionne perdre des leads le we sur LinkedIn" |
+
+**Tip** : conditional formatting sur "Statut" (vert/orange/rouge) pour avoir une vue instantanée.
+
+---
+
+## 4. Le plan 7 jours pour lundi prochain
+
+### Dimanche (J-1) — Préparation
+- [ ] **Build ta liste de 50 cibles** (méthode §2)
+- [ ] Repère sur LinkedIn ceux qui ont posté récemment sur leurs leads → tu y fais référence au téléphone (méthode B §6)
+- [ ] Note pour chacun **2-3 infos perso** : ville, taille cabinet, signe particulier (ex : "ancien cadre BNP")
+- [ ] Prépare ton **environnement de démo** : compte Tim sur bankkey.ch avec prospect Camille Martin déjà chargé
+
+### Lundi — Premier sprint d'appels (objectif : 10 appels)
+- **9h-9h30** : envoi 10 DM LinkedIn "soft" (template §6.A) → casse la glace
+- **10h-12h** : **10 appels téléphoniques** (script §5)
+- Objectif : **3 RDV démo bookés** cette semaine
+
+### Mardi — Suivi + 10 nouveaux appels
+- Recall les 10 de lundi qui n'ont pas répondu
+- 10 nouveaux appels
+- **Premier RDV démo en visio** (méthode §7)
+
+### Mercredi — 10 appels + démos
+- Suivi mardi
+- 10 nouveaux appels
+- 1-2 démos visio (20 min chacune)
+
+### Jeudi — Suivi qualifié + 5 appels
+- Recontacte les "intéressé mais pas dispo cette semaine"
+- Envoie le lien d'inscription Google OAuth aux courtiers qui ont dit oui à la démo
+- 5 nouveaux appels
+
+### Vendredi — Bilan + recadrage
+- Suivi semaine
+- **Bilan en chat avec moi** : que faut-il ajuster ? (objections récurrentes, mots qui marchent)
+- Préparer démos de la semaine suivante
+
+### Weekend
+- Off (ou : noter les leads à reprendre lundi)
+
+---
+
+## 5. Le script téléphone (90 secondes top chrono)
+
+### Ouverture (15 secondes — ne te grille pas)
+
+> *"Bonjour Marie, je suis Tim, le fondateur de BankKey. Je vous appelle 30 secondes — vous avez 30 secondes ?"*
+
+**Réponse "oui"** → continue
+**Réponse "non, rappelez demain"** → *"Parfait, quelle heure vous arrange ?"* → note et raccroche
+**Réponse "c'est quoi BankKey ?"** → tu passes au pitch direct
+
+### Pitch (30 secondes)
+
+> *"On a créé un outil qui qualifie automatiquement les emails de demande de financement que vous recevez. En clair : quand Empruntis ou un prospect direct vous envoie un mail, BankKey lit le profil emprunteur en 60 secondes, donne un score de bancabilité et prépare votre réponse. Vous gardez la main sur tout, c'est juste pour ne plus passer 2h le matin à trier 80 mails."*
+
+### Question de qualification (20 secondes)
+
+> *"Vous, sur une journée type, vous recevez combien de demandes ? Et combien arrivez-vous à traiter sérieusement ?"*
+
+**→ Laisse-le parler. C'est lui qui vend ton produit en t'expliquant son problème.**
+
+### Closing (15 secondes)
+
+> *"OK, ce que je vous propose : 20 minutes en visio cette semaine. Je vous montre l'outil en direct sur des vrais emails — pas un pitch, juste une démo. Vous me dites oui ou non après. Mardi 14h ou jeudi 10h ?"*
+
+**Double choice = closing rate +40%.** Ne lui demande pas "vous voulez bien ?", impose le format.
+
+### Si tu n'arrives pas à parler à la bonne personne (gatekeeper / secrétaire)
+
+> *"Bonjour, c'est Tim de BankKey. Je peux parler à [Prénom Nom] s'il vous plaît ? C'est concernant la qualification des leads de son cabinet."*
+
+**Évite à tout prix** : *"je veux vendre quelque chose"*, *"c'est commercial"*. Sois neutre.
+
+---
+
+## 6. LinkedIn — Avant ou après l'appel
+
+### A. Le DM "casse-glace" envoyé 1h avant l'appel (taux d'ouverture +50%)
 
 ```
-Bonjour [Prénom],
+Bonjour Marie,
 
-Je vous écris parce que [Cabinet] correspond au profil que je cherche pour le
-programme pilote BankKey 2026.
+Je vais essayer de vous joindre par téléphone dans la journée 
+au sujet de la qualification de vos leads. Pas un truc commercial, 
+juste 2 minutes pour comprendre votre process actuel.
 
-Le problème : vous recevez probablement 40-80 leads par mois (Empruntis,
-SeLoger, contacts directs). Vous passez 1 à 2 heures par jour à trier ceux qui
-valent la peine. Et quand un dossier urgent arrive en pleine semaine chargée,
-vous le perdez.
+À tout à l'heure,
+Tim — bankkey.ch
+```
 
-Ce que fait BankKey :
-- Lit vos emails entrants (OAuth Gmail, lecture seule)
-- Qualifie chaque demande en 60 secondes
-- Calcule un score de bancabilité selon vos critères
-- Rédige la réponse email pré-remplie + briefing d'appel
-- Suit les banques sollicitées + résultats
+### B. Le DM follow-up si pas joint au téléphone
 
-Le pilote :
-- 20 cabinets sélectionnés
-- 199 €/mois (au lieu de 349 € prix public futur)
-- Tarif bloqué à vie
-- Accompagnement perso pendant 3 mois
+```
+Bonjour Marie,
 
-Démo de 20 min sur vos propres emails : https://bankkey.ch/book
+J'ai essayé de vous joindre tout à l'heure. Je relance par message 
+si c'est plus pratique.
 
-Bien à vous,
-Sandra
-[Téléphone perso pour réponse rapide]
-bankkey.ch
+On a sorti BankKey, un outil qui qualifie automatiquement vos emails 
+entrants (revenus, apport, score bancabilité) en 60 secondes. 
+Programme pilote, 20 cabinets max, tarif préférentiel à vie.
+
+20 min de démo cette semaine ? Mardi 14h ou jeudi 10h ?
+
+Tim — bankkey.ch
+```
+
+### C. Référence à un post LinkedIn récent (si pertinent)
+
+```
+Bonjour Marie,
+
+J'ai vu votre post sur [sujet exact — "perdre des dossiers le we", 
+"trier 80 mails", "passer à un CRM"]. C'est exactement le problème 
+qu'on résout chez BankKey.
+
+20 min en visio cette semaine pour vous montrer ?
+
+Tim — bankkey.ch
 ```
 
 ---
 
-## 6. Séquence de follow-up
+## 7. Le RDV démo — comment le préparer
 
-| Étape | Délai | Action |
-|-------|-------|--------|
-| **J0** | — | Envoi DM LinkedIn Template A |
-| **J+4** | si pas de réponse | Relance LinkedIn courte : *"Pas vu mon message [Prénom] ? Promis 5 min seulement."* |
-| **J+10** | si toujours pas | Email Template (voir #5) |
-| **J+18** | si toujours pas | Dernier message LinkedIn : *"Dernière relance promis ! Si pas votre besoin, voici la démo en autoplay pour curiosité : bankkey.ch/demo. Bonne suite à vous."* |
-| **J+25** | si toujours pas | Marquer "Ghosted" dans tracker, ne plus relancer |
+### J-1 du RDV
+- Envoie une **invitation calendar** avec lien visio Google Meet
+- Ajoute en description :
+  > "Démo BankKey – 20 minutes
+  > 1. 5 min : votre process actuel
+  > 2. 10 min : démo en direct sur des emails type
+  > 3. 5 min : questions et conditions
+  > Lien : meet.google.com/xxx-xxxx-xxx"
+
+### 1h avant le RDV
+- Ouvre **bankkey.ch/pro/login**
+- Crée un compte test ou utilise ton compte avec le prospect démo Camille Martin pré-chargé
+- Vérifie que tout charge bien (Wi-Fi, audio, écran partagé)
+
+### Pendant le RDV
+- Suis le **DEMO-PLAYBOOK.md** (script 20 min minute par minute)
+
+### Après le RDV
+- Envoie email récap dans les 2h avec :
+  - Lien d'inscription **bankkey.ch/pro/login?mode=signup** (1 clic via Google)
+  - Récap des 3 points clés évoqués
+  - Date de relance proposée (J+3)
 
 ---
 
-## 7. Quand ils répondent positivement
+## 8. Mes prédictions sur tes 10 premiers appels
 
-### Si ils disent "oui je veux voir"
+| Réponse type | % attendu | Que faire |
+|--------------|-----------|-----------|
+| "Pas intéressé / on a déjà tout" | 40% | Note + suis-les sur LinkedIn, retentative dans 3 mois |
+| "Renvoyez-moi un mail je vais regarder" | 25% | Email récap dans la journée, relance LinkedIn J+5 |
+| "OK pour une démo" | 20% | Book le RDV tout de suite (calendar invite dans les 5 min) |
+| "C'est qui ?" / méfiance | 10% | Rassure ton statut (jeune fondateur honnête + transparence) |
+| Pas joint / messagerie | 5% | Recall J+1 à un autre horaire (matin ↔ après-midi) |
 
-Réponse immédiate (moins de 2h) :
+**Conversion appel → démo bookée** : 20% = **2 démos sur 10 appels**.
+**Conversion démo → pilote signé** : 30-40% = **3-5 pilotes sur 50 appels**.
+
+---
+
+## 9. Objections fréquentes au téléphone — réponses prêtes
+
+### "C'est combien ?"
+> *"199 € par mois pour les pilotes — essai gratuit 30 jours, sans carte bancaire. Mais ce n'est pas le sujet du premier appel — je préfère que vous voyiez d'abord si l'outil vous fait gagner du temps. Démo ?"*
+
+### "Je n'ai pas le temps"
+> *"C'est exactement pour ça que je vous appelle — l'outil est conçu pour vous faire **récupérer** 2-3h par semaine. 20 minutes pour valider que ça marche, ça vous va ?"*
+
+### "On utilise déjà Aprico / Marketis"
+> *"Parfait, BankKey ne les remplace pas — il les remplit. On fait la qualification en amont, ensuite les leads partent dans votre CRM via export CSV. Démo de 20 min pour voir comment ça s'articule ?"*
+
+### "Je dois voir avec mon associé"
+> *"Évidemment. Je vous propose une démo à deux pour gagner du temps. Quel jour de la semaine il est dispo ?"*
+
+### "Vous avez quel âge ?"
+> *"18 ans. Je suis le développeur et fondateur — je peux passer du temps à comprendre votre métier que d'autres n'auront pas. C'est précisément l'avantage : vous parlez direct au constructeur, pas à un commercial."*
+
+### "Ça vient des US ?"
+> *"Non — BankKey est suisse, hébergé en Europe (Francfort), conforme RGPD. Aucune donnée ne sort de l'UE."*
+
+---
+
+## 10. Bilan hebdo (vendredi 17h)
+
+Chaque vendredi, remplis ces 6 lignes dans un fichier `BILAN-S{N}.md` :
 
 ```
-Super [Prénom], merci. Je vous propose 3 créneaux :
-
-- [Jour] [Heure]
-- [Jour] [Heure]
-- [Jour] [Heure]
-
-Démo de 20 min en visio. Vous ouvrez votre Gmail, on regarde 2-3 de vos
-vrais leads, je vous montre comment BankKey les qualifierait.
-
-Sinon dites-moi votre dispo, je m'adapte.
-
-Sandra
+Semaine N — du JJ/MM au JJ/MM
+- Appels passés : XX
+- Démos bookées : X
+- Démos faites : X
+- Pilotes signés : X
+- Objection #1 récurrente : "..."
+- Phrase du pitch qui a le mieux marché : "..."
 ```
 
-### Si ils disent "trop cher"
-
-```
-Je comprends. Le programme pilote est justement fait pour ça : 199 €/mois au
-lieu de 349, et c'est bloqué à vie. Soit vous voyez un retour rapide (en
-moyenne 1 dossier supplémentaire/mois rembourse l'abonnement), soit vous
-annulez sans frais.
-
-5 min pour qu'on en parle ?
-```
-
-### Si ils disent "j'ai déjà un CRM"
-
-```
-Parfait. BankKey ne remplace pas votre CRM, il intervient EN AMONT sur la
-qualification des emails entrants. Vous gardez Aprico/Marketis pour la gestion
-des dossiers actifs. BankKey vous fait gagner les 1-2h/jour que vous passez à
-trier les nouveaux leads.
-
-5 min pour voir comment on s'intègre ?
-```
+Tu m'envoies ce bilan. Je te dirai ce qu'il faut ajuster dans le script et le ciblage.
 
 ---
 
-## 8. Script démo 20 min — structure
+## Récap — ce que tu fais dimanche soir
 
-| Temps | Section | À dire |
-|-------|---------|--------|
-| 0-2 min | Découverte | "Avant de vous montrer, dites-moi comment vous recevez vos leads aujourd'hui, combien par mois, et où ça pèche pour vous." |
-| 2-7 min | Démo live | Ouvrez bankkey.ch/demo (vue auto), montrez 2 prospects. Insistez sur le scoring + l'email pré-rédigé. |
-| 7-12 min | Test réel | "Donnez-moi un de vos vrais emails de la semaine dernière, on le passe ensemble." Utilisez /demo/manual. |
-| 12-15 min | Tableau de bord | Montrez `/pro` (votre compte avec quelques exemples). Stats. Banques. Bilan mensuel. |
-| 15-18 min | Programme pilote | Tarif, accompagnement, durée. |
-| 18-20 min | Closing | "Vous me dites oui maintenant, on vous setup demain. Sinon dites-moi ce qui bloque vraiment." |
+- [ ] Liste 50 cibles dans Google Sheets (avec téléphone)
+- [ ] Lis ce document 1 fois en entier
+- [ ] Imprime le script §5 et garde-le à côté de toi pendant les appels
+- [ ] Charge sur ton compte bankkey.ch le prospect démo Camille Martin
+- [ ] Bloque 10h-12h dans ton agenda lundi pour le **premier sprint de 10 appels**
 
-**Tip** : enregistrez vos premières démos (avec leur accord). Vous verrez vos tics et les vraies objections.
-
----
-
-## 9. Métriques à suivre chaque semaine
-
-| Métrique | Cible semaine 1 | Cible semaine 4 |
-|----------|----------------|----------------|
-| Ajouts tracker | 50 | 200 cumulés |
-| DMs envoyés | 30 | 150 cumulés |
-| Taux de réponse | 15% | 20% (après itération) |
-| Démos bookées | 3-5 | 15 cumulés |
-| Pilotes signés | 0 | 3-5 |
-
-**Si après 100 DM vous n'avez pas 3 démos bookées** : changer le template ou la cible. Quelque chose ne colle pas.
-
----
-
-## 10. Limites à respecter
-
-### LinkedIn
-- Maximum **80 invitations + DMs / semaine** (Linkedin déclare 100 mais cap réel ~80)
-- **Ne pas spammer** : personnaliser chaque message (au moins prénom + détail)
-- Si vous êtes coupée pour spam → 48h sans pouvoir envoyer
-
-### Email
-- Max **20-30 emails / jour** depuis votre adresse pro (Google peut flag spam)
-- **Toujours mention RGPD** en bas : *"Vous pouvez vous opposer à toute relance — répondez STOP"*
-
-### Téléphone
-- Le téléphone est OK en B2B mais **pas avant 9h, pas après 18h**
-- Maximum 2 essais espacés de 3 jours
-
----
-
-## 11. Outils utiles (gratuits ou freemium)
-
-| Outil | Usage | Gratuit ? |
-|-------|-------|-----------|
-| LinkedIn Sales Navigator | Recherche ciblée | Essai 30j |
-| Apollo.io | Trouver emails depuis LinkedIn | 50/mois gratuit |
-| Hunter.io | Vérifier emails avant envoi | 25/mois gratuit |
-| Calendly | Booking démos | Gratuit basique |
-| Loom | Vidéos pitch courtes | 25 vidéos gratuit |
-| Notion / Google Sheets | Tracker | Gratuit |
-
----
-
-## Action de cette semaine
-
-1. **Lundi matin (1h)** : créer compte LinkedIn Sales Navigator (essai 30j), exporter 50 prospects dans Apollo, importer dans tracker Google Sheets
-2. **Lundi après-midi (1h)** : envoyer 20 DMs Template A
-3. **Mercredi (30 min)** : check réponses, relancer non-répondants J+4
-4. **Vendredi (30 min)** : envoyer 20 nouveaux DMs, planifier semaine suivante
-
-**Si vous bookez 1 démo cette semaine, c'est une victoire.**
-Si vous bookez 3 démos, c'est exceptionnel.
-
----
-
-## Et après la première démo
-
-Reportez tout dans CLAUDE.md pour que je puisse vous aider à itérer :
-- Ce qui a marché
-- Les objections récurrentes
-- Les fonctionnalités demandées
-- Les abandons (et à quel moment)
-
-On ajuste BankKey en fonction des vrais retours, pas de mon intuition.
+**Lundi matin, tu décroches le téléphone.** Personne ne signera un pilote en lisant tes posts. Le téléphone fait tout.
