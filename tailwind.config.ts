@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss';
+import defaultTheme from 'tailwindcss/defaultTheme';
 
 const config: Config = {
   content: [
@@ -7,6 +8,10 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans:    ['var(--font-sans)',    ...defaultTheme.fontFamily.sans],
+        display: ['var(--font-display)', ...defaultTheme.fontFamily.serif],
+      },
       keyframes: {
         fadeUp: {
           '0%':   { opacity: '0', transform: 'translateY(10px)' },

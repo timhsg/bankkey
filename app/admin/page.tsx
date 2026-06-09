@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { LogoMark } from '@/app/_components/Logo'
 import AdminTable from './_components/AdminTable'
 import type { CabinetRow } from './_types'
 
@@ -184,9 +185,7 @@ export default async function AdminPage() {
       <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-6 h-6 rounded-md bg-blue-900 flex items-center justify-center">
-              <span className="text-white text-[10px] font-bold tracking-tighter">BK</span>
-            </div>
+            <LogoMark size={24} />
             <span className="font-semibold text-slate-900 tracking-tight text-sm">Console interne</span>
             <span className="text-[10px] font-bold uppercase tracking-widest bg-red-100 text-red-700 px-1.5 py-0.5 rounded">Admin</span>
             <span className="text-[10px] text-slate-400">{me.email}</span>

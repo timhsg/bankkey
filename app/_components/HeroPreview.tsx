@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { LogoMark } from './Logo'
 
 // ════════════════════════════════════════════════════════════════════════
 //  HeroPreview — Mockup réaliste du produit dans le hero
@@ -89,9 +90,7 @@ export default function HeroPreview() {
           {/* Sidebar */}
           <div className="col-span-3 bg-white border-r border-slate-100 p-3">
             <div className="flex items-center gap-2 mb-5 pb-3 border-b border-slate-100">
-              <div className="w-6 h-6 rounded-md bg-blue-900 flex items-center justify-center">
-                <span className="text-white text-[10px] font-bold tracking-tighter">BK</span>
-              </div>
+              <LogoMark size={24} />
               <span className="font-semibold text-slate-900 text-sm">BankKey</span>
             </div>
 

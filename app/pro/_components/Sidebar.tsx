@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import { LogoMark } from '@/app/_components/Logo'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
@@ -216,9 +217,7 @@ export default function Sidebar() {
         {/* Brand + close mobile */}
         <div className="flex items-center justify-between px-4 h-14 border-b border-slate-100">
           <Link href="/" className="flex items-center gap-2 hover:opacity-75 transition-opacity">
-            <div className="w-6 h-6 rounded-md bg-blue-900 flex items-center justify-center">
-              <span className="text-white text-[10px] font-bold tracking-tighter">BK</span>
-            </div>
+            <LogoMark size={24} />
             <span className="font-semibold text-slate-900 tracking-tight text-sm">BankKey</span>
           </Link>
           <button

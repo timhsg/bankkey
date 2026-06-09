@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { LogoMark } from '@/app/_components/Logo'
 import { createClient } from '@/lib/supabase/client'
 import type { BrokerMemory } from '@/types'
 
@@ -175,9 +176,7 @@ function OnboardingContent() {
       <header className="bg-white border-b border-slate-100">
         <div className="max-w-3xl mx-auto px-6 h-14 flex items-center justify-between">
           <Link href="/pro" className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-blue-900 flex items-center justify-center">
-              <span className="text-white text-[10px] font-bold tracking-tighter">BK</span>
-            </div>
+            <LogoMark size={24} />
             <span className="font-semibold text-slate-900 tracking-tight">BankKey</span>
           </Link>
           <Link href="/pro" className="text-xs text-slate-500 hover:text-slate-900 transition-colors">

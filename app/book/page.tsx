@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
+import { LogoMark } from '@/app/_components/Logo'
 
 // Génère les 10 prochains créneaux ouvrés (lundi-vendredi, matin/après-midi)
 // — exclut les créneaux déjà passés dans la journée en cours
@@ -82,9 +83,7 @@ export default function BookPage() {
       <header className="bg-white/80 backdrop-blur-md border-b border-slate-100 sticky top-0 z-20">
         <div className="max-w-6xl mx-auto px-5 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-blue-900 flex items-center justify-center">
-              <span className="text-white text-[10px] font-bold tracking-tighter">BK</span>
-            </div>
+            <LogoMark size={24} />
             <span className="font-semibold text-slate-900 tracking-tight">BankKey</span>
           </Link>
           <Link href="/" className="text-xs text-slate-500 hover:text-slate-900 transition-colors">

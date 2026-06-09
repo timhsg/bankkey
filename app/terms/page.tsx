@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { LogoMark } from '@/app/_components/Logo'
 
 export const metadata: Metadata = {
   title: 'Conditions générales d\'utilisation — BankKey',
@@ -13,9 +14,7 @@ export default function TermsPage() {
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
         <div className="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-md bg-blue-900 flex items-center justify-center">
-              <span className="text-white text-xs font-bold tracking-tighter">BK</span>
-            </div>
+            <LogoMark size={28} />
             <span className="font-semibold text-slate-900 tracking-tight">BankKey</span>
           </Link>
           <Link href="/" className="text-xs text-slate-500 hover:text-slate-900 transition-colors">

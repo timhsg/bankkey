@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { LogoMark } from '@/app/_components/Logo'
 
 export const metadata: Metadata = {
   title: 'Sécurité & confidentialité — BankKey',
@@ -56,9 +57,7 @@ export default function SecurityPage() {
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-md bg-blue-900 flex items-center justify-center">
-              <span className="text-white text-xs font-bold tracking-tighter">BK</span>
-            </div>
+            <LogoMark size={28} />
             <span className="font-semibold text-slate-900 tracking-tight">BankKey</span>
           </Link>
           <nav className="hidden md:flex items-center gap-7 text-sm text-slate-600">
@@ -83,11 +82,11 @@ export default function SecurityPage() {
           </svg>
           Sécurité & conformité
         </div>
-        <h1 className="text-4xl md:text-5xl font-semibold tracking-tight mb-5 leading-tight">
-          Conçu pour la confidentialité <br />bancaire européenne.
+        <h1 className="font-display text-4xl md:text-5xl font-medium tracking-tight mb-5 leading-[1.05]">
+          Vos données restent <br />en Europe.
         </h1>
-        <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-          Les données de vos prospects sont sensibles. BankKey applique les standards de la finance européenne — chiffrement, isolation, droit à l&apos;effacement.
+        <p className="text-base md:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
+          Les fichiers que vous traitez touchent à la vie privée et à l&apos;argent. BankKey applique les règles que vos clients exigeraient de leur banque : chiffrement, isolation par cabinet, suppression sur demande.
         </p>
       </section>
 
