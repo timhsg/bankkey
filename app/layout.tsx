@@ -1,24 +1,15 @@
 import type { Metadata } from 'next';
-import { Inter, Fraunces } from 'next/font/google';
+import { Inter } from 'next/font/google';
 import { headers } from 'next/headers';
 import { CurrencyProvider } from './_components/CurrencyContext';
 import { currencyFromCountry } from '@/lib/currency';
 import './globals.css';
 
-// Inter — corps (déjà chargé)
+// Inter — police unique, poids variés pour hiérarchie
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-sans',
-  display: 'swap',
-});
-
-// Fraunces — serif distinctive pour titres et accents
-// Poids restreints pour ne pas alourdir le LCP
-const fraunces = Fraunces({
-  subsets: ['latin'],
-  variable: '--font-display',
-  weight: ['400', '500', '600'],
-  style: ['normal', 'italic'],
+  weight: ['400', '500', '600', '700'],
   display: 'swap',
 });
 
@@ -43,8 +34,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const initialCurrency = currencyFromCountry(country);
 
   return (
-    <html lang="fr" className={`${inter.variable} ${fraunces.variable}`}>
-      <body className="font-sans antialiased">
+    <html lang="fr" className={inter.variable}>
+      <body className="font-sans antialiased tracking-tight">
         <CurrencyProvider initialCurrency={initialCurrency}>
           {children}
         </CurrencyProvider>

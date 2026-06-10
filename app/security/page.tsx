@@ -82,7 +82,7 @@ export default function SecurityPage() {
           </svg>
           Sécurité & conformité
         </div>
-        <h1 className="font-display text-4xl md:text-5xl font-medium tracking-tight mb-5 leading-[1.05]">
+        <h1 className="font-semibold text-4xl md:text-5xl tracking-tightest mb-5 leading-[1.05]">
           Vos données restent <br />en Europe.
         </h1>
         <p className="text-base md:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">

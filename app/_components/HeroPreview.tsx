@@ -131,7 +131,7 @@ export default function HeroPreview() {
             {/* En-tête salutation */}
             <div className="px-5 pt-5 pb-3">
               <p className="text-[9px] font-semibold uppercase tracking-widest text-slate-400 mb-1">Mardi 9 juin</p>
-              <h2 className="font-display text-lg font-medium text-slate-900 mb-0.5 tracking-tight">Bonjour Marie.</h2>
+              <h2 className="font-semibold text-lg font-medium text-slate-900 mb-0.5 tracking-tight">Bonjour Marie.</h2>
               <p className="text-[11px] text-slate-500">4 prospects prioritaires à traiter aujourd&apos;hui.</p>
             </div>
 

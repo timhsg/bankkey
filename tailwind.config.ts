@@ -9,8 +9,12 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans:    ['var(--font-sans)',    ...defaultTheme.fontFamily.sans],
-        display: ['var(--font-display)', ...defaultTheme.fontFamily.serif],
+        sans: ['var(--font-sans)', ...defaultTheme.fontFamily.sans],
+      },
+      letterSpacing: {
+        tight: '-0.011em',
+        tighter: '-0.022em',
+        tightest: '-0.033em',
       },
       keyframes: {
         fadeUp: {

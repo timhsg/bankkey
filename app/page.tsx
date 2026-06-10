@@ -173,9 +173,9 @@ export default function LandingPage() {
                 Courtage en crédit immobilier
               </div>
 
-              <h1 className="font-display text-[2.5rem] sm:text-5xl lg:text-[3.75rem] font-medium tracking-tight leading-[1.02] mb-6 text-slate-900">
+              <h1 className="font-semibold text-[2.5rem] sm:text-5xl lg:text-[3.75rem] tracking-tightest leading-[1.02] mb-6 text-slate-900">
                 Le premier qui répond
-                <span className="block text-slate-500 italic">signe le dossier.</span>
+                <span className="block text-slate-500 font-normal">signe le dossier.</span>
               </h1>
 
               <p className="text-base sm:text-lg text-slate-600 leading-relaxed mb-8 max-w-lg mx-auto lg:mx-0">
@@ -261,7 +261,7 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-14 md:mb-16">
             <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Ce que vous obtenez</p>
-            <h2 className="font-display text-3xl md:text-4xl font-medium tracking-tight text-slate-900">
+            <h2 className="font-semibold text-3xl md:text-4xl tracking-tightest text-slate-900">
               Six gestes faits pour vous, à chaque lead.
             </h2>
           </div>
@@ -289,9 +289,9 @@ export default function LandingPage() {
       <section id="comparison" className="max-w-5xl mx-auto px-6 py-20 md:py-24">
         <div className="text-center mb-14">
           <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Positionnement</p>
-          <h2 className="font-display text-3xl md:text-4xl font-medium tracking-tight text-slate-900 mb-4">
+          <h2 className="font-semibold text-3xl md:text-4xl tracking-tightest text-slate-900 mb-4">
             On ne remplace pas votre CRM.
-            <span className="block text-slate-500 italic">On vous aide à le remplir mieux.</span>
+            <span className="block text-slate-500 font-normal">On vous aide à le remplir mieux.</span>
           </h2>
           <p className="text-slate-600 max-w-xl mx-auto">
             Vous utilisez Aprico ou Marketis ? Gardez-les. BankKey travaille en amont, sur la pile d&apos;emails qui arrive le matin. Vos dossiers signés restent là où ils sont.
@@ -349,9 +349,9 @@ export default function LandingPage() {
       <section className="border-y border-slate-100 py-20 md:py-24 bg-white">
         <div className="max-w-3xl mx-auto px-6 text-center">
           <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Programme pilote 2026</p>
-          <h2 className="font-display text-3xl md:text-4xl font-medium tracking-tight text-slate-900 mb-5">
+          <h2 className="font-semibold text-3xl md:text-4xl tracking-tightest text-slate-900 mb-5">
             Vingt cabinets fondateurs.
-            <span className="block text-slate-500 italic">Vous pouvez en faire partie.</span>
+            <span className="block text-slate-500 font-normal">Vous pouvez en faire partie.</span>
           </h2>
           <p className="text-slate-600 leading-relaxed mb-8 max-w-xl mx-auto">
             On ouvre vingt places. En échange de vos retours hebdo, vous bloquez votre tarif à vie, vous avez ma ligne directe pour vos questions, et vos demandes passent en priorité sur la roadmap.
@@ -382,7 +382,7 @@ export default function LandingPage() {
         <div className="grid md:grid-cols-5 gap-10 md:gap-12 items-start">
           <div className="md:col-span-2">
             <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Confidentialité</p>
-            <h2 className="font-display text-3xl md:text-4xl font-medium tracking-tight text-slate-900 mb-4">
+            <h2 className="font-semibold text-3xl md:text-4xl tracking-tightest text-slate-900 mb-4">
               Vos prospects restent vos prospects.
             </h2>
             <p className="text-slate-600 leading-relaxed mb-5">
@@ -419,7 +419,7 @@ export default function LandingPage() {
       <section id="faq" className="max-w-3xl mx-auto px-6 py-20 md:py-24">
         <div className="text-center mb-14 md:mb-16">
           <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Questions fréquentes</p>
-          <h2 className="font-display text-3xl md:text-4xl font-medium tracking-tight text-slate-900">
+          <h2 className="font-semibold text-3xl md:text-4xl tracking-tightest text-slate-900">
             Les vraies questions des courtiers.
           </h2>
         </div>
@@ -489,9 +489,9 @@ export default function LandingPage() {
             Vingt places ouvertes pour 2026
           </div>
 
-          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight mb-4 leading-[1.05]">
+          <h2 className="font-semibold text-3xl sm:text-4xl md:text-5xl tracking-tightest mb-4 leading-[1.05]">
             Répondez en premier
-            <span className="block text-slate-400 italic">dès demain matin.</span>
+            <span className="block text-slate-400 font-normal">dès demain matin.</span>
           </h2>
           <p className="text-slate-300 text-base md:text-lg mb-10 leading-relaxed max-w-xl mx-auto">
             Pendant que vous lisez vos 80 mails, un autre courtier a déjà rappelé votre prospect. Dix minutes pour installer BankKey, et c&apos;est vous qui passez en premier.

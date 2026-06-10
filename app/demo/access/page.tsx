@@ -65,7 +65,7 @@ export default function DemoAccessPage() {
         {/* Hero */}
         <div className="text-center">
           <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Compte démo</p>
-          <h1 className="font-display text-3xl md:text-4xl font-medium tracking-tight text-slate-900 mb-4">
+          <h1 className="font-semibold text-3xl md:text-4xl tracking-tightest text-slate-900 mb-4">
             Connectez-vous, explorez librement.
           </h1>
           <p className="text-slate-600 leading-relaxed max-w-xl mx-auto">
@@ -100,7 +100,7 @@ export default function DemoAccessPage() {
 
         {/* Marche à suivre */}
         <section>
-          <h2 className="font-display text-xl font-medium text-slate-900 mb-5 tracking-tight">Marche à suivre</h2>
+          <h2 className="font-semibold text-xl tracking-tightest text-slate-900 mb-5 tracking-tight">Marche à suivre</h2>
           <ol className="space-y-4">
             {STEPS.map((step, i) => (
               <li key={i} className="flex gap-4 bg-white border border-slate-200 rounded-xl p-4">
@@ -118,7 +118,7 @@ export default function DemoAccessPage() {
 
         {/* Sections à explorer */}
         <section>
-          <h2 className="font-display text-xl font-medium text-slate-900 mb-5 tracking-tight">Toutes les vues à explorer</h2>
+          <h2 className="font-semibold text-xl tracking-tightest text-slate-900 mb-5 tracking-tight">Toutes les vues à explorer</h2>
           <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden divide-y divide-slate-100">
             {SECTIONS.map(s => (
               <div key={s.route} className="px-5 py-3 flex items-start gap-4">
