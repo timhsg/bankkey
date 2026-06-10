@@ -138,13 +138,22 @@ BEGIN
     score_val := 25 + (i * 29) % 70;
     temp_val := CASE WHEN score_val >= 65 THEN 'hot' WHEN score_val >= 45 THEN 'warm' ELSE 'cold' END;
 
-    rec_date := NOW() - (INTERVAL '1 day' * (i * 2.4)::INT);
+    -- Étalement temporel plus naturel (heures puis jours)
+    IF i <= 3 THEN
+      rec_date := NOW() - (INTERVAL '1 hour' * (i * 3 + 9));  -- 12h, 15h, 18h aujourd'hui
+    ELSE
+      rec_date := NOW() - (INTERVAL '1 day' * ((i - 3) * 2.2 + 1)::INT);  -- À partir de hier
+    END IF;
 
+    -- Statuts plus variés pour éviter les coïncidences sur les compteurs
     status_val := CASE
-      WHEN i <= 6 THEN 'new'
-      WHEN i <= 14 THEN 'viewed'
-      WHEN i <= 65 THEN 'replied'
-      ELSE 'archived'
+      WHEN i = 1 THEN 'new'           -- 1 nouveau aujourd'hui (depuis boucle)
+      WHEN i = 2 THEN 'viewed'
+      WHEN i = 3 THEN 'replied'
+      WHEN i % 11 = 0 THEN 'new'      -- ~7 dispersés "new"
+      WHEN i % 7 = 0 THEN 'viewed'    -- ~11 "viewed"
+      WHEN i > 60 THEN 'archived'     -- 20 très vieux
+      ELSE 'replied'                  -- le reste : ~42 répondus
     END;
 
     revenus := 2200 + (i * 173) % 8500;

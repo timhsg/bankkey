@@ -69,7 +69,7 @@ const JURISDICTION_LABEL: Record<string, string> = {
 }
 
 function detectCurrency(q: QualificationResult): string {
-  const text = `${q.address ?? ''} ${q.description}`.toLowerCase()
+  const text = `${q.address ?? ''} ${q.description ?? ''}`.toLowerCase()
   if (/genève|geneve|lausanne|zurich|chf|suisse/.test(text)) return 'CHF'
   return '€'
 }
@@ -414,11 +414,11 @@ export default function LeadDetailPage() {
                 ))}
               </div>
 
-              {q.urgencySignals.length > 0 && (
+              {(q.urgencySignals?.length ?? 0) > 0 && (
                 <div className="mt-5 pt-4 border-t border-slate-100">
                   <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-2">Signaux d&apos;urgence</p>
                   <div className="flex flex-wrap gap-1.5">
-                    {q.urgencySignals.map((sig, i) => (
+                    {(q.urgencySignals ?? []).map((sig, i) => (
                       <span key={i} className="text-xs bg-amber-50 text-amber-700 px-2 py-0.5 rounded-md border border-amber-200">
                         {sig}
                       </span>
@@ -429,11 +429,11 @@ export default function LeadDetailPage() {
             </div>
 
             {/* Scoring factors */}
-            {s.keyFactors.length > 0 && (
+            {(s.keyFactors?.length ?? 0) > 0 && (
               <div className="px-6 py-4 bg-slate-50/30">
                 <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-2.5">Facteurs de scoring</p>
                 <div className="flex flex-wrap gap-1.5">
-                  {s.keyFactors.map((f, i) => (
+                  {(s.keyFactors ?? []).map((f, i) => (
                     <span key={i} className="text-xs bg-white text-slate-600 border border-slate-200 px-2 py-0.5 rounded-md font-medium">
                       +{f.points} · {f.factor}
                     </span>
@@ -605,35 +605,43 @@ export default function LeadDetailPage() {
                   </div>
 
                   {/* Briefing appel */}
-                  <div>
-                    <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest mb-2">Briefing pour l&apos;appel</p>
-                    <div className="space-y-3">
-                      <div className="border border-slate-200 rounded-xl overflow-hidden">
-                        <div className="bg-slate-50 border-b border-slate-200 px-4 py-2">
-                          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Contexte</span>
-                        </div>
-                        <div className="px-4 py-3">
-                          <p className="text-sm font-medium text-slate-800 leading-relaxed">{p.callScript.briefing}</p>
-                        </div>
-                      </div>
-                      <div className="border border-slate-200 rounded-xl overflow-hidden">
-                        <div className="bg-slate-50 border-b border-slate-200 px-4 py-2">
-                          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Besoin du prospect</span>
-                        </div>
-                        <div className="px-4 py-3">
-                          <p className="text-sm text-slate-700 leading-relaxed">{p.callScript.need}</p>
-                        </div>
-                      </div>
-                      <div className="border border-emerald-200 rounded-xl overflow-hidden">
-                        <div className="bg-emerald-50 border-b border-emerald-200 px-4 py-2">
-                          <span className="text-[10px] font-semibold text-emerald-700 uppercase tracking-wide">Question clé à poser en premier</span>
-                        </div>
-                        <div className="px-4 py-3">
-                          <p className="text-sm text-slate-700 leading-relaxed italic">« {p.callScript.keyQuestion} »</p>
-                        </div>
+                  {p.callScript && (
+                    <div>
+                      <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest mb-2">Briefing pour l&apos;appel</p>
+                      <div className="space-y-3">
+                        {p.callScript.briefing && (
+                          <div className="border border-slate-200 rounded-xl overflow-hidden">
+                            <div className="bg-slate-50 border-b border-slate-200 px-4 py-2">
+                              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Contexte</span>
+                            </div>
+                            <div className="px-4 py-3">
+                              <p className="text-sm font-medium text-slate-800 leading-relaxed">{p.callScript.briefing}</p>
+                            </div>
+                          </div>
+                        )}
+                        {p.callScript.need && (
+                          <div className="border border-slate-200 rounded-xl overflow-hidden">
+                            <div className="bg-slate-50 border-b border-slate-200 px-4 py-2">
+                              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Besoin du prospect</span>
+                            </div>
+                            <div className="px-4 py-3">
+                              <p className="text-sm text-slate-700 leading-relaxed">{p.callScript.need}</p>
+                            </div>
+                          </div>
+                        )}
+                        {p.callScript.keyQuestion && (
+                          <div className="border border-emerald-200 rounded-xl overflow-hidden">
+                            <div className="bg-emerald-50 border-b border-emerald-200 px-4 py-2">
+                              <span className="text-[10px] font-semibold text-emerald-700 uppercase tracking-wide">Question clé à poser en premier</span>
+                            </div>
+                            <div className="px-4 py-3">
+                              <p className="text-sm text-slate-700 leading-relaxed italic">« {p.callScript.keyQuestion} »</p>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
 

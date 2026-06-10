@@ -61,7 +61,7 @@ export default function BanksPage() {
     const { data } = await supabase
       .from('prospects')
       .select('id, email_from_name, bank_submitted, scoring, qualification, status')
-      .neq('status', 'archived')
+      .not('status', 'in', '(archived,filtered)')
       .order('created_at', { ascending: false })
 
     setProspects((data ?? []) as Prospect[])

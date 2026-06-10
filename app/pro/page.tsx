@@ -86,7 +86,7 @@ export default function TodayPage() {
       supabase.from('profiles').select('email, agency_name, gmail_connected_email, broker_memory').single(),
       supabase.from('prospects')
         .select('id, email_from_name, email_from, email_subject, received_at, created_at, status, scoring, qualification')
-        .neq('status', 'archived')
+        .not('status', 'in', '(archived,filtered)')
         .order('created_at', { ascending: false })
         .limit(50),
     ])
