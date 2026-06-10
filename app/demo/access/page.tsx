@@ -2,7 +2,9 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { LogoMark } from '@/app/_components/Logo'
+import { createClient } from '@/lib/supabase/client'
 
 // ════════════════════════════════════════════════════════════════════════
 //  /demo/access — Page d'accès au compte démo seedé
@@ -45,6 +47,26 @@ const SECTIONS = [
 ]
 
 export default function DemoAccessPage() {
+  const router = useRouter()
+  const [loggingIn, setLoggingIn] = useState(false)
+  const [loginError, setLoginError] = useState<string | null>(null)
+  const supabase = createClient()
+
+  async function autoLogin() {
+    setLoggingIn(true)
+    setLoginError(null)
+    const { error } = await supabase.auth.signInWithPassword({
+      email: DEMO_EMAIL,
+      password: DEMO_PASSWORD,
+    })
+    if (error) {
+      setLoginError('Connexion impossible. Le compte démo n\'est peut-être pas encore activé.')
+      setLoggingIn(false)
+    } else {
+      router.push('/pro')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-slate-50">
 
@@ -65,36 +87,65 @@ export default function DemoAccessPage() {
         {/* Hero */}
         <div className="text-center">
           <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Compte démo</p>
-          <h1 className="font-semibold text-3xl md:text-4xl tracking-tightest text-slate-900 mb-4">
-            Connectez-vous, explorez librement.
+          <h1 className="text-3xl md:text-4xl font-semibold text-slate-900 tracking-tighter mb-4 leading-tight">
+            Le cabinet de Marie Lefèvre, ouvert pour vous.
           </h1>
           <p className="text-slate-600 leading-relaxed max-w-xl mx-auto">
-            Un compte BankKey pré-rempli avec dix dossiers réalistes, un mois de statistiques et un suivi banques en cours. Vous voyez tout, sans rien casser.
+            90 dossiers réels sur six mois, suivi banques en cours, statistiques de performance. Cliquez sur le bouton ci-dessous, vous êtes dedans en deux secondes.
           </p>
         </div>
 
-        {/* Identifiants */}
+        {/* CTA principal : auto-login */}
         <section className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-          <div className="bg-blue-900 text-white px-6 py-4">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-blue-200 mb-1">Identifiants à utiliser</p>
-            <p className="text-base font-medium">Compte de démonstration · cabinet Lefèvre Courtage</p>
-          </div>
-
-          <div className="p-6 space-y-3">
-            <Credential label="Email"        value={DEMO_EMAIL}    mono />
-            <Credential label="Mot de passe" value={DEMO_PASSWORD} mono />
-          </div>
-
-          <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-4 flex-wrap">
-            <p className="text-[11px] text-slate-500">
-              Compte partagé. Les modifications sont visibles le temps de votre session, puis réinitialisées chaque nuit.
-            </p>
-            <Link
-              href="/pro/login"
-              className="text-sm font-medium bg-blue-900 hover:bg-blue-800 text-white px-5 py-2 rounded-lg transition-colors whitespace-nowrap"
+          <div className="p-6 sm:p-8 text-center">
+            <button
+              onClick={autoLogin}
+              disabled={loggingIn}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-blue-900 hover:bg-blue-800 disabled:bg-slate-300 text-white font-semibold px-7 py-3.5 rounded-lg transition-colors text-base"
             >
-              Aller à la page login
-            </Link>
+              {loggingIn ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Connexion en cours...
+                </>
+              ) : (
+                <>
+                  Ouvrir le compte démo
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+                  </svg>
+                </>
+              )}
+            </button>
+
+            {loginError && (
+              <p className="text-xs text-red-700 bg-red-50 border border-red-100 rounded-lg px-3 py-2 mt-4 max-w-md mx-auto">
+                {loginError}
+              </p>
+            )}
+
+            <p className="text-[12px] text-slate-500 mt-4">
+              Aucune inscription. Aucune carte bancaire. Aucune trace.
+            </p>
+          </div>
+
+          <div className="bg-slate-50 border-t border-slate-200 px-6 py-4">
+            <details className="group">
+              <summary className="text-xs text-slate-500 cursor-pointer hover:text-slate-700 list-none flex items-center justify-between">
+                <span className="font-medium">Vous préférez taper les identifiants vous-même ?</span>
+                <svg className="w-3 h-3 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </summary>
+              <div className="mt-3 space-y-2">
+                <Credential label="Email"        value={DEMO_EMAIL}    mono />
+                <Credential label="Mot de passe" value={DEMO_PASSWORD} mono />
+                <p className="text-[11px] text-slate-400 pt-2">
+                  Utilisez ces identifiants sur la page{' '}
+                  <Link href="/pro/login" className="text-blue-900 underline">connexion classique</Link>.
+                </p>
+              </div>
+            </details>
           </div>
         </section>
 

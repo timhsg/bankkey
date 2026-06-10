@@ -174,44 +174,40 @@ export default function LandingPage() {
               </div>
 
               <h1 className="font-semibold text-[2.5rem] sm:text-5xl lg:text-[3.75rem] tracking-tightest leading-[1.02] mb-6 text-slate-900">
-                Le premier qui répond
-                <span className="block text-slate-500 font-normal">signe le dossier.</span>
+                Vos leads triés
+                <span className="block text-slate-500 font-normal">avant votre café.</span>
               </h1>
 
               <p className="text-base sm:text-lg text-slate-600 leading-relaxed mb-8 max-w-lg mx-auto lg:mx-0">
-                BankKey lit vos emails entrants, extrait le profil emprunteur et prépare votre réponse en moins d&apos;une minute. Vous gardez la main, vous arrivez juste avant les autres.
+                Quand vous ouvrez Gmail le matin, BankKey a déjà classé vos 80 mails. Les 5 qui valent un appel sont en haut, avec leur score, leur profil et une réponse prête à relire.
               </p>
 
               <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-3 mb-3">
-                <Link href="/book" className="inline-flex items-center justify-center gap-2 bg-blue-900 hover:bg-blue-800 text-white font-medium px-6 py-3 rounded-lg transition-base hover-lift w-full sm:w-auto">
-                  Réserver une démo
+                <Link href="/demo/access" className="inline-flex items-center justify-center gap-2 bg-blue-900 hover:bg-blue-800 text-white font-medium px-6 py-3 rounded-lg transition-base hover-lift w-full sm:w-auto">
+                  Tester le compte démo
                   <Icons.ArrowRight />
                 </Link>
-                <Link href="/demo" className="inline-flex items-center justify-center gap-2 text-slate-700 hover:text-slate-900 font-medium px-6 py-3 rounded-lg border border-slate-200 hover:border-slate-300 transition-base w-full sm:w-auto">
-                  Voir la démo guidée
+                <Link href="/book" className="inline-flex items-center justify-center gap-2 text-slate-700 hover:text-slate-900 font-medium px-6 py-3 rounded-lg border border-slate-200 hover:border-slate-300 transition-base w-full sm:w-auto">
+                  Réserver 20 min avec Tim
                 </Link>
               </div>
               <p className="text-xs text-slate-500 mb-5 text-center lg:text-left">
-                Ou{' '}
-                <Link href="/demo/access" className="text-blue-900 underline hover:text-blue-800 font-medium">
-                  connectez-vous directement à un compte démo pré-rempli
-                </Link>
-                .
+                Le compte démo s&apos;ouvre en deux clics. Pas d&apos;inscription, pas de carte.
               </p>
 
               {/* Mini stats / proof */}
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-2 text-xs text-slate-500">
                 <span className="flex items-center gap-1.5">
                   <span className="w-1 h-1 rounded-full bg-emerald-500" />
-                  Moins de 60 secondes par lead
+                  60 secondes par lead
                 </span>
                 <span className="flex items-center gap-1.5">
                   <span className="w-1 h-1 rounded-full bg-emerald-500" />
-                  10 minutes pour mettre en route
+                  Mise en route en 10 minutes
                 </span>
                 <span className="flex items-center gap-1.5">
                   <span className="w-1 h-1 rounded-full bg-emerald-500" />
-                  30 jours offerts, sans carte
+                  30 jours d&apos;essai
                 </span>
               </div>
             </div>
@@ -260,20 +256,21 @@ export default function LandingPage() {
       <section id="features" className="bg-slate-50 border-y border-slate-100 py-20 md:py-24">
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-14 md:mb-16">
-            <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Ce que vous obtenez</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Sous le capot</p>
             <h2 className="font-semibold text-3xl md:text-4xl tracking-tightest text-slate-900">
-              Six gestes faits pour vous, à chaque lead.
+              Six trucs que vous faites à la main.<br />
+              <span className="text-slate-500 font-normal">Maintenant faits avant que vous arriviez.</span>
             </h2>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-slate-200 rounded-2xl overflow-hidden border border-slate-200">
             {[
-              { icon: <Icons.Mail />, title: 'Lecture des entrées', desc: 'Gmail, formulaire site, transfert mail ou import Excel. BankKey récupère le lead par la porte qui vous arrange.' },
-              { icon: <Icons.Gauge />, title: 'Score de bancabilité', desc: 'Une note sur 100 calculée sur les revenus, l\'apport, la situation pro et la maturité du projet. Pondérations ajustables.' },
-              { icon: <Icons.FileText />, title: 'Profil structuré', desc: 'Tous les champs sortis du mail et rangés proprement. Modifiables en un clic si l\'IA s\'est trompée.' },
-              { icon: <Icons.Send />, title: 'Réponse rédigée', desc: 'Un brouillon dans votre ton, prêt à relire et à envoyer depuis votre Gmail. Aucun envoi automatique sans votre validation.' },
-              { icon: <Icons.Phone />, title: 'Briefing d\'appel', desc: 'Le contexte du dossier, le vrai besoin, la question d\'ouverture à poser. Pour ne pas démarrer l\'appel à froid.' },
-              { icon: <Icons.Bolt />, title: 'Priorisation', desc: 'Les dossiers chauds remontent. Les newsletters et spams sont écartés, mais récupérables si BankKey s\'est trompé.' },
+              { icon: <Icons.Mail />, title: 'Tri de la boîte mail', desc: 'Gmail, Outlook, un transfert ou un formulaire web. Le lead arrive par où vous voulez, BankKey le range au bon endroit.' },
+              { icon: <Icons.Gauge />, title: 'Score de bancabilité', desc: 'Une note sur 100 selon revenus, apport, situation pro et maturité du projet. Vous décidez du poids de chaque critère.' },
+              { icon: <Icons.FileText />, title: 'Profil emprunteur', desc: 'Les champs habituels (revenus, apport, charges, projet) extraits du mail. Vous corrigez en un clic si BankKey a mal lu.' },
+              { icon: <Icons.Send />, title: 'Brouillon de réponse', desc: 'Un mail dans votre ton, à relire et envoyer depuis votre Gmail. Rien ne part automatiquement.' },
+              { icon: <Icons.Phone />, title: 'Briefing d\'appel', desc: 'Contexte du dossier, vrai besoin, question d\'ouverture. Vous ne démarrez plus à froid.' },
+              { icon: <Icons.Bolt />, title: 'Priorisation', desc: 'Les hot leads en haut. Les newsletters et factures écartées, mais récupérables si le filtre s\'est trompé.' },
             ].map((f, i) => (
               <div key={i} className="bg-white p-7">
                 <div className="text-blue-900 mb-4">{f.icon}</div>
@@ -294,7 +291,7 @@ export default function LandingPage() {
             <span className="block text-slate-500 font-normal">On vous aide à le remplir mieux.</span>
           </h2>
           <p className="text-slate-600 max-w-xl mx-auto">
-            Vous utilisez Aprico ou Marketis ? Gardez-les. BankKey travaille en amont, sur la pile d&apos;emails qui arrive le matin. Vos dossiers signés restent là où ils sont.
+            Aprico, Marketis, votre Excel maison. Tout reste. BankKey gère la pile d&apos;emails du matin, et vous remplissez votre CRM avec ce qui en sort vraiment.
           </p>
         </div>
 
@@ -351,10 +348,10 @@ export default function LandingPage() {
           <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Programme pilote 2026</p>
           <h2 className="font-semibold text-3xl md:text-4xl tracking-tightest text-slate-900 mb-5">
             Vingt cabinets fondateurs.
-            <span className="block text-slate-500 font-normal">Vous pouvez en faire partie.</span>
+            <span className="block text-slate-500 font-normal">Une place vous attend.</span>
           </h2>
           <p className="text-slate-600 leading-relaxed mb-8 max-w-xl mx-auto">
-            On ouvre vingt places. En échange de vos retours hebdo, vous bloquez votre tarif à vie, vous avez ma ligne directe pour vos questions, et vos demandes passent en priorité sur la roadmap.
+            Vingt places, pas une de plus. Vous bloquez votre tarif à vie, vous avez le numéro direct de Tim, et chaque feature que vous demandez passe en priorité sur la roadmap.
           </p>
 
           <div className="grid grid-cols-3 gap-4 mb-8 max-w-lg mx-auto">
@@ -427,36 +424,36 @@ export default function LandingPage() {
         <div className="divide-y divide-slate-200 border-y border-slate-200">
           {[
             {
-              q: 'Quelle différence avec un CRM courtage ?',
-              a: 'Un CRM gère vos dossiers actifs. BankKey s\'occupe de la pile d\'emails qui arrive avant. Les deux outils se complètent : on filtre et on qualifie, vous remplissez votre CRM avec ce qui en sort.',
+              q: 'Différence avec mon CRM ?',
+              a: 'Le CRM gère vos dossiers signés. BankKey gère la pile d\'emails du matin. On ne remplace rien, on remplit votre CRM avec ce qui en sort vraiment.',
             },
             {
               q: 'Combien de dossiers BankKey peut traiter par mois ?',
-              a: 'Pas de limite imposée. Les cabinets pilotes tournent entre 50 et 200 emails par mois. La capacité dépend de votre boîte mail, pas de BankKey.',
+              a: 'Pas de plafond. Les pilotes tournent entre 50 et 200 emails par mois. La limite, c\'est votre boîte mail, pas la nôtre.',
             },
             {
               q: 'BankKey envoie des emails à votre place ?',
-              a: 'Non. C\'est volontaire. BankKey rédige le brouillon, vous le relisez, vous cliquez "envoyer" depuis votre Gmail. Aucun message ne part automatiquement.',
+              a: 'Non, et c\'est exprès. On rédige le brouillon, vous le relisez, vous cliquez envoyer depuis Gmail. Aucun mail ne part sans votre validation.',
             },
             {
-              q: 'Si l\'IA se trompe sur un dossier ?',
-              a: 'Le score est un outil de priorisation, pas une décision finale. Sur la fiche prospect, chaque champ (revenus, apport, situation pro) est modifiable en un clic et le score se recalcule. C\'est vous qui décidez.',
+              q: 'Si BankKey se trompe sur un champ ?',
+              a: 'Vous cliquez "Corriger" sur la fiche, vous changez la valeur, le score se recalcule. C\'est vous qui décidez.',
             },
             {
               q: 'Combien de temps pour démarrer ?',
-              a: 'Dix minutes. Vous créez votre compte via Google, vous connectez votre Gmail, le premier lead est analysé dans la foulée. Rien à installer sur votre poste.',
+              a: 'Dix minutes. Création de compte avec Google, connexion Gmail (ou un simple transfert email), premier lead analysé dans la foulée.',
             },
             {
               q: 'Mes données restent confidentielles ?',
-              a: 'Oui. Hébergement à Francfort, chiffrement TLS et AES-256, isolation par cabinet. Vos emails ne servent jamais à entraîner un modèle. Le détail des sous-traitants est sur la page sécurité.',
+              a: 'Hébergement à Francfort, chiffrement TLS + AES-256, isolation par cabinet. Vos emails ne servent à rien d\'autre qu\'à vous. Le détail des sous-traitants est sur la page sécurité.',
             },
             {
               q: 'Si je veux arrêter ?',
-              a: 'Annulation en un clic depuis votre espace. Vous gardez l\'accès jusqu\'à la fin de la période payée, vous exportez tout en CSV, et vos données sont supprimées sous 72 heures.',
+              a: 'Annulation en un clic. Vous gardez l\'accès jusqu\'à la fin du mois payé, vous exportez tout en CSV, vos données sont supprimées sous 72 heures.',
             },
             {
               q: 'Je peux tester avant de payer ?',
-              a: 'Oui. Trente jours d\'essai sans carte bancaire. Vous pouvez aussi réserver une démo de 20 minutes sur vos vrais emails.',
+              a: 'Trente jours offerts, sans carte. Ou directement le compte démo (bouton "Tester le compte démo" en haut de page).',
             },
           ].map((item, i) => (
             <details key={i} className="group py-5">
