@@ -120,6 +120,53 @@ types/index.ts              # Types partagés (QualificationResult, ScoringResul
 
 ## 7. Statut actuel (mettre à jour à chaque session)
 
+### 🆕 Livré le 10 juin 2026
+
+**Refonte visuelle complète**
+- Logo : composant `LogoMark` réutilisable (clé géométrique navy, plus de "BK" texte)
+- Typo : Fraunces sur les H1/H2 (serif distinctive), Inter sur le corps
+- Couleur brand : navy `#1e3a8a` (vs noir slate-900 avant)
+- Textes : passe sans em-dash, sans marketing-IA — sur landing, login, security, FAQ
+- 13 instances "BK" remplacées sur tout le site
+
+**Compte démo `/demo/access` + seed enrichi**
+- Page publique avec identifiants `demo@bankkey.ch / DemoBankKey2026`
+- Bouton "Copier" sur les credentials
+- Liste de 10 sections à explorer
+- Seed Supabase v2 (`supabase/seed-demo-reset.sql`) : profil cabinet 7 mois,
+  90 prospects (10 récents détaillés + 80 historiques),
+  25 emails filtrés (spam, perso, promo, notifications),
+  50 décisions bancaires sur 6 mois avec rate_pct + commissions JSONB,
+  sources variées (Empruntis, Pretto, SeLoger, Meilleurtaux, web_form, forwarding, whatsapp),
+  bank_submitted JSONB sur ~35 prospects pour alimenter `/pro/banks` kanban
+- Reset nocturne via pg_cron (`supabase/setup-cron.sql`)
+
+**Auth & inscription**
+- Login page brandée 2 colonnes (navy panel + form blanc)
+- `signInWithOAuth({ provider: 'google' })` via Supabase
+- Callback `/auth/callback` qui détecte nouveau vs existant
+- Page d'aide pour brander écran consentement Google (à faire côté Tim)
+
+**Outreach & demo playbook**
+- OUTREACH-2026.md : refonte phone-first + plan 7 jours + 50 cibles
+- DEMO-PLAYBOOK.md : carte "fondateur transparent" intégrée partout
+- Section §11 "20 cabinets fondateurs" dans tous les scripts
+
+**Features pro app**
+- `/api/ingest/email` : webhook Resend Inbound pour ingestion par email forward
+- `/pro/filtered` : page emails écartés + bouton Restaurer
+- Modale `EditQualificationModal` : "Corriger" sur fiche prospect
+- Export CSV sur /pro/prospects (BOM UTF-8)
+- Créneaux dynamiques `/book` (10 prochains ouvrés, exclut passés)
+- Admin v2 enrichie : MRR/ARR/commissions, top 5 actifs, AdminTable interactive
+- Pricing scoring `/pro/settings` : sliders indépendants + normalisation au save
+
+**Polish & SEO**
+- robots.ts, sitemap.ts, not-found.tsx, error.tsx
+- icon.svg + apple-icon.svg (clé navy)
+- metadataBase + Open Graph
+- Mot de passe oublié (`?mode=reset`)
+
 ### ✅ Livré (état au 8 juin 2026)
 
 **Landing & marketing**
