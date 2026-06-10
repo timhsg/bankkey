@@ -361,7 +361,7 @@ export default function InteractiveDemo() {
 
               <div className="text-center">
                 <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-2">Le reste de l&apos;app</p>
-                <h2 className="font-semibold text-2xl md:text-3xl font-medium tracking-tight text-slate-900">
+                <h2 className="font-semibold text-2xl md:text-3xl tracking-tight text-slate-900">
                   Ce que vous voyez après quelques semaines d&apos;utilisation.
                 </h2>
                 <p className="text-sm text-slate-600 mt-3 max-w-xl mx-auto">
