@@ -79,6 +79,12 @@ BEGIN
     RETURN 'Erreur : aucun utilisateur demo@bankkey.ch trouvé.';
   END IF;
 
+  -- Sécurité compte partagé : restaure le mot de passe à chaque reset.
+  -- Sans ça, un visiteur peut le changer via l'app et verrouiller le compte.
+  UPDATE auth.users
+  SET encrypted_password = extensions.crypt('DemoBankKey2026', extensions.gen_salt('bf'))
+  WHERE id = demo_user_id;
+
   -- ════════════════════════════════════════════════════════════════
   --  0. Profil cabinet (7 mois d'activité)
   -- ════════════════════════════════════════════════════════════════

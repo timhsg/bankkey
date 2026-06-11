@@ -12,6 +12,14 @@ export async function POST() {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
     }
 
+    // Compte démo partagé : pas de paiement possible
+    if (user.email === 'demo@bankkey.ch') {
+      return NextResponse.json(
+        { error: 'Le compte démo ne permet pas de souscrire. Créez votre propre compte gratuit.' },
+        { status: 403 },
+      )
+    }
+
     // 2. Vérifier ou créer le customer Stripe
     const admin = createAdminClient()
     const { data: profile } = await admin

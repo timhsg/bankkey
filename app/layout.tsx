@@ -1,15 +1,23 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Hanken_Grotesk, Bricolage_Grotesque } from 'next/font/google';
 import { headers } from 'next/headers';
 import { CurrencyProvider } from './_components/CurrencyContext';
 import { currencyFromCountry } from '@/lib/currency';
 import './globals.css';
 
-// Inter — police unique, poids variés pour hiérarchie
-const inter = Inter({
+// Hanken Grotesk — corps de texte : chaleureux, précis, très lisible
+const hanken = Hanken_Grotesk({
   subsets: ['latin'],
   variable: '--font-sans',
   weight: ['400', '500', '600', '700'],
+  display: 'swap',
+});
+
+// Bricolage Grotesque — titres : grotesque de caractère, ton fintech affirmé
+const bricolage = Bricolage_Grotesque({
+  subsets: ['latin'],
+  variable: '--font-display',
+  weight: ['500', '600', '700'],
   display: 'swap',
 });
 
@@ -34,8 +42,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const initialCurrency = currencyFromCountry(country);
 
   return (
-    <html lang="fr" className={inter.variable}>
-      <body className="font-sans antialiased tracking-tight">
+    <html lang="fr" className={`${hanken.variable} ${bricolage.variable}`}>
+      <body className="font-sans antialiased">
         <CurrencyProvider initialCurrency={initialCurrency}>
           {children}
         </CurrencyProvider>

@@ -18,7 +18,7 @@ BankKey est un SaaS qui qualifie automatiquement les emails de demande de financ
 **Tarif lancement programme pilote** : Essai gratuit 30 jours · Pro **199 €/mois** (et 199 CHF/mois pour la Suisse).
 - Stripe Price ID actuel : `price_1TfyJw0reUrQKljH2Z3oIAKX` (199 EUR/mois)
 - Ancien Price ID (349 EUR, archivé) : `price_1TffPa0reUrQKljHZBVtkXHM`
-- **Resend** (emails transactionnels + digest mensuel) : compte créé, clé API `re_gHTvvk54_9ZfK3LBnjvLwzRPYdR556vZ1` en .env.local. Domaine `bankkey.ch` à vérifier via DNS pour envoyer depuis @bankkey.ch.
+- **Resend** (emails transactionnels + digest mensuel) : compte créé, clé API dans `.env.local` (jamais dans ce fichier — il est commité). ⚠️ L'ancienne clé a fuité dans l'historique git le 11/06/2026 et doit être révoquée + régénérée sur resend.com/api-keys. Domaine `bankkey.ch` à vérifier via DNS pour envoyer depuis @bankkey.ch.
 - **Sentry** : setup en cours par Tim (compte gratuit Developer + projet Next.js)
 
 ## 2. Stack technique
