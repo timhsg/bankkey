@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation'
 import Sidebar from './Sidebar'
 
 /**
- * Shell de l'app pro : sidebar + content area.
+ * Shell de l'app pro : sidebar fixe à gauche, content area à droite.
  * /pro/login et /pro/onboarding utilisent un layout fullscreen sans sidebar.
  */
 export default function ProShell({ children }: { children: React.ReactNode }) {
@@ -16,9 +16,9 @@ export default function ProShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-white">
       <Sidebar />
-      <div className="lg:pl-60">
+      <div className="lg:pl-64">
         {children}
       </div>
     </div>

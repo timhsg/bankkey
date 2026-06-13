@@ -4,10 +4,13 @@ import { Suspense, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { LogoMark } from '@/app/_components/Logo'
 
-// ════════════════════════════════════════════════════════════════════════
-//  /pro/login — 2 colonnes : panneau brandé navy + formulaire blanc
-// ════════════════════════════════════════════════════════════════════════
+// ─────────────────────────────────────────────────────────────
+// /pro/login — split 2 colonnes
+// Gauche : promo BankKey avec gradient brand
+// Droite : formulaire propre, Google OAuth en haut
+// ─────────────────────────────────────────────────────────────
 
 type Mode = 'login' | 'signup' | 'reset'
 
@@ -87,7 +90,6 @@ function LoginInner() {
       if (error) {
         setMessage({ type: 'error', text: error.message })
       } else if (data.session) {
-        // Pré-remplir le profil avec le nom
         try {
           await supabase
             .from('profiles')
@@ -114,104 +116,105 @@ function LoginInner() {
   const isReset  = mode === 'reset'
 
   return (
-    <div className="min-h-screen lg:grid lg:grid-cols-5 bg-slate-50">
+    <div className="min-h-screen bg-white">
 
-      {/* ═══════ Colonne brandée navy ═══════ */}
-      <aside className="hidden lg:flex lg:col-span-2 relative overflow-hidden bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white p-12 flex-col justify-between">
+      {/* ═══════════ Colonne promo (gauche) — fixée pour ne plus bouger ═══════════ */}
+      <aside className="hidden lg:flex lg:fixed lg:inset-y-0 lg:left-0 lg:w-1/2 relative overflow-hidden text-white p-12 flex-col justify-between bg-brand-gradient">
 
-        {/* Halos */}
+        {/* Halos décoratifs */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-700/20 rounded-full blur-3xl" />
-          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl" />
+          <div className="absolute top-0 -left-32 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 -right-32 w-96 h-96 bg-accent/30 rounded-full blur-3xl" />
         </div>
 
         {/* Logo */}
-        <Link href="/" className="relative flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
-            <KeyIcon />
+        <Link href="/" className="relative flex items-center gap-2.5 z-10">
+          <div className="w-9 h-9 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
+            <LogoMark size={18} variant="dark" />
           </div>
-          <span className="font-semibold tracking-tight">BankKey</span>
+          <span className="font-bold tracking-tight text-lg">BankKey</span>
         </Link>
 
         {/* Pitch */}
-        <div className="relative space-y-8">
-          <h2 className="text-3xl font-semibold tracking-tight leading-tight">
-            Vos prospects qualifiés, prêts pour la banque.
-          </h2>
-          <p className="text-blue-100/80 leading-relaxed text-sm max-w-md">
-            BankKey lit vos emails entrants, extrait le profil emprunteur et prépare votre réponse en moins d&apos;une minute. Vous gardez la main.
-          </p>
+        <div className="relative space-y-8 z-10">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest text-blue-200 mb-4">
+              Pour les courtiers en crédit
+            </p>
+            <h2 className="text-4xl font-extrabold tracking-tightest leading-[1.05] mb-5">
+              Le premier courtier à répondre décroche le dossier.
+            </h2>
+            <p className="text-blue-100 leading-relaxed text-base max-w-md">
+              BankKey centralise vos demandes de financement, qualifie chaque prospect et prépare votre réponse — avant même que vous arriviez au bureau.
+            </p>
+          </div>
 
-          <div className="space-y-3 pt-4">
+          <div className="space-y-4 pt-2">
             {[
-              { icon: <ShieldIcon />, text: 'Lecture seule de votre Gmail, jamais d\'envoi en votre nom' },
-              { icon: <LockIcon />,   text: 'Chiffrement AES-256, hébergement à Francfort' },
-              { icon: <GavelIcon />,  text: 'Conformité RGPD, isolation par cabinet' },
-            ].map((item, i) => (
-              <div key={i} className="flex items-start gap-3 text-sm">
-                <span className="w-7 h-7 rounded-md bg-white/10 border border-white/15 flex items-center justify-center shrink-0 mt-0.5">
-                  {item.icon}
-                </span>
-                <span className="text-blue-100/90 pt-1">{item.text}</span>
+              { metric: '< 5 min', label: 'Réponse initiale à chaque prospect' },
+              { metric: '−80 %',   label: 'Temps de qualification' },
+              { metric: '×2',      label: 'Dossiers traités par semaine' },
+            ].map((s) => (
+              <div key={s.label} className="flex items-baseline gap-4 border-l-2 border-white/20 pl-5">
+                <p className="text-3xl font-extrabold tracking-tightest text-white">{s.metric}</p>
+                <p className="text-sm text-blue-100/80">{s.label}</p>
               </div>
             ))}
           </div>
         </div>
 
         {/* Footer pilote */}
-        <div className="relative">
-          <div className="inline-flex items-center gap-2 text-[11px] font-medium text-emerald-200 bg-emerald-500/10 border border-emerald-400/20 px-3 py-1.5 rounded-full">
+        <div className="relative z-10">
+          <div className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-200 bg-emerald-500/15 border border-emerald-400/30 px-3 py-1.5 rounded-full">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            Programme pilote 2026
+            Programme pilote 2026 · 50 places
           </div>
-          <p className="text-[11px] text-blue-200/60 mt-4">
-            © {new Date().getFullYear()} BankKey
+          <p className="text-xs text-blue-200/60 mt-4">
+            © {new Date().getFullYear()} BankKey — France & Suisse
           </p>
         </div>
       </aside>
 
-      {/* ═══════ Colonne formulaire ═══════ */}
-      <main className="lg:col-span-3 flex flex-col min-h-screen lg:min-h-0">
+      {/* ═══════════ Colonne formulaire (droite) ═══════════ */}
+      <main className="flex flex-col min-h-screen lg:ml-[50%]">
 
         {/* Header mobile */}
-        <div className="lg:hidden border-b border-slate-200 bg-white px-6 h-14 flex items-center justify-between">
+        <div className="lg:hidden border-b border-[#E5E7EB] bg-white px-6 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-md bg-blue-900 flex items-center justify-center">
-              <KeyIcon />
-            </div>
-            <span className="font-semibold text-slate-900 tracking-tight text-sm">BankKey</span>
+            <LogoMark size={22} />
+            <span className="font-bold text-navy tracking-tight text-sm">BankKey</span>
           </Link>
-          <Link href="/" className="text-xs text-slate-500 hover:text-slate-900">Accueil</Link>
+          <Link href="/" className="text-xs text-[#6B7280] hover:text-navy">Accueil</Link>
         </div>
 
-        <div className="flex-1 flex items-center justify-center px-6 py-10 lg:py-16">
-          <div className="w-full max-w-sm">
+        <div className="flex-1 flex items-center justify-center px-6 py-12 lg:py-16">
+          <div className="w-full max-w-md">
 
-            <div className="mb-7">
-              <h1 className="text-2xl lg:text-3xl font-semibold text-slate-900 tracking-tight mb-2 leading-tight">
+            <div className="mb-8">
+              <h1 className="text-3xl font-extrabold text-[#0A0F1E] tracking-tightest mb-2 leading-tight">
                 {isReset  ? 'Mot de passe oublié' :
                  isSignup ? 'Créer votre compte' :
-                            'Bon retour parmi nous'}
+                            'Connectez-vous'}
               </h1>
-              <p className="text-sm text-slate-600 leading-relaxed">
+              <p className="text-sm text-[#6B7280] leading-relaxed">
                 {isReset  ? 'Entrez votre email professionnel, on vous envoie un lien.' :
-                 isSignup ? 'Essai gratuit 30 jours, sans carte bancaire.' :
-                            'Connectez-vous à votre espace BankKey.'}
+                 isSignup ? 'Essai gratuit 30 jours · Aucune carte bancaire.' :
+                            'Accédez à votre espace BankKey.'}
               </p>
             </div>
 
             {/* Tabs */}
             {!isReset && (
-              <div className="flex gap-1 p-1 bg-slate-100 rounded-lg mb-6">
+              <div className="flex gap-1 p-1 bg-[#F3F4F6] rounded-lg mb-6">
                 {(['login', 'signup'] as const).map(m => (
                   <button
                     key={m}
                     type="button"
                     onClick={() => { setMode(m); setMessage(null) }}
-                    className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                    className={`flex-1 py-2 text-sm font-semibold rounded-md transition-all ${
                       mode === m
-                        ? 'bg-white text-slate-900 shadow-sm'
-                        : 'text-slate-600 hover:text-slate-900'
+                        ? 'bg-white text-navy shadow-sm'
+                        : 'text-[#6B7280] hover:text-navy'
                     }`}
                   >
                     {m === 'login' ? 'Connexion' : 'Créer un compte'}
@@ -227,87 +230,55 @@ function LoginInner() {
                   type="button"
                   onClick={handleGoogle}
                   disabled={googleLoading || loading}
-                  className="w-full flex items-center justify-center gap-2.5 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 disabled:opacity-50 text-slate-900 font-medium px-4 py-2.5 rounded-lg transition-colors text-sm"
+                  className="w-full flex items-center justify-center gap-3 bg-white border border-[#D1D5DB] hover:border-navy hover:bg-[#F7F8FA] disabled:opacity-50 text-[#0A0F1E] font-semibold px-4 py-3 rounded-lg transition-all text-sm"
                 >
                   {googleLoading ? (
-                    <span className="w-4 h-4 border-2 border-slate-300 border-t-slate-700 rounded-full animate-spin" />
+                    <span className="w-4 h-4 border-2 border-[#E5E7EB] border-t-navy rounded-full animate-spin" />
                   ) : (
                     <GoogleLogo />
                   )}
                   {googleLoading ? 'Redirection...' : (isSignup ? 'S\'inscrire avec Google' : 'Continuer avec Google')}
                 </button>
 
-                <div className="flex items-center gap-3 my-5">
-                  <div className="flex-1 h-px bg-slate-200" />
-                  <span className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">ou</span>
-                  <div className="flex-1 h-px bg-slate-200" />
+                <div className="flex items-center gap-3 my-6">
+                  <div className="flex-1 h-px bg-[#E5E7EB]" />
+                  <span className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-widest">ou avec votre email</span>
+                  <div className="flex-1 h-px bg-[#E5E7EB]" />
                 </div>
               </>
             )}
 
             {/* Formulaire */}
-            <form onSubmit={handleSubmit} className="space-y-3.5">
+            <form onSubmit={handleSubmit} className="space-y-4">
 
-              {/* Nom & prénom uniquement en signup */}
               {isSignup && (
                 <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-[11px] font-medium text-slate-600 mb-1.5 block">
-                      Prénom
-                    </label>
-                    <input
-                      type="text"
-                      value={firstName}
-                      onChange={e => setFirstName(e.target.value)}
-                      required
-                      placeholder="Marie"
-                      autoComplete="given-name"
-                      className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[11px] font-medium text-slate-600 mb-1.5 block">
-                      Nom
-                    </label>
-                    <input
-                      type="text"
-                      value={lastName}
-                      onChange={e => setLastName(e.target.value)}
-                      required
-                      placeholder="Lefèvre"
-                      autoComplete="family-name"
-                      className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent"
-                    />
-                  </div>
+                  <Field label="Prénom" value={firstName} onChange={setFirstName} required placeholder="Marie" autoComplete="given-name" />
+                  <Field label="Nom"    value={lastName}  onChange={setLastName}  required placeholder="Lefèvre" autoComplete="family-name" />
                 </div>
               )}
 
-              <div>
-                <label className="text-[11px] font-medium text-slate-600 mb-1.5 block">
-                  Email professionnel
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  required
-                  placeholder="vous@cabinet-courtage.fr"
-                  autoComplete="email"
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent"
-                />
-              </div>
+              <Field
+                label="Email professionnel"
+                type="email"
+                value={email}
+                onChange={setEmail}
+                required
+                placeholder="vous@cabinet-courtage.fr"
+                autoComplete="email"
+              />
 
               {!isReset && (
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-[11px] font-medium text-slate-600">
+                    <label className="text-xs font-semibold text-[#374151]">
                       Mot de passe
                     </label>
                     {isLogin && (
                       <button
                         type="button"
                         onClick={() => { setMode('reset'); setMessage(null) }}
-                        className="text-[11px] text-slate-500 hover:text-slate-900"
+                        className="text-xs font-medium text-accent hover:text-navy transition-colors"
                       >
                         Oublié ?
                       </button>
@@ -321,16 +292,16 @@ function LoginInner() {
                     minLength={isSignup ? 8 : 6}
                     placeholder={isSignup ? 'Au moins 8 caractères' : '••••••••'}
                     autoComplete={isLogin ? 'current-password' : 'new-password'}
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent"
+                    className="w-full border border-[#D1D5DB] rounded-lg px-3.5 py-2.5 text-sm placeholder:text-[#9CA3AF] focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all"
                   />
                 </div>
               )}
 
               {message && (
-                <div className={`text-xs px-3 py-2 rounded-lg ${
+                <div className={`text-sm px-3.5 py-2.5 rounded-lg border ${
                   message.type === 'error'
-                    ? 'bg-red-50 text-red-700 border border-red-100'
-                    : 'bg-blue-50 text-blue-700 border border-blue-100'
+                    ? 'bg-red-50 text-red-700 border-red-200'
+                    : 'bg-blue-50 text-blue-700 border-blue-200'
                 }`}>
                   {message.text}
                 </div>
@@ -339,9 +310,9 @@ function LoginInner() {
               <button
                 type="submit"
                 disabled={loading || googleLoading}
-                className="w-full bg-blue-900 hover:bg-blue-800 disabled:bg-slate-300 text-white font-medium text-sm py-2.5 rounded-lg transition-colors"
+                className="btn-primary w-full justify-center py-3 text-sm disabled:opacity-50"
               >
-                {loading ? '...' :
+                {loading ? 'Chargement...' :
                   isLogin  ? 'Se connecter' :
                   isReset  ? 'Envoyer le lien' :
                              'Créer mon compte'}
@@ -352,7 +323,7 @@ function LoginInner() {
               <p className="text-center mt-5">
                 <button
                   onClick={() => { setMode('login'); setMessage(null) }}
-                  className="text-xs text-slate-500 hover:text-slate-900"
+                  className="text-sm text-[#6B7280] hover:text-navy transition-colors font-medium"
                 >
                   ← Retour à la connexion
                 </button>
@@ -360,17 +331,17 @@ function LoginInner() {
             )}
 
             {isSignup && (
-              <p className="text-[11px] text-slate-500 mt-5 leading-relaxed text-center">
+              <p className="text-xs text-[#9CA3AF] mt-5 leading-relaxed text-center">
                 En créant un compte vous acceptez nos{' '}
-                <Link href="/terms" className="text-slate-700 underline hover:text-slate-900">conditions générales</Link>
+                <Link href="/terms" className="text-[#374151] underline hover:text-navy">conditions générales</Link>
                 {' '}et notre{' '}
-                <Link href="/privacy" className="text-slate-700 underline hover:text-slate-900">politique de confidentialité</Link>.
+                <Link href="/privacy" className="text-[#374151] underline hover:text-navy">politique de confidentialité</Link>.
               </p>
             )}
 
-            <div className="mt-10 pt-5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-              <Link href="/" className="hover:text-slate-700">← Accueil</Link>
-              <Link href="/security" className="hover:text-slate-700">Sécurité &amp; RGPD</Link>
+            <div className="mt-10 pt-5 border-t border-[#E5E7EB] flex items-center justify-between text-xs text-[#9CA3AF]">
+              <Link href="/" className="hover:text-navy transition-colors">← Accueil</Link>
+              <Link href="/security" className="hover:text-navy transition-colors">Sécurité & RGPD</Link>
             </div>
           </div>
         </div>
@@ -382,8 +353,8 @@ function LoginInner() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="w-5 h-5 border-2 border-slate-200 border-t-slate-600 rounded-full animate-spin" />
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="w-5 h-5 border-2 border-[#E5E7EB] border-t-navy rounded-full animate-spin" />
       </div>
     }>
       <LoginInner />
@@ -391,56 +362,44 @@ export default function LoginPage() {
   )
 }
 
-// ── Icons ──────────────────────────────────────────────────────────
+// ── Composants ─────────────────────────────────────────────────────
+
+function Field({
+  label, value, onChange, type = 'text', required, placeholder, autoComplete,
+}: {
+  label: string
+  value: string
+  onChange: (v: string) => void
+  type?: string
+  required?: boolean
+  placeholder?: string
+  autoComplete?: string
+}) {
+  return (
+    <div>
+      <label className="text-xs font-semibold text-[#374151] mb-1.5 block">
+        {label}{required && <span className="text-red-500 ml-0.5">*</span>}
+      </label>
+      <input
+        type={type}
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        required={required}
+        placeholder={placeholder}
+        autoComplete={autoComplete}
+        className="w-full border border-[#D1D5DB] rounded-lg px-3.5 py-2.5 text-sm placeholder:text-[#9CA3AF] focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all"
+      />
+    </div>
+  )
+}
 
 function GoogleLogo() {
   return (
-    <svg className="w-4 h-4" viewBox="0 0 48 48" aria-hidden="true">
+    <svg className="w-5 h-5" viewBox="0 0 48 48" aria-hidden="true">
       <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C12.955 4 4 12.955 4 24s8.955 20 20 20s20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/>
       <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C16.318 4 9.656 8.337 6.306 14.691z"/>
       <path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/>
       <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571c.001-.001.002-.001.003-.002l6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/>
-    </svg>
-  )
-}
-
-function KeyIcon() {
-  return (
-    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="8" cy="15" r="4" />
-      <line x1="10.85" y1="12.15" x2="19" y2="4" />
-      <line x1="18" y1="5" x2="20" y2="7" />
-      <line x1="15" y1="8" x2="17" y2="10" />
-    </svg>
-  )
-}
-
-function ShieldIcon() {
-  return (
-    <svg className="w-3.5 h-3.5 text-emerald-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
-    </svg>
-  )
-}
-
-function LockIcon() {
-  return (
-    <svg className="w-3.5 h-3.5 text-blue-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect width="18" height="11" x="3" y="11" rx="2" />
-      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-    </svg>
-  )
-}
-
-function GavelIcon() {
-  return (
-    <svg className="w-3.5 h-3.5 text-amber-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M14 13L8 7" />
-      <path d="M16 19l-7-7" />
-      <path d="M5 22h14" />
-      <path d="M3.5 13.5L9 8" />
-      <path d="M9 19l5-5" />
-      <path d="M15 8l3 3" />
     </svg>
   )
 }

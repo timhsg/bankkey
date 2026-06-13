@@ -5,11 +5,10 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
-// ════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════
 //  /pro/bilan — Bilan mensuel du cabinet
-//  Vue récap du mois courant ET du mois précédent — base du futur
-//  email digest automatique (envoyé chaque 1er du mois via Resend)
-// ════════════════════════════════════════════════════════════════════════
+//  KPIs bancaires : acquisition + sources + résultats banques
+// ═══════════════════════════════════════════════════════════════════════
 
 interface Prospect {
   id: string
@@ -63,8 +62,7 @@ export default function BilanPage() {
     void load()
   }, [supabase, router])
 
-  // ── Calcul des bornes du mois sélectionné ──
-  const { startDate, endDate, periodLabel, periodShort } = useMemo(() => {
+  const { startDate, endDate, periodLabel } = useMemo(() => {
     const now = new Date()
     const start = new Date(now.getFullYear(), now.getMonth(), 1)
     const end   = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59)
@@ -76,7 +74,6 @@ export default function BilanPage() {
         startDate: prevStart,
         endDate: prevEnd,
         periodLabel: prevStart.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }),
-        periodShort: prevStart.toLocaleDateString('fr-FR', { month: 'short' }),
       }
     }
 
@@ -84,11 +81,9 @@ export default function BilanPage() {
       startDate: start,
       endDate: end,
       periodLabel: start.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }),
-      periodShort: start.toLocaleDateString('fr-FR', { month: 'short' }),
     }
   }, [period])
 
-  // ── Stats agrégées sur la période ──
   const stats = useMemo(() => {
     const inPeriod = (iso: string | null) => {
       if (!iso) return false
@@ -103,7 +98,6 @@ export default function BilanPage() {
     const replied = periodProspects.filter(p => p.status === 'replied').length
     const filtered = periodProspects.filter(p => p.status === 'filtered').length
 
-    // Répartition par source
     const bySource = new Map<string, number>()
     for (const p of periodProspects) {
       const src = p.detected_source?.sourceName ?? 'Direct'
@@ -113,15 +107,12 @@ export default function BilanPage() {
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count)
 
-    // Banques sollicitées dans la période
     const banksSubmitted = periodProspects.reduce((sum, p) => sum + (p.bank_submitted?.length ?? 0), 0)
 
-    // Résultats bancaires
     const accepted = periodOutcomes.filter(o => o.status === 'accepted').length
     const rejected = periodOutcomes.filter(o => o.status === 'rejected').length
     const counter  = periodOutcomes.filter(o => o.status === 'counter').length
 
-    // Taux moyen sur les accords
     const acceptedRates = periodOutcomes
       .filter(o => o.status === 'accepted' && o.rate_pct !== null)
       .map(o => o.rate_pct!)
@@ -129,7 +120,6 @@ export default function BilanPage() {
       ? acceptedRates.reduce((s, r) => s + r, 0) / acceptedRates.length
       : null
 
-    // Montant total accordé
     const totalLoanAmount = periodOutcomes
       .filter(o => o.status === 'accepted' && o.loan_amount !== null)
       .reduce((s, o) => s + (o.loan_amount ?? 0), 0)
@@ -149,7 +139,6 @@ export default function BilanPage() {
     }
   }, [prospects, outcomes, startDate, endDate])
 
-  // ── Diff vs mois précédent ──
   const previousMonthStats = useMemo(() => {
     if (period !== 'current') return null
 
@@ -176,90 +165,107 @@ export default function BilanPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-5 h-5 border-2 border-slate-200 border-t-slate-600 rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-[#F7F8FA]">
+        <div className="w-5 h-5 border-2 border-[#E5E7EB] border-t-navy rounded-full animate-spin" />
       </div>
     )
   }
 
-  function delta(curr: number, prev: number | undefined): string {
-    if (prev === undefined || prev === 0) return ''
+  function delta(curr: number, prev: number | undefined): { label: string; positive: boolean } | null {
+    if (prev === undefined || prev === 0) return null
     const diff = curr - prev
-    const sign = diff > 0 ? '+' : ''
-    return `${sign}${diff} vs ${periodShort === 'sept.' || periodShort === 'oct.' ? 'mois dernier' : 'mois précédent'}`
+    if (diff === 0) return null
+    return {
+      label: `${diff > 0 ? '+' : ''}${diff} vs mois précédent`,
+      positive: diff > 0,
+    }
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[#F7F8FA]">
 
-      {/* Header */}
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between gap-3 flex-wrap">
-          <div className="pl-12 lg:pl-0 min-w-0">
-            <h1 className="text-base font-semibold text-slate-900 tracking-tight">Bilan mensuel</h1>
-            <p className="text-[11px] text-slate-500 mt-0.5 capitalize">{periodLabel}</p>
+      {/* ── Header ── */}
+      <header className="bg-white border-b border-[#E5E7EB] sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-5 flex items-end justify-between gap-4 flex-wrap">
+          <div className="pl-12 lg:pl-0">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-[#9CA3AF] mb-1.5">Pipeline</p>
+            <h1 className="text-2xl font-extrabold text-navy tracking-tightest leading-none capitalize">Bilan · {periodLabel}</h1>
+            <p className="text-xs text-[#6B7280] mt-1.5 tabular-nums">
+              {stats.total} demande{stats.total > 1 ? 's' : ''} · {stats.accepted} accord{stats.accepted > 1 ? 's' : ''} bancaire{stats.accepted > 1 ? 's' : ''}
+            </p>
           </div>
 
           {/* Toggle période */}
-          <div className="inline-flex items-center bg-slate-100 rounded-full p-0.5 text-[11px] font-semibold shrink-0">
+          <div className="inline-flex items-center bg-[#F3F4F6] rounded-lg p-1 text-xs font-bold shrink-0">
             <button
               onClick={() => setPeriod('previous')}
-              className={`px-2.5 sm:px-3 py-1 rounded-full transition-all ${period === 'previous' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`px-3 py-1.5 rounded-md transition-all ${
+                period === 'previous'
+                  ? 'bg-navy text-white shadow-sm'
+                  : 'text-[#6B7280] hover:text-navy'
+              }`}
             >
               Mois dernier
             </button>
             <button
               onClick={() => setPeriod('current')}
-              className={`px-2.5 sm:px-3 py-1 rounded-full transition-all ${period === 'current' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`px-3 py-1.5 rounded-md transition-all ${
+                period === 'current'
+                  ? 'bg-navy text-white shadow-sm'
+                  : 'text-[#6B7280] hover:text-navy'
+              }`}
             >
               Ce mois
             </button>
           </div>
         </div>
-      </div>
+      </header>
 
-      <main className="max-w-5xl mx-auto px-6 py-8 space-y-8">
+      <main className="max-w-7xl mx-auto px-6 lg:px-8 py-8 space-y-8">
 
-        {/* Empty state */}
         {stats.total === 0 ? (
-          <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center max-w-2xl mx-auto">
-            <svg className="w-12 h-12 text-slate-300 mx-auto mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 3v18h18"/><path d="M7 12l4-4 4 4 5-5"/>
-            </svg>
-            <h2 className="text-sm font-semibold text-slate-900 mb-2">Aucune activité ce mois</h2>
-            <p className="text-xs text-slate-500 max-w-md mx-auto">
+          <div className="bg-white border border-[#E5E7EB] rounded-xl p-12 text-center max-w-2xl mx-auto">
+            <div className="w-12 h-12 rounded-full bg-[#F7F8FA] flex items-center justify-center mx-auto mb-4">
+              <svg className="w-5 h-5 text-[#9CA3AF]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 3v18h18"/><path d="M7 12l4-4 4 4 5-5"/>
+              </svg>
+            </div>
+            <h2 className="text-sm font-bold text-navy mb-2">Aucune activité ce mois</h2>
+            <p className="text-xs text-[#6B7280] max-w-md mx-auto leading-relaxed">
               Dès qu&apos;un prospect arrive ou qu&apos;une décision bancaire est enregistrée, votre bilan se construira automatiquement.
             </p>
           </div>
         ) : (
           <>
-            {/* ─── Section 1 : Acquisition ─── */}
-            <Section title="Acquisition" subtitle="Prospects reçus et traités ce mois">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <Kpi label="Prospects reçus"   value={stats.total}      sub={delta(stats.total, previousMonthStats?.total)} />
-                <Kpi label="Prioritaires"      value={stats.hot}        sub={delta(stats.hot, previousMonthStats?.hot)}    accent={stats.hot > 0 ? 'emerald' : undefined} />
-                <Kpi label="Filtrés (spam, perso)" value={stats.filtered} sub="Écartés automatiquement" />
-                <Kpi label="Taux de réponse"   value={`${stats.responseRate}%`} sub={`${stats.replied} répondu${stats.replied > 1 ? 's' : ''}`} />
+            {/* ── Section : Acquisition ── */}
+            <Section title="Acquisition" subtitle="Demandes reçues et traitées ce mois">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <Kpi label="Demandes reçues" value={stats.total} delta={delta(stats.total, previousMonthStats?.total)} icon="inbox" />
+                <Kpi label="Prioritaires"    value={stats.hot}   delta={delta(stats.hot, previousMonthStats?.hot)} accent="emerald" icon="bolt" />
+                <Kpi label="Écartés"         value={stats.filtered} hint="Spam, perso, non finançable" icon="filter" />
+                <Kpi label="Taux de réponse" value={`${stats.responseRate}%`} hint={`${stats.replied} répondu${stats.replied > 1 ? 's' : ''}`} icon="check" />
               </div>
             </Section>
 
-            {/* ─── Section 2 : Sources ─── */}
+            {/* ── Section : Sources ── */}
             {stats.sourceRanking.length > 0 && (
-              <Section title="Sources de leads" subtitle="D'où viennent vos prospects ce mois">
-                <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+              <Section title="Sources de prospects" subtitle="D'où viennent vos demandes ce mois">
+                <div className="bg-white border border-[#E5E7EB] rounded-xl overflow-hidden">
                   {stats.sourceRanking.map((src, idx) => {
                     const pct = Math.round(100 * src.count / stats.total)
                     return (
-                      <div key={src.name} className={`px-5 py-3 flex items-center gap-4 ${idx > 0 ? 'border-t border-slate-100' : ''}`}>
+                      <div key={src.name} className={`px-5 py-4 flex items-center gap-4 ${idx > 0 ? 'border-t border-[#F3F4F6]' : ''}`}>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-slate-900">{src.name}</p>
-                          <div className="mt-1.5 h-1 bg-slate-100 rounded-full overflow-hidden">
-                            <div className="h-full bg-slate-700 rounded-full" style={{ width: `${pct}%` }} />
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="text-sm font-bold text-navy">{src.name}</p>
+                            <p className="text-xs font-bold text-[#6B7280] tabular-nums">{src.count} · {pct}%</p>
                           </div>
-                        </div>
-                        <div className="text-right shrink-0">
-                          <p className="text-base font-semibold text-slate-900 tracking-tight">{src.count}</p>
-                          <p className="text-[10px] text-slate-400">{pct}%</p>
+                          <div className="h-1.5 bg-[#F3F4F6] rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-brand-gradient rounded-full transition-all duration-500"
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
                         </div>
                       </div>
                     )
@@ -268,26 +274,26 @@ export default function BilanPage() {
               </Section>
             )}
 
-            {/* ─── Section 3 : Résultats bancaires ─── */}
-            <Section title="Résultats bancaires" subtitle="Décisions enregistrées ce mois">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <Kpi label="Banques sollicitées" value={stats.banksSubmitted} sub="Au total ce mois" />
-                <Kpi label="Accords obtenus"     value={stats.accepted}        accent="emerald" sub={delta(stats.accepted, previousMonthStats?.accepted)} />
-                <Kpi label="Contre-offres"        value={stats.counter} />
-                <Kpi label="Refus"               value={stats.rejected}        accent={stats.rejected > stats.accepted ? 'red' : undefined} />
+            {/* ── Section : Résultats bancaires ── */}
+            <Section title="Résultats bancaires" subtitle="Décisions des banques ce mois">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <Kpi label="Banques sollicitées" value={stats.banksSubmitted} hint="Au total" icon="bank" />
+                <Kpi label="Accords obtenus"     value={stats.accepted} accent="emerald" delta={delta(stats.accepted, previousMonthStats?.accepted)} icon="check" />
+                <Kpi label="Contre-offres"        value={stats.counter} icon="arrows" />
+                <Kpi label="Refus"               value={stats.rejected} accent={stats.rejected > stats.accepted ? 'red' : undefined} icon="x" />
               </div>
 
               {stats.accepted > 0 && (
-                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3">
-                    <p className="text-[10px] font-semibold text-emerald-700 uppercase tracking-widest">Taux moyen obtenu</p>
-                    <p className="text-2xl font-semibold text-emerald-900 tracking-tight mt-1">
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-gradient-to-br from-emerald-50 to-white border-2 border-emerald-200 rounded-xl px-5 py-4">
+                    <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest mb-1">Taux moyen obtenu</p>
+                    <p className="text-3xl font-extrabold text-emerald-900 tracking-tightest tabular-nums leading-none">
                       {stats.avgRate ? `${stats.avgRate.toFixed(2)}%` : '—'}
                     </p>
                   </div>
-                  <div className="bg-blue-900 text-white rounded-xl px-4 py-3">
-                    <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Montant total accordé</p>
-                    <p className="text-2xl font-semibold tracking-tight mt-1">
+                  <div className="bg-brand-gradient text-white rounded-xl px-5 py-4 shadow-[0_4px_24px_rgba(10,31,92,0.16)]">
+                    <p className="text-[10px] font-bold text-blue-200 uppercase tracking-widest mb-1">Montant total accordé</p>
+                    <p className="text-3xl font-extrabold tracking-tightest tabular-nums leading-none">
                       {stats.totalLoanAmount > 0 ? formatMoney(stats.totalLoanAmount) : '—'}
                     </p>
                   </div>
@@ -295,14 +301,12 @@ export default function BilanPage() {
               )}
             </Section>
 
-            {/* ─── Note bas de page ─── */}
             <DigestPreviewCard />
           </>
         )}
 
-        {/* Lien vers statistiques avancées */}
-        <div className="text-center pt-4">
-          <Link href="/pro/statistiques" className="text-xs text-slate-500 hover:text-slate-900 transition-colors">
+        <div className="text-center pt-2">
+          <Link href="/pro/statistiques" className="text-xs font-semibold text-accent hover:text-navy transition-colors">
             Voir toutes les statistiques détaillées →
           </Link>
         </div>
@@ -311,7 +315,7 @@ export default function BilanPage() {
   )
 }
 
-// ── Carte preview email digest ─────────────────────────────────────
+// ── Sous-composants ─────────────────────────────────────────────────
 
 function DigestPreviewCard() {
   const [sending, setSending] = useState(false)
@@ -336,66 +340,87 @@ function DigestPreviewCard() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 via-white to-emerald-50/40 border border-blue-100 rounded-2xl px-5 py-5">
-      <div className="flex items-start gap-4">
-        <div className="w-10 h-10 rounded-xl bg-white border border-blue-100 flex items-center justify-center shrink-0">
-          <svg className="w-5 h-5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-            <rect width="20" height="16" x="2" y="4" rx="2"/>
-            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
-          </svg>
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-slate-900 mb-1">Envoi automatique chaque 1er du mois</p>
-          <p className="text-xs text-slate-600 leading-relaxed mb-3">
-            BankKey vous enverra ce bilan par email chaque 1er du mois à 09h. Voulez-vous voir à quoi ça ressemble dans votre boîte mail ?
+    <div className="bg-white border border-[#E5E7EB] rounded-xl p-5 flex items-start gap-4 shadow-card">
+      <div className="w-11 h-11 rounded-xl bg-brand-gradient flex items-center justify-center shrink-0 shadow-btn">
+        <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect width="20" height="16" x="2" y="4" rx="2"/>
+          <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+        </svg>
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-bold text-navy mb-1">Envoi automatique chaque 1er du mois</p>
+        <p className="text-xs text-[#6B7280] leading-relaxed mb-3">
+          BankKey vous enverra ce bilan par email chaque 1er du mois à 9h. Vous voulez voir à quoi ça ressemble dans votre boîte ?
+        </p>
+        <button
+          onClick={sendPreview}
+          disabled={sending}
+          className="text-xs font-bold bg-white border border-[#D1D5DB] hover:border-navy text-[#374151] hover:text-navy disabled:opacity-50 px-3 py-1.5 rounded-lg transition-all"
+        >
+          {sending ? 'Envoi...' : 'M\'envoyer un aperçu'}
+        </button>
+        {result && (
+          <p className={`text-xs mt-2 font-semibold ${result.ok ? 'text-emerald-700' : 'text-red-600'}`}>
+            {result.ok ? '✓ ' : ''}{result.message}
           </p>
-          <button
-            onClick={sendPreview}
-            disabled={sending}
-            className="text-xs font-medium bg-blue-900 hover:bg-blue-800 disabled:bg-slate-300 text-white px-3 py-1.5 rounded-lg transition-base"
-          >
-            {sending ? 'Envoi...' : 'M\'envoyer un aperçu'}
-          </button>
-          {result && (
-            <p className={`text-xs mt-2 ${result.ok ? 'text-emerald-700' : 'text-red-600'}`}>
-              {result.ok ? '✓ ' : ''}{result.message}
-            </p>
-          )}
-        </div>
+        )}
       </div>
     </div>
   )
 }
 
-// ── UI Helpers ─────────────────────────────────────────────────────
-
 function Section({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
     <div>
       <div className="mb-4">
-        <h2 className="text-sm font-semibold text-slate-900">{title}</h2>
-        {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
+        <h2 className="text-sm font-extrabold text-navy">{title}</h2>
+        {subtitle && <p className="text-xs text-[#6B7280] mt-0.5">{subtitle}</p>}
       </div>
       {children}
     </div>
   )
 }
 
-function Kpi({ label, value, sub, accent }: {
+function Kpi({ label, value, hint, delta, accent, icon }: {
   label: string
   value: string | number
-  sub?: string
+  hint?: string
+  delta?: { label: string; positive: boolean } | null
   accent?: 'emerald' | 'red'
+  icon?: 'inbox' | 'bolt' | 'filter' | 'check' | 'bank' | 'arrows' | 'x'
 }) {
   const accentColor =
     accent === 'emerald' ? 'text-emerald-700' :
     accent === 'red'     ? 'text-red-700' :
-    'text-slate-900'
+    'text-navy'
+
+  const ICONS: Record<string, React.ReactNode> = {
+    inbox: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>,
+    bolt:  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>,
+    filter:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>,
+    check: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5"><polyline points="20 6 9 17 4 12"/></svg>,
+    bank:  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5"><polygon points="12 2 20 7 4 7"/><line x1="3" y1="22" x2="21" y2="22"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/></svg>,
+    arrows:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5"><path d="M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3"/></svg>,
+    x:     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+  }
+
   return (
-    <div className="bg-white border border-slate-200 rounded-xl px-4 py-3">
-      <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">{label}</p>
-      <p className={`text-2xl font-semibold tracking-tight mt-1 ${accentColor}`}>{value}</p>
-      {sub && <p className="text-[10px] text-slate-400 mt-0.5">{sub}</p>}
+    <div className="bg-white border border-[#E5E7EB] rounded-xl px-5 py-4 hover:shadow-card transition-shadow">
+      <div className="flex items-center justify-between mb-2.5">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">{label}</p>
+        {icon && (
+          <div className="w-6 h-6 rounded-md bg-[#F7F8FA] flex items-center justify-center text-[#6B7280]">
+            {ICONS[icon]}
+          </div>
+        )}
+      </div>
+      <p className={`text-3xl font-extrabold tracking-tightest tabular-nums leading-none ${accentColor}`}>{value}</p>
+      {hint && <p className="text-[11px] text-[#9CA3AF] mt-2 font-medium">{hint}</p>}
+      {delta && (
+        <p className={`text-[10px] font-bold mt-2 tabular-nums ${delta.positive ? 'text-emerald-700' : 'text-red-700'}`}>
+          {delta.label}
+        </p>
+      )}
     </div>
   )
 }

@@ -5,7 +5,10 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { ScoringResult, QualificationResult } from '@/types'
 
-// ── Types ──────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════
+//  /pro/prospects — Liste de prospects
+//  Table dense bancaire avec filtres pills + tri + recherche + export
+// ═══════════════════════════════════════════════════════════════════════
 
 interface Prospect {
   id: string
@@ -25,36 +28,74 @@ interface Profile {
   gmail_last_processed_at: string | null
 }
 
-// ── Config ─────────────────────────────────────────────────────────────────
-
-const TEMP = {
-  cold: { label: 'Non prioritaire', cls: 'bg-slate-100 text-slate-500'   },
-  warm: { label: 'À qualifier',     cls: 'bg-amber-50 text-amber-700'    },
-  hot:  { label: 'Prioritaire',     cls: 'bg-emerald-50 text-emerald-700' },
+const TEMP_CONFIG = {
+  cold: { label: 'Non prioritaire', cls: 'bg-slate-100 text-slate-600 border-slate-200',     dot: 'bg-slate-400' },
+  warm: { label: 'À qualifier',     cls: 'bg-amber-50 text-amber-700 border-amber-200',      dot: 'bg-amber-500' },
+  hot:  { label: 'Prioritaire',     cls: 'bg-emerald-50 text-emerald-700 border-emerald-200',dot: 'bg-emerald-500' },
 } as const
 
-const STATUS_LABEL: Record<string, string> = {
-  new: 'Nouveau', viewed: 'Vu', replied: 'Répondu', archived: 'Archivé',
-}
-
-const STATUS_COLOR: Record<string, string> = {
-  new:      'bg-blue-50 text-blue-700',
-  viewed:   'bg-slate-100 text-slate-600',
-  replied:  'bg-emerald-50 text-emerald-700',
-  archived: 'bg-slate-50 text-slate-400',
+const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
+  new:      { label: 'Nouveau',  cls: 'bg-blue-50 text-blue-700 border-blue-200' },
+  viewed:   { label: 'Vu',       cls: 'bg-slate-100 text-slate-600 border-slate-200' },
+  replied:  { label: 'Répondu',  cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  archived: { label: 'Archivé',  cls: 'bg-slate-50 text-slate-400 border-slate-200' },
 }
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime()
   const m = Math.floor(diff / 60000)
-  if (m < 1)  return 'À l\'instant'
+  if (m < 1)  return 'à l\'instant'
   if (m < 60) return `${m} min`
   const h = Math.floor(m / 60)
-  if (h < 24) return `${h}h`
-  return `${Math.floor(h / 24)}j`
+  if (h < 24) return `${h} h`
+  return `${Math.floor(h / 24)} j`
 }
 
-// ── Page ───────────────────────────────────────────────────────────────────
+function formatAmount(value: number | null | undefined): string {
+  if (value == null) return '—'
+  return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(value) + ' €'
+}
+
+// ── Mini composants ──
+
+function ScoreBadge({ score }: { score: number | null | undefined }) {
+  if (score == null) return <span className="text-[#D1D5DB] tabular-nums font-bold">—</span>
+
+  let color = 'bg-slate-100 text-slate-700 border-slate-200'
+  if (score >= 80) color = 'bg-emerald-50 text-emerald-700 border-emerald-200'
+  else if (score >= 60) color = 'bg-amber-50 text-amber-700 border-amber-200'
+  else if (score >= 40) color = 'bg-blue-50 text-blue-700 border-blue-200'
+
+  return (
+    <span className={`inline-flex items-center justify-center w-10 h-7 rounded border text-xs font-extrabold tabular-nums ${color}`}>
+      {score}
+    </span>
+  )
+}
+
+function StatusPill({ status }: { status: string }) {
+  const cfg = STATUS_CONFIG[status] ?? { label: status, cls: 'bg-slate-100 text-slate-600 border-slate-200' }
+  return (
+    <span className={`inline-flex items-center text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${cfg.cls}`}>
+      {cfg.label}
+    </span>
+  )
+}
+
+function TempPill({ temp }: { temp: 'cold' | 'warm' | 'hot' | null | undefined }) {
+  if (!temp) return null
+  const cfg = TEMP_CONFIG[temp]
+  return (
+    <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${cfg.cls}`}>
+      <span className={`w-1 h-1 rounded-full ${cfg.dot}`} />
+      {cfg.label}
+    </span>
+  )
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Page
+// ═══════════════════════════════════════════════════════════════════════
 
 function ProspectsContent() {
   const router       = useRouter()
@@ -148,17 +189,15 @@ function ProspectsContent() {
     URL.revokeObjectURL(url)
   }
 
-  // ── Recherche + filtre + tri ──
+  // ── Filtres + recherche + tri ──
   const filtered = useMemo(() => {
     let list = prospects
 
-    // Filtre
     if (filter === 'new')     list = list.filter(p => p.status === 'new')
     if (filter === 'hot')     list = list.filter(p => p.scoring?.temperature === 'hot')
     if (filter === 'warm')    list = list.filter(p => p.scoring?.temperature === 'warm')
     if (filter === 'replied') list = list.filter(p => p.status === 'replied')
 
-    // Recherche
     if (search.trim()) {
       const q = search.toLowerCase().trim()
       list = list.filter(p => {
@@ -168,7 +207,6 @@ function ProspectsContent() {
       })
     }
 
-    // Tri
     if (sort === 'score') {
       list = [...list].sort((a, b) => (b.scoring?.score ?? 0) - (a.scoring?.score ?? 0))
     }
@@ -186,50 +224,57 @@ function ProspectsContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-5 h-5 border-2 border-slate-200 border-t-slate-600 rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-[#F7F8FA]">
+        <div className="w-5 h-5 border-2 border-[#E5E7EB] border-t-navy rounded-full animate-spin" />
       </div>
     )
   }
 
   const gmailConnected = !!profile?.gmail_connected_email
+  const FILTERS = [
+    { key: 'all',     label: 'Tous',          count: counts.all },
+    { key: 'new',     label: 'Nouveaux',      count: counts.new },
+    { key: 'hot',     label: 'Prioritaires',  count: counts.hot },
+    { key: 'warm',    label: 'À qualifier',   count: counts.warm },
+    { key: 'replied', label: 'Répondus',      count: counts.replied },
+  ] as const
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[#F7F8FA]">
 
-      {/* Page header */}
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between gap-4">
+      {/* ── Header de page ── */}
+      <header className="bg-white border-b border-[#E5E7EB] sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-5 flex items-end justify-between gap-4 flex-wrap">
           <div className="pl-12 lg:pl-0">
-            <h1 className="text-xl font-semibold text-slate-900 tracking-tight">Prospects</h1>
-            <p className="text-xs text-slate-500 mt-0.5">{counts.all} prospects actifs</p>
+            <p className="text-[11px] font-bold uppercase tracking-widest text-[#9CA3AF] mb-1.5">Pipeline</p>
+            <h1 className="text-2xl font-extrabold text-navy tracking-tightest leading-none">Prospects</h1>
+            <p className="text-xs text-[#6B7280] mt-1.5 tabular-nums">{counts.all} prospects actifs · {counts.hot} prioritaires</p>
           </div>
+
           <div className="flex items-center gap-2 shrink-0">
             {gmailConnected && (
               <button
                 onClick={sync}
                 disabled={syncing}
-                className="flex items-center gap-1.5 text-xs font-medium bg-white border border-slate-200 hover:border-slate-300 text-slate-700 px-2.5 py-1.5 sm:px-3 rounded-lg transition-colors disabled:opacity-50"
-                aria-label="Synchroniser"
+                className="flex items-center gap-1.5 text-xs font-semibold bg-white border border-[#D1D5DB] hover:border-navy text-[#374151] hover:text-navy px-3 py-2 rounded-lg transition-all disabled:opacity-50"
               >
-                {syncing
-                  ? <span className="w-3 h-3 border border-slate-400 border-t-slate-700 rounded-full animate-spin" />
-                  : (
-                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-                      <path d="M21 3v5h-5" />
-                      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-                      <path d="M3 21v-5h5" />
-                    </svg>
-                  )}
+                {syncing ? (
+                  <span className="w-3 h-3 border border-[#D1D5DB] border-t-navy rounded-full animate-spin" />
+                ) : (
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                    <path d="M21 3v5h-5" />
+                    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                    <path d="M3 21v-5h5" />
+                  </svg>
+                )}
                 <span className="hidden sm:inline">{syncing ? 'Synchronisation' : 'Synchroniser'}</span>
               </button>
             )}
             {filtered.length > 0 && (
               <button
                 onClick={exportCsv}
-                className="hidden md:flex items-center gap-1.5 text-xs font-medium bg-white border border-slate-200 hover:border-slate-300 text-slate-700 px-3 py-1.5 rounded-lg transition-colors"
-                aria-label="Exporter en CSV"
+                className="hidden md:flex items-center gap-1.5 text-xs font-semibold bg-white border border-[#D1D5DB] hover:border-navy text-[#374151] hover:text-navy px-3 py-2 rounded-lg transition-all"
                 title="Exporter les prospects affichés en CSV"
               >
                 <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -237,55 +282,76 @@ function ProspectsContent() {
                   <polyline points="7 10 12 15 17 10" />
                   <line x1="12" y1="15" x2="12" y2="3" />
                 </svg>
-                Exporter
+                Exporter CSV
               </button>
             )}
-            <a
-              href="/pro/prospects/new"
-              className="flex items-center gap-1.5 text-xs font-medium bg-blue-900 hover:bg-blue-800 text-white px-2.5 py-1.5 sm:px-3 rounded-lg transition-base"
-              aria-label="Ajouter un prospect"
-            >
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <a href="/pro/prospects/new" className="btn-primary text-xs py-2 px-3">
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19"/>
                 <line x1="5" y1="12" x2="19" y2="12"/>
               </svg>
               <span className="hidden sm:inline">Ajouter un prospect</span>
+              <span className="sm:hidden">Ajouter</span>
             </a>
           </div>
         </div>
-      </div>
+      </header>
 
-      <main className="max-w-5xl mx-auto px-6 py-6 space-y-5">
+      <main className="max-w-7xl mx-auto px-6 lg:px-8 py-6 space-y-5">
 
         {/* Gmail banner */}
         {justConnected && (
-          <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-sm text-emerald-700 flex items-center gap-2 animate-fade-up">
-            ✓ Gmail connecté ({profile?.gmail_connected_email}). Synchronisation pour analyser vos premiers emails.
+          <div className="bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-3 text-sm text-emerald-700 flex items-center gap-2 reveal">
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            <span><strong className="font-semibold">Gmail connecté</strong> ({profile?.gmail_connected_email}). Première synchronisation en cours.</span>
           </div>
         )}
 
         {/* Gmail CTA */}
         {!gmailConnected && (
-          <div className="bg-white border border-slate-200 rounded-xl p-6 flex items-center justify-between gap-4">
+          <div className="bg-gradient-to-br from-blue-50 to-white border-2 border-accent rounded-xl p-6 flex items-center justify-between gap-4 shadow-[0_4px_24px_rgba(59,95,224,0.06)]">
             <div>
-              <p className="text-sm font-semibold text-slate-900 mb-1">Connectez votre Gmail pour démarrer</p>
-              <p className="text-xs text-slate-500">BankKey analysera vos nouveaux emails entrants automatiquement.</p>
+              <p className="text-sm font-extrabold text-navy mb-1">Connectez votre boîte Gmail pour démarrer</p>
+              <p className="text-xs text-[#6B7280]">BankKey analysera vos nouveaux emails automatiquement.</p>
             </div>
-            <a
-              href="/pro/onboarding"
-              className="inline-flex items-center gap-2 bg-blue-900 hover:bg-slate-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shrink-0"
-            >
+            <a href="/pro/onboarding" className="btn-primary text-sm shrink-0">
               Connecter Gmail
             </a>
           </div>
         )}
 
-        {/* Search + filtres */}
+        {/* Filtres + recherche */}
         {prospects.length > 0 && (
-          <div className="space-y-3">
-            <div className="flex items-center gap-3">
+          <div className="bg-white border border-[#E5E7EB] rounded-xl p-4 space-y-3">
+
+            {/* Filtres pills */}
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {FILTERS.map(f => (
+                <button
+                  key={f.key}
+                  onClick={() => setFilter(f.key)}
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 ${
+                    filter === f.key
+                      ? 'bg-navy text-white shadow-sm'
+                      : 'text-[#6B7280] hover:text-navy hover:bg-[#F3F4F6]'
+                  }`}
+                >
+                  {f.label}
+                  <span className={`text-[10px] font-bold tabular-nums ${
+                    filter === f.key ? 'text-blue-200' : 'text-[#9CA3AF]'
+                  }`}>
+                    {f.count}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* Search + sort */}
+            <div className="flex items-center gap-2 pt-2 border-t border-[#F3F4F6]">
               <div className="flex-1 relative">
-                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9CA3AF]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="11" cy="11" r="8" />
                   <line x1="21" y1="21" x2="16.65" y2="16.65" />
                 </svg>
@@ -293,116 +359,138 @@ function ProspectsContent() {
                   type="text"
                   value={search}
                   onChange={e => setSearch(e.target.value)}
-                  placeholder="Rechercher un prospect..."
-                  className="w-full bg-white border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent transition-all"
+                  placeholder="Rechercher un nom, un email, une description..."
+                  className="w-full bg-[#F7F8FA] border border-transparent rounded-md pl-9 pr-3 py-2 text-sm placeholder-[#9CA3AF] focus:outline-none focus:bg-white focus:border-accent transition-all"
                 />
               </div>
               <select
                 value={sort}
                 onChange={e => setSort(e.target.value as 'recent' | 'score')}
-                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-900 cursor-pointer"
+                className="bg-[#F7F8FA] border border-transparent rounded-md px-3 py-2 text-sm font-medium text-[#374151] focus:outline-none focus:bg-white focus:border-accent cursor-pointer"
               >
-                <option value="recent">Récents</option>
-                <option value="score">Score</option>
+                <option value="recent">Plus récents</option>
+                <option value="score">Score décroissant</option>
               </select>
-            </div>
-
-            <div className="flex items-center gap-2 flex-wrap">
-              {([
-                { key: 'all',     label: 'Tous',          count: counts.all },
-                { key: 'new',     label: 'Nouveaux',      count: counts.new },
-                { key: 'hot',     label: 'Prioritaires',  count: counts.hot },
-                { key: 'warm',    label: 'À qualifier',   count: counts.warm },
-                { key: 'replied', label: 'Répondus',      count: counts.replied },
-              ] as const).map(f => (
-                <button
-                  key={f.key}
-                  onClick={() => setFilter(f.key)}
-                  className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors flex items-center gap-1.5 ${
-                    filter === f.key
-                      ? 'bg-blue-900 text-white'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-white border border-transparent hover:border-slate-200'
-                  }`}
-                >
-                  {f.label}
-                  <span className={`text-[10px] font-mono ${filter === f.key ? 'text-slate-300' : 'text-slate-400'}`}>
-                    {f.count}
-                  </span>
-                </button>
-              ))}
             </div>
           </div>
         )}
 
         {/* Empty state */}
         {filtered.length === 0 && gmailConnected && (
-          <div className="bg-white border border-slate-200 rounded-xl p-12 text-center">
-            <p className="text-sm text-slate-500">
+          <div className="bg-white border border-[#E5E7EB] rounded-xl p-12 text-center">
+            <div className="w-12 h-12 rounded-full bg-[#F7F8FA] flex items-center justify-center mx-auto mb-4">
+              <svg className="w-5 h-5 text-[#9CA3AF]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="8" y1="12" x2="16" y2="12" />
+              </svg>
+            </div>
+            <p className="text-sm font-semibold text-navy mb-1">
+              {prospects.length === 0 ? 'Aucun prospect pour l\'instant' : 'Aucun prospect dans ce filtre'}
+            </p>
+            <p className="text-xs text-[#6B7280]">
               {prospects.length === 0
-                ? 'Aucun prospect pour l\'instant. Cliquez sur "Synchroniser" pour analyser vos emails.'
-                : 'Aucun prospect dans ce filtre.'}
+                ? 'Cliquez sur "Synchroniser" pour analyser vos emails.'
+                : 'Essayez un autre filtre ou modifiez votre recherche.'}
             </p>
           </div>
         )}
 
-        {/* Liste — table dense */}
+        {/* ── Table dense bancaire ── */}
         {filtered.length > 0 && (
-          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-            {filtered.map((prospect, idx) => {
-              const temp     = prospect.scoring?.temperature
-              const tempCfg  = temp ? TEMP[temp] : null
-              const score    = prospect.scoring?.score
-              const name     = prospect.qualification?.firstName
-                ? `${prospect.qualification.firstName}${prospect.qualification.lastName ? ' ' + prospect.qualification.lastName : ''}`
-                : prospect.email_from_name || prospect.email_from || 'Inconnu'
-              const desc     = prospect.qualification?.description ?? prospect.email_subject ?? ''
-              const dateStr  = prospect.received_at ?? prospect.created_at
+          <div className="bg-white border border-[#E5E7EB] rounded-xl overflow-hidden">
 
-              return (
-                <button
-                  key={prospect.id}
-                  onClick={() => router.push(`/pro/leads/${prospect.id}`)}
-                  className={`w-full px-4 py-3 flex items-center gap-4 text-left hover:bg-slate-50 transition-colors ${
-                    idx > 0 ? 'border-t border-slate-100' : ''
-                  }`}
-                >
-                  {/* Score */}
-                  <div className="w-9 h-9 rounded-full border-2 flex items-center justify-center shrink-0"
-                       style={{ borderColor: temp === 'hot' ? '#6ee7b7' : temp === 'warm' ? '#fcd34d' : '#e2e8f0' }}>
-                    <span className="text-xs font-bold text-slate-800">{score ?? '?'}</span>
-                  </div>
+            {/* Header de table */}
+            <div className="hidden md:grid grid-cols-12 gap-3 px-5 py-2.5 border-b border-[#E5E7EB] bg-[#F7F8FA] text-[10px] font-bold uppercase tracking-wider text-[#6B7280]">
+              <div className="col-span-1 text-center">Score</div>
+              <div className="col-span-3">Prospect</div>
+              <div className="col-span-3">Projet</div>
+              <div className="col-span-2">Statut</div>
+              <div className="col-span-2">Priorité</div>
+              <div className="col-span-1 text-right">Reçu</div>
+            </div>
 
-                  {/* Contenu */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <span className="text-sm font-semibold text-slate-900 truncate">{name}</span>
-                      <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${STATUS_COLOR[prospect.status]}`}>
-                        {STATUS_LABEL[prospect.status]}
-                      </span>
+            {/* Lignes */}
+            <div className="divide-y divide-[#F3F4F6]">
+              {filtered.map((p) => {
+                const temp = p.scoring?.temperature ?? null
+                const score = p.scoring?.score
+                const name = p.qualification?.firstName
+                  ? `${p.qualification.firstName}${p.qualification.lastName ? ' ' + p.qualification.lastName : ''}`
+                  : p.email_from_name || p.email_from || 'Inconnu'
+                const projet = p.qualification?.description ?? p.email_subject ?? ''
+                const amount = p.qualification?.price
+                const dateStr = p.received_at ?? p.created_at
+
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => router.push(`/pro/leads/${p.id}`)}
+                    className="w-full md:grid md:grid-cols-12 gap-3 px-5 py-3.5 hover:bg-[#F7F8FA] transition-colors text-left items-center group flex flex-col items-start"
+                  >
+                    {/* Mobile : tout en stack */}
+                    <div className="md:hidden flex items-center gap-3 w-full">
+                      <ScoreBadge score={score} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-navy truncate">{name}</p>
+                        <p className="text-xs text-[#6B7280] truncate">{projet}</p>
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <StatusPill status={p.status} />
+                          <TempPill temp={temp} />
+                        </div>
+                      </div>
+                      <span className="text-[10px] text-[#9CA3AF] font-medium tabular-nums shrink-0">{timeAgo(dateStr)}</span>
                     </div>
-                    <p className="text-xs text-slate-500 truncate">{desc}</p>
-                  </div>
 
-                  {/* Meta */}
-                  <div className="flex flex-col items-end gap-1 shrink-0">
-                    {tempCfg && (
-                      <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${tempCfg.cls}`}>
-                        {tempCfg.label}
-                      </span>
-                    )}
-                    <span className="text-[10px] text-slate-400 font-mono">{timeAgo(dateStr)}</span>
-                  </div>
+                    {/* Desktop : grid 12 colonnes */}
+                    <div className="hidden md:flex md:col-span-1 justify-center">
+                      <ScoreBadge score={score} />
+                    </div>
 
-                  {/* Chevron */}
-                  <svg className="w-4 h-4 text-slate-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="9 18 15 12 9 6" />
-                  </svg>
-                </button>
-              )
-            })}
+                    <div className="hidden md:block md:col-span-3 min-w-0">
+                      <p className="text-sm font-bold text-navy truncate">{name}</p>
+                      <p className="text-[11px] text-[#9CA3AF] truncate">{p.qualification?.email ?? p.email_from ?? ''}</p>
+                    </div>
+
+                    <div className="hidden md:block md:col-span-3 min-w-0">
+                      <p className="text-sm text-[#374151] truncate leading-snug">{projet}</p>
+                      {amount && (
+                        <p className="text-[11px] font-bold text-navy tabular-nums mt-0.5">{formatAmount(amount)}</p>
+                      )}
+                    </div>
+
+                    <div className="hidden md:flex md:col-span-2">
+                      <StatusPill status={p.status} />
+                    </div>
+
+                    <div className="hidden md:flex md:col-span-2">
+                      <TempPill temp={temp} />
+                    </div>
+
+                    <div className="hidden md:flex md:col-span-1 items-center justify-end gap-2">
+                      <span className="text-[11px] text-[#9CA3AF] font-medium tabular-nums">{timeAgo(dateStr)}</span>
+                      <svg className="w-3.5 h-3.5 text-[#D1D5DB] group-hover:text-navy transition-colors shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="9 18 15 12 9 6" />
+                      </svg>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Footer table */}
+            <div className="px-5 py-3 border-t border-[#E5E7EB] bg-[#F7F8FA] text-[11px] text-[#6B7280] flex items-center justify-between">
+              <span className="tabular-nums">
+                {filtered.length} prospect{filtered.length > 1 ? 's' : ''} affiché{filtered.length > 1 ? 's' : ''}
+                {filter !== 'all' && ` · filtré "${FILTERS.find(f => f.key === filter)?.label}"`}
+              </span>
+              {profile?.gmail_last_processed_at && (
+                <span className="hidden sm:inline">
+                  Dernière sync : {new Date(profile.gmail_last_processed_at).toLocaleString('fr-FR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })}
+                </span>
+              )}
+            </div>
           </div>
         )}
-
       </main>
     </div>
   )
@@ -411,8 +499,8 @@ function ProspectsContent() {
 export default function ProspectsPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-5 h-5 border-2 border-slate-200 border-t-slate-600 rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-[#F7F8FA]">
+        <div className="w-5 h-5 border-2 border-[#E5E7EB] border-t-navy rounded-full animate-spin" />
       </div>
     }>
       <ProspectsContent />

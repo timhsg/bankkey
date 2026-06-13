@@ -7,7 +7,8 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
 // ════════════════════════════════════════════════════════════════════════
-//  Sidebar de l'app pro — sticky desktop, drawer mobile
+//  Sidebar — style bancaire pro (Qonto / Mercury)
+//  Dense, sections groupées, cabinet badge en haut, statut essai en bas
 // ════════════════════════════════════════════════════════════════════════
 
 const Icons = {
@@ -88,10 +89,20 @@ const Icons = {
       <path d="m18 16.98-7.21 4.16a2 2 0 1 1-2-3.46l1.94-1.12"/>
     </svg>
   ),
+  Filter: () => (
+    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+    </svg>
+  ),
   Close: () => (
     <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <line x1="18" y1="6" x2="6" y2="18" />
       <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  ),
+  Chevron: () => (
+    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="9 18 15 12 9 6" />
     </svg>
   ),
 }
@@ -101,22 +112,40 @@ interface NavItem {
   label: string
   icon: () => React.JSX.Element
   matchExact?: boolean
+  badge?: string
 }
 
-const PRIMARY_NAV: NavItem[] = [
-  { href: '/pro',           label: 'Aujourd\'hui',   icon: Icons.Home, matchExact: true },
-  { href: '/pro/prospects', label: 'Prospects',      icon: Icons.Users },
-  { href: '/pro/filtered',  label: 'Emails filtrés', icon: Icons.Inbox },
-  { href: '/pro/banks',     label: 'Banques',        icon: Icons.Bank },
-  { href: '/pro/bilan',         label: 'Bilan du mois',  icon: Icons.Calendar },
-  { href: '/pro/statistiques',  label: 'Statistiques',   icon: Icons.Chart },
-  { href: '/pro/sources',   label: 'Sources',        icon: Icons.Inbox },
-  { href: '/pro/integrations', label: 'Intégrations', icon: Icons.Webhook },
-]
+interface NavGroup {
+  label: string
+  items: NavItem[]
+}
 
-const SECONDARY_NAV: NavItem[] = [
-  { href: '/pro/settings', label: 'Profil',     icon: Icons.Settings },
-  { href: '/pro/billing',  label: 'Abonnement', icon: Icons.Card },
+const NAV_GROUPS: NavGroup[] = [
+  {
+    label: 'Activité',
+    items: [
+      { href: '/pro',           label: 'Aujourd\'hui', icon: Icons.Home, matchExact: true },
+      { href: '/pro/prospects', label: 'Prospects',    icon: Icons.Users },
+      { href: '/pro/filtered',  label: 'Écartés',      icon: Icons.Filter },
+    ],
+  },
+  {
+    label: 'Pipeline',
+    items: [
+      { href: '/pro/banks',        label: 'Banques',      icon: Icons.Bank },
+      { href: '/pro/bilan',        label: 'Bilan du mois',icon: Icons.Calendar },
+      { href: '/pro/statistiques', label: 'Statistiques', icon: Icons.Chart },
+    ],
+  },
+  {
+    label: 'Configuration',
+    items: [
+      { href: '/pro/sources',      label: 'Sources',     icon: Icons.Inbox },
+      { href: '/pro/integrations', label: 'Intégrations',icon: Icons.Webhook },
+      { href: '/pro/settings',     label: 'Profil',      icon: Icons.Settings },
+      { href: '/pro/billing',      label: 'Abonnement',  icon: Icons.Card },
+    ],
+  },
 ]
 
 export default function Sidebar() {
@@ -151,7 +180,6 @@ export default function Sidebar() {
     void load()
   }, [supabase])
 
-  // Fermer le drawer mobile à chaque navigation
   useEffect(() => { setMobileOpen(false) }, [pathname])
 
   async function logout() {
@@ -169,31 +197,36 @@ export default function Sidebar() {
     return (
       <Link
         href={item.href}
-        className={`relative flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors ${
+        className={`group relative flex items-center gap-2.5 px-3 py-2 rounded-md text-[13px] transition-all ${
           active
-            ? 'bg-slate-100 text-slate-900 font-medium'
-            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+            ? 'bg-navy text-white font-semibold shadow-[0_1px_2px_rgba(10,31,92,0.12)]'
+            : 'text-[#374151] hover:bg-white hover:text-navy font-medium'
         }`}
       >
-        <span className={active ? 'text-slate-900' : 'text-slate-400'}>
+        <span className={`shrink-0 ${active ? 'text-white' : 'text-[#9CA3AF] group-hover:text-navy'}`}>
           <item.icon />
         </span>
-        {item.label}
-        {active && (
-          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-blue-900 rounded-r" />
+        <span className="flex-1 truncate">{item.label}</span>
+        {item.badge && (
+          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+            active ? 'bg-white/20 text-white' : 'bg-accent/10 text-accent'
+          }`}>
+            {item.badge}
+          </span>
         )}
       </Link>
     )
   }
 
   const isPro = planStatus.plan === 'pro'
+  const cabinetInitials = (agency ?? email ?? '?').slice(0, 2).toUpperCase()
 
   return (
     <>
       {/* ── Mobile toggle ── */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed top-3 left-3 z-30 bg-white border border-slate-200 rounded-lg p-2 shadow-sm"
+        className="lg:hidden fixed top-3 left-3 z-30 bg-white border border-[#E5E7EB] rounded-lg p-2 shadow-sm hover:border-navy transition-colors"
         aria-label="Ouvrir le menu"
       >
         <Icons.Menu />
@@ -202,84 +235,97 @@ export default function Sidebar() {
       {/* ── Overlay mobile ── */}
       {mobileOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-slate-900/40 z-40"
+          className="lg:hidden fixed inset-0 bg-navy/40 backdrop-blur-sm z-40"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
       {/* ── Sidebar ── */}
       <aside className={`
-        fixed top-0 bottom-0 left-0 z-40 w-60 bg-white border-r border-slate-200 flex flex-col
+        fixed top-0 bottom-0 left-0 z-40 w-64 bg-[#F7F8FA] border-r border-[#E5E7EB] flex flex-col
         transition-transform duration-200 ease-out
         ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:translate-x-0
       `}>
-        {/* Brand + close mobile */}
-        <div className="flex items-center justify-between px-4 h-14 border-b border-slate-100">
-          <Link href="/" className="flex items-center gap-2 hover:opacity-75 transition-opacity">
-            <LogoMark size={24} />
-            <span className="font-semibold text-slate-900 tracking-tight text-sm">BankKey</span>
-          </Link>
+        {/* ── Cabinet badge en haut ── */}
+        <div className="flex items-center justify-between p-3 border-b border-[#E5E7EB]">
+          <div className="flex items-center gap-2.5 flex-1 min-w-0">
+            <div className="w-9 h-9 rounded-lg bg-brand-gradient flex items-center justify-center shrink-0 shadow-[0_1px_3px_rgba(10,31,92,0.16)]">
+              <span className="text-[12px] font-extrabold text-white tracking-tight">{cabinetInitials}</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[13px] font-bold text-navy truncate leading-tight">{agency ?? 'Mon cabinet'}</p>
+              <p className="text-[10px] text-[#9CA3AF] font-medium uppercase tracking-wider">
+                {isPro ? 'Plan Pro' : 'Essai gratuit'}
+              </p>
+            </div>
+          </div>
           <button
             onClick={() => setMobileOpen(false)}
-            className="lg:hidden text-slate-400 hover:text-slate-700"
+            className="lg:hidden text-[#9CA3AF] hover:text-navy"
             aria-label="Fermer le menu"
           >
             <Icons.Close />
           </button>
         </div>
 
-        {/* Nav primaire */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-2 px-3">Navigation</p>
-          <ul className="space-y-0.5 mb-6">
-            {PRIMARY_NAV.map((item) => (
-              <li key={item.href}><NavLink item={item} /></li>
-            ))}
-          </ul>
-
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-2 px-3">Cabinet</p>
-          <ul className="space-y-0.5">
-            {SECONDARY_NAV.map((item) => (
-              <li key={item.href}><NavLink item={item} /></li>
-            ))}
-          </ul>
+        {/* ── Navigation groupée ── */}
+        <nav className="flex-1 overflow-y-auto px-2.5 py-4 space-y-5">
+          {NAV_GROUPS.map((group) => (
+            <div key={group.label}>
+              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#9CA3AF] mb-2 px-3">
+                {group.label}
+              </p>
+              <ul className="space-y-0.5">
+                {group.items.map((item) => (
+                  <li key={item.href}><NavLink item={item} /></li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </nav>
 
-        {/* Statut abonnement (CTA si trial) */}
+        {/* ── Essai gratuit CTA (si trial) ── */}
         {!isPro && (
-          <div className="mx-3 mb-3 p-3 bg-slate-50 border border-slate-200 rounded-lg">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500 mb-1">Essai gratuit</p>
-            <p className="text-xs text-slate-700 mb-2 leading-tight">
+          <div className="mx-3 mb-3 p-4 bg-white border border-[#E5E7EB] rounded-xl shadow-card">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-700">
+                Essai actif
+              </p>
+            </div>
+            <p className="text-[13px] font-bold text-navy mb-1">
               {planStatus.trialDaysLeft !== null
-                ? `${planStatus.trialDaysLeft} jours restants`
-                : 'Période d\'essai en cours'}
+                ? `${planStatus.trialDaysLeft} jour${planStatus.trialDaysLeft > 1 ? 's' : ''} restants`
+                : 'Essai en cours'}
+            </p>
+            <p className="text-[11px] text-[#6B7280] mb-3 leading-tight">
+              Conservez vos prospects qualifiés à vie.
             </p>
             <Link
               href="/pro/billing"
-              className="block text-center text-[11px] font-medium bg-blue-900 hover:bg-blue-800 text-white py-1.5 rounded transition-colors"
+              className="block text-center text-[12px] font-semibold bg-brand-gradient text-white py-2 rounded-lg hover:opacity-90 transition-opacity shadow-btn"
             >
-              Passer à Pro
+              Passer au plan Pro
             </Link>
           </div>
         )}
 
-        {/* Footer user */}
-        <div className="px-3 pb-4 pt-2 border-t border-slate-100">
-          <div className="flex items-center gap-2.5 px-2 py-2">
-            <div className="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center shrink-0">
-              <span className="text-[10px] font-semibold text-slate-700">
-                {(agency ?? email ?? '?').slice(0, 2).toUpperCase()}
+        {/* ── Footer user ── */}
+        <div className="px-2.5 pb-3 pt-2 border-t border-[#E5E7EB] bg-white/50">
+          <div className="flex items-center gap-2.5 px-2.5 py-2 rounded-md">
+            <div className="w-7 h-7 rounded-full bg-[#E5E7EB] flex items-center justify-center shrink-0">
+              <span className="text-[10px] font-bold text-[#374151]">
+                {(email ?? '?').slice(0, 1).toUpperCase()}
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-slate-900 truncate">{agency ?? 'Mon cabinet'}</p>
-              <p className="text-[11px] text-slate-500 truncate">{email}</p>
+              <p className="text-[11px] text-[#6B7280] truncate font-medium">{email}</p>
             </div>
           </div>
           <button
             onClick={logout}
-            className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-colors mt-1"
+            className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-md text-[12px] text-[#6B7280] hover:bg-[#F3F4F6] hover:text-navy transition-colors mt-0.5 font-medium"
           >
             <Icons.Logout />
             Déconnexion

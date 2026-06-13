@@ -7,10 +7,11 @@ import { LogoMark } from '@/app/_components/Logo'
 import { createClient } from '@/lib/supabase/client'
 import type { BrokerMemory } from '@/types'
 
-// ════════════════════════════════════════════════════════════════════════
-//  Onboarding wizard — première connexion
-//  Étapes : Bienvenue → Profil cabinet → Source de leads → Prêt
-// ════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════
+//  /pro/onboarding — Wizard première connexion
+//  4 étapes : Bienvenue → Profil cabinet → Source de leads → Prêt
+//  Design : split fullscreen, gradient brand à gauche, contenu à droite
+// ═══════════════════════════════════════════════════════════════════════
 
 type Step = 'welcome' | 'profile' | 'source' | 'done'
 
@@ -110,7 +111,6 @@ function OnboardingContent() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { setDemoCreating(false); return }
 
-    // Prospect démo réaliste : Camille Martin, score 87
     const qualification = {
       type: 'acheteur', firstName: 'Camille', lastName: 'Martin',
       email: 'camille.martin@exemple.fr', phone: '06 12 34 56 78',
@@ -171,36 +171,48 @@ function OnboardingContent() {
   const progress = ((currentIdx + 1) / STEPS.length) * 100
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col">
 
-      <header className="bg-white border-b border-slate-100">
-        <div className="max-w-3xl mx-auto px-6 h-14 flex items-center justify-between">
-          <Link href="/pro" className="flex items-center gap-2">
+      {/* ── Header progress ── */}
+      <header className="bg-white border-b border-[#E5E7EB]">
+        <div className="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between">
+          <Link href="/pro" className="flex items-center gap-2.5">
             <LogoMark size={24} />
-            <span className="font-semibold text-slate-900 tracking-tight">BankKey</span>
+            <span className="font-bold text-navy tracking-tight text-sm">BankKey</span>
           </Link>
-          <Link href="/pro" className="text-xs text-slate-500 hover:text-slate-900 transition-colors">
-            Passer
+          <Link href="/pro" className="text-xs text-[#9CA3AF] hover:text-navy transition-colors font-medium">
+            Passer pour l&apos;instant
           </Link>
         </div>
-        <div className="h-px bg-slate-100">
+        <div className="h-1 bg-[#F3F4F6] relative">
           <div
-            className="h-px bg-blue-900 transition-all duration-500"
+            className="absolute inset-y-0 left-0 bg-brand-gradient transition-all duration-500"
             style={{ width: `${progress}%` }}
           />
         </div>
       </header>
 
-      <main className="flex-1 flex items-center justify-center px-5 py-12">
-        <div className="w-full max-w-xl animate-fade-up">
+      <main className="flex-1 flex items-center justify-center px-5 py-12 bg-[#F7F8FA]">
+        <div className="w-full max-w-xl reveal">
 
+          {/* Step dots */}
           <div className="flex items-center justify-center gap-2 mb-10">
             {STEPS.map((s, i) => (
               <div key={s.id} className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full transition-colors ${
-                  i <= currentIdx ? 'bg-blue-900' : 'bg-slate-200'
-                }`} />
-                {i < STEPS.length - 1 && <div className={`w-8 h-px ${i < currentIdx ? 'bg-blue-900' : 'bg-slate-200'}`} />}
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold transition-all ${
+                  i < currentIdx ? 'bg-emerald-500 text-white' :
+                  i === currentIdx ? 'bg-navy text-white shadow-[0_0_0_4px_rgba(10,31,92,0.12)]' :
+                  'bg-white border border-[#E5E7EB] text-[#9CA3AF]'
+                }`}>
+                  {i < currentIdx ? (
+                    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  ) : (
+                    i + 1
+                  )}
+                </div>
+                {i < STEPS.length - 1 && (
+                  <div className={`w-8 h-px ${i < currentIdx ? 'bg-emerald-500' : 'bg-[#E5E7EB]'}`} />
+                )}
               </div>
             ))}
           </div>
@@ -219,66 +231,72 @@ function OnboardingContent() {
             </div>
           )}
 
-          {/* ── STEP : Bienvenue ── */}
+          {/* ─── STEP : Bienvenue ─── */}
           {step === 'welcome' && (
-            <div className="text-center space-y-6">
+            <div className="text-center space-y-8">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Bienvenue dans BankKey</p>
-                <h1 className="text-3xl font-semibold text-slate-900 tracking-tight mb-3">
-                  Configurons votre cabinet en 3 minutes
+                <div className="badge mb-5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+                  Bienvenue
+                </div>
+                <h1 className="text-4xl font-extrabold text-navy tracking-tightest mb-4 leading-[1.05]">
+                  Votre cabinet,<br />
+                  <span className="text-gradient">prêt en 3 minutes.</span>
                 </h1>
-                <p className="text-slate-600 leading-relaxed max-w-md mx-auto">
-                  On va remplir votre profil, connecter une première source de leads, et vous serez prêt à recevoir vos premiers prospects qualifiés automatiquement.
+                <p className="text-[#6B7280] leading-relaxed max-w-md mx-auto">
+                  Trois étapes simples : votre profil, votre source de leads, et BankKey commence à qualifier vos prospects automatiquement.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-md mx-auto">
                 {[
-                  { n: '1', t: 'Profil', d: 'Votre signature, votre style' },
-                  { n: '2', t: 'Sources', d: 'D\'où viennent vos leads' },
+                  { n: '1', t: 'Profil', d: 'Cabinet et signature' },
+                  { n: '2', t: 'Source', d: 'Gmail ou transfert' },
                   { n: '3', t: 'Prêt', d: 'BankKey travaille pour vous' },
                 ].map(s => (
-                  <div key={s.n} className="bg-white border border-slate-200 rounded-xl p-3 text-left transition-base hover-lift">
-                    <p className="text-[10px] font-mono text-slate-400 mb-1">{s.n}</p>
-                    <p className="text-xs font-semibold text-slate-900 mb-0.5">{s.t}</p>
-                    <p className="text-[11px] text-slate-500 leading-snug">{s.d}</p>
+                  <div key={s.n} className="bg-white border border-[#E5E7EB] rounded-xl p-4 text-left hover:shadow-card transition-shadow">
+                    <p className="text-[10px] font-bold text-accent uppercase tracking-widest mb-2">Étape {s.n}</p>
+                    <p className="text-sm font-bold text-navy mb-0.5">{s.t}</p>
+                    <p className="text-[11px] text-[#6B7280] leading-snug">{s.d}</p>
                   </div>
                 ))}
               </div>
 
-              <button
-                onClick={next}
-                className="bg-blue-900 hover:bg-blue-800 text-white text-sm font-medium px-6 py-2.5 rounded-lg transition-base"
-              >
+              <button onClick={next} className="btn-primary text-sm py-3 px-6">
                 Commencer
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+                </svg>
               </button>
             </div>
           )}
 
-          {/* ── STEP : Profil ── */}
+          {/* ─── STEP : Profil ─── */}
           {step === 'profile' && (
             <div className="space-y-6">
               <div className="text-center">
-                <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Étape 2 sur 4</p>
-                <h1 className="text-2xl font-semibold text-slate-900 tracking-tight mb-2">Présentez votre cabinet</h1>
-                <p className="text-sm text-slate-600 max-w-md mx-auto">
-                  BankKey utilisera ces informations pour signer vos emails de réponse automatiquement.
+                <p className="label mb-3">Étape 2 sur 4</p>
+                <h1 className="text-3xl font-extrabold text-navy tracking-tightest mb-2">Présentez votre cabinet</h1>
+                <p className="text-sm text-[#6B7280] max-w-md mx-auto leading-relaxed">
+                  BankKey utilise ces informations pour signer vos emails de réponse automatiquement.
                 </p>
               </div>
 
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4">
+              <div className="bg-white border border-[#E5E7EB] rounded-xl p-6 space-y-4 shadow-card">
                 <Field
                   label="Votre nom complet"
                   value={memory.fullName ?? ''}
                   onChange={v => setMemory(m => ({ ...m, fullName: v }))}
                   placeholder="Marie Lefèvre"
                   autoFocus
+                  required
                 />
                 <Field
                   label="Nom du cabinet"
                   value={memory.agencyName ?? ''}
                   onChange={v => setMemory(m => ({ ...m, agencyName: v }))}
                   placeholder="Cabinet Lefèvre Courtage"
+                  required
                 />
                 <Field
                   label="Téléphone professionnel"
@@ -289,30 +307,30 @@ function OnboardingContent() {
                 />
               </div>
 
-              <p className="text-xs text-slate-400 text-center">
-                Vous pourrez ajouter zones, banques partenaires, style… plus tard dans votre profil.
+              <p className="text-xs text-[#9CA3AF] text-center font-medium">
+                Vous pourrez ajouter zones, banques partenaires, style éditorial… plus tard.
               </p>
             </div>
           )}
 
-          {/* ── STEP : Source ── */}
+          {/* ─── STEP : Source ─── */}
           {step === 'source' && (
             <div className="space-y-6">
               <div className="text-center">
-                <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Étape 3 sur 4</p>
-                <h1 className="text-2xl font-semibold text-slate-900 tracking-tight mb-2">D&apos;où viennent vos leads ?</h1>
-                <p className="text-sm text-slate-600 max-w-md mx-auto">
-                  Connectez Gmail pour ingestion auto, ou utilisez votre adresse BankKey pour faire suivre d&apos;autres plateformes.
+                <p className="label mb-3">Étape 3 sur 4</p>
+                <h1 className="text-3xl font-extrabold text-navy tracking-tightest mb-2">D&apos;où viennent vos demandes ?</h1>
+                <p className="text-sm text-[#6B7280] max-w-md mx-auto leading-relaxed">
+                  Connectez Gmail pour ingestion automatique, ou utilisez votre adresse BankKey pour transférer depuis d&apos;autres plateformes.
                 </p>
               </div>
 
               <a
                 href="/api/gmail/connect"
-                className="block bg-white border border-slate-200 rounded-2xl p-5 hover-lift transition-base"
+                className="block bg-white border-2 border-accent rounded-xl p-5 hover:shadow-card transition-all"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-11 h-11 bg-slate-50 rounded-xl flex items-center justify-center shrink-0">
-                    <svg className="w-5 h-5" viewBox="0 0 24 24">
+                  <div className="w-12 h-12 bg-[#F7F8FA] rounded-xl flex items-center justify-center shrink-0">
+                    <svg className="w-6 h-6" viewBox="0 0 24 24">
                       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                       <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                       <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
@@ -320,73 +338,73 @@ function OnboardingContent() {
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-semibold text-slate-900 mb-0.5">Connecter Gmail</p>
-                    <p className="text-xs text-slate-500">Connexion sécurisée OAuth — BankKey lit en lecture seule</p>
+                    <p className="text-sm font-bold text-navy mb-0.5">Connecter Gmail</p>
+                    <p className="text-xs text-[#6B7280] leading-relaxed">Connexion sécurisée OAuth · Lecture seule</p>
                   </div>
-                  <svg className="w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+                  <span className="text-xs font-bold text-accent">Recommandé</span>
                 </div>
               </a>
 
               {forwardingAddress && (
-                <div className="bg-blue-900 text-white rounded-2xl p-5">
-                  <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">Ou utilisez votre adresse BankKey</p>
-                  <p className="text-base font-mono font-semibold mb-2 break-all">{forwardingAddress}</p>
-                  <p className="text-xs text-slate-300 leading-relaxed mb-3">
+                <div className="bg-brand-gradient text-white rounded-xl p-5 shadow-[0_8px_32px_rgba(10,31,92,0.16)]">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-blue-200 mb-2">Ou utilisez votre adresse BankKey</p>
+                  <p className="text-base font-mono font-bold mb-3 break-all bg-white/10 px-3 py-2 rounded-lg">{forwardingAddress}</p>
+                  <p className="text-xs text-blue-100 leading-relaxed mb-3">
                     Faites suivre les emails de n&apos;importe quelle source (Empruntis, SeLoger, partenaires) vers cette adresse.
                   </p>
                   <button
                     onClick={copyForwarding}
-                    className="text-xs bg-white hover:bg-slate-100 text-slate-900 font-medium px-3 py-1.5 rounded-lg transition-base"
+                    className="text-xs font-bold bg-white text-navy hover:bg-slate-100 px-3 py-1.5 rounded-lg transition-colors"
                   >
-                    {copied ? '✓ Copié' : 'Copier l\'adresse'}
+                    {copied ? '✓ Adresse copiée' : 'Copier l\'adresse'}
                   </button>
                 </div>
               )}
 
-              <p className="text-xs text-slate-400 text-center">
-                Vous pouvez configurer tout cela plus tard depuis l&apos;onglet Sources.
+              <p className="text-xs text-[#9CA3AF] text-center font-medium">
+                Vous pourrez aussi configurer cela plus tard depuis l&apos;onglet Sources.
               </p>
             </div>
           )}
 
-          {/* ── STEP : Done ── */}
+          {/* ─── STEP : Done ─── */}
           {step === 'done' && (
-            <div className="text-center space-y-6">
-              <div className="w-14 h-14 mx-auto rounded-full bg-emerald-100 flex items-center justify-center">
-                <svg className="w-7 h-7 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <div className="text-center space-y-7">
+              <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-emerald-50 to-white border-2 border-emerald-300 flex items-center justify-center">
+                <svg className="w-8 h-8 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Tout est prêt</p>
-                <h1 className="text-3xl font-semibold text-slate-900 tracking-tight mb-3">
-                  Bienvenue dans BankKey{memory.fullName ? `, ${memory.fullName.split(' ')[0]}` : ''}.
+                <p className="label mb-3">Configuration terminée</p>
+                <h1 className="text-3xl font-extrabold text-navy tracking-tightest mb-3 leading-[1.05]">
+                  Bienvenue{memory.fullName ? `, ${memory.fullName.split(' ')[0]}` : ''}.<br />
+                  <span className="text-gradient">Votre cabinet est prêt.</span>
                 </h1>
-                <p className="text-slate-600 leading-relaxed max-w-md mx-auto">
-                  Avant d&apos;attaquer, voulez-vous voir un exemple de prospect qualifié dans votre tableau de bord ?
+                <p className="text-[#6B7280] leading-relaxed max-w-md mx-auto">
+                  Avant de démarrer, voulez-vous voir un exemple de prospect qualifié dans votre tableau de bord ?
                 </p>
               </div>
 
-              {/* Carte option : créer un prospect démo */}
               {!demoCreated && (
-                <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 text-left max-w-md mx-auto">
+                <div className="bg-white border border-[#E5E7EB] rounded-xl p-5 text-left max-w-md mx-auto shadow-card">
                   <div className="flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-white border border-emerald-200 flex items-center justify-center shrink-0">
-                      <svg className="w-4 h-4 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <div className="w-10 h-10 rounded-lg bg-brand-gradient flex items-center justify-center shrink-0 shadow-btn">
+                      <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
                       </svg>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-slate-900 mb-1">Voir BankKey rempli</p>
-                      <p className="text-xs text-slate-600 leading-relaxed mb-3">
-                        On crée un prospect d&apos;exemple (Camille Martin, score 87) dans votre tableau de bord pour vous montrer à quoi ça ressemble. Vous pourrez le supprimer ensuite.
+                      <p className="text-sm font-bold text-navy mb-1">Voir un exemple de prospect</p>
+                      <p className="text-xs text-[#6B7280] leading-relaxed mb-3">
+                        On crée un prospect exemple (Camille Martin, score 87) dans votre tableau de bord pour vous montrer à quoi BankKey ressemble en pratique. Vous pourrez le supprimer ensuite.
                       </p>
                       <button
                         onClick={createDemoProspect}
                         disabled={demoCreating}
-                        className="bg-blue-900 hover:bg-blue-800 disabled:bg-slate-300 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-base"
+                        className="btn-primary text-xs py-2 px-3 disabled:opacity-50"
                       >
-                        {demoCreating ? 'Création...' : 'Créer un prospect d\'exemple'}
+                        {demoCreating ? 'Création...' : 'Créer le prospect exemple'}
                       </button>
                     </div>
                   </div>
@@ -394,37 +412,44 @@ function OnboardingContent() {
               )}
 
               {demoCreated && (
-                <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-sm text-emerald-800 max-w-md mx-auto">
-                  ✓ Prospect d&apos;exemple créé. Vous le trouverez dans votre tableau de bord.
+                <div className="bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-3 text-sm text-emerald-800 max-w-md mx-auto flex items-center gap-2 justify-center">
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span><strong className="font-bold">Prospect créé.</strong> Disponible dans votre tableau de bord.</span>
                 </div>
               )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md mx-auto">
-                <Link href="/pro" className="bg-blue-900 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-base">
+                <Link href="/pro" className="btn-primary text-sm py-2.5 justify-center">
                   Mon tableau de bord
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+                  </svg>
                 </Link>
-                <Link href="/pro/sources" className="bg-white border border-slate-200 hover:border-slate-300 text-slate-700 text-sm font-medium px-4 py-2.5 rounded-lg transition-base">
+                <Link href="/pro/sources" className="btn-ghost text-sm py-2.5 justify-center">
                   Connecter Gmail
                 </Link>
               </div>
             </div>
           )}
 
-          {/* Navigation footer */}
+          {/* Footer nav */}
           {step !== 'welcome' && step !== 'done' && (
-            <div className="flex items-center justify-between mt-8">
+            <div className="flex items-center justify-between mt-10">
               <button
                 onClick={back}
-                className="text-sm text-slate-500 hover:text-slate-900 transition-colors"
+                className="text-sm font-medium text-[#6B7280] hover:text-navy transition-colors"
               >
                 ← Retour
               </button>
               <button
                 onClick={next}
                 disabled={saving}
-                className="bg-blue-900 hover:bg-blue-800 disabled:bg-slate-300 text-white text-sm font-medium px-5 py-2 rounded-lg transition-base"
+                className="btn-primary text-sm py-2.5 px-5 disabled:opacity-50"
               >
                 {saving ? 'Sauvegarde...' : 'Continuer'}
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+                </svg>
               </button>
             </div>
           )}
@@ -434,24 +459,27 @@ function OnboardingContent() {
   )
 }
 
-function Field({ label, value, onChange, placeholder, type = 'text', autoFocus }: {
+function Field({ label, value, onChange, placeholder, type = 'text', autoFocus, required }: {
   label: string
   value: string
   onChange: (v: string) => void
   placeholder?: string
   type?: string
   autoFocus?: boolean
+  required?: boolean
 }) {
   return (
     <div>
-      <label className="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1.5 block">{label}</label>
+      <label className="text-xs font-bold text-[#374151] mb-1.5 block">
+        {label}{required && <span className="text-red-500 ml-0.5">*</span>}
+      </label>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         autoFocus={autoFocus}
-        className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent transition-all placeholder-slate-300"
+        className="w-full border border-[#D1D5DB] rounded-lg px-3.5 py-2.5 text-sm text-navy placeholder-[#9CA3AF] focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all"
       />
     </div>
   )
