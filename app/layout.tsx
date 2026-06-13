@@ -1,33 +1,24 @@
 import type { Metadata } from 'next';
-import { Hanken_Grotesk, Bricolage_Grotesque } from 'next/font/google';
+import { Inter } from 'next/font/google';
 import { headers } from 'next/headers';
 import { CurrencyProvider } from './_components/CurrencyContext';
 import { currencyFromCountry } from '@/lib/currency';
 import './globals.css';
 
-// Hanken Grotesk — corps de texte : chaleureux, précis, très lisible
-const hanken = Hanken_Grotesk({
+// Inter — la police de Stripe, Linear, Vercel. Lisible, moderne, technique.
+const inter = Inter({
   subsets: ['latin'],
   variable: '--font-sans',
-  weight: ['400', '500', '600', '700'],
-  display: 'swap',
-});
-
-// Bricolage Grotesque — titres : grotesque de caractère, ton fintech affirmé
-const bricolage = Bricolage_Grotesque({
-  subsets: ['latin'],
-  variable: '--font-display',
-  weight: ['500', '600', '700'],
   display: 'swap',
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://bankkey.ch'),
   title: 'BankKey — Qualification automatique pour courtiers crédit',
-  description: 'Vos emails de prospects qualifiés, scorés et préparés en moins de 60 secondes. Pour les cabinets de courtage en crédit immobilier.',
+  description: 'BankKey lit vos emails de demande de financement, score la bancabilité et prépare la réponse. Vos 6 vrais dossiers en haut. Avant votre café.',
   openGraph: {
     title: 'BankKey — Qualification automatique pour courtiers crédit',
-    description: 'Qualification, scoring et brouillon de réponse en moins de 60 secondes.',
+    description: 'Vos emails qualifiés, scorés et préparés en moins de 60 secondes.',
     type: 'website',
     locale: 'fr_CH',
     url: 'https://bankkey.ch',
@@ -42,8 +33,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const initialCurrency = currencyFromCountry(country);
 
   return (
-    <html lang="fr" className={`${hanken.variable} ${bricolage.variable}`}>
-      <body className="font-sans antialiased">
+    <html lang="fr" className={inter.variable}>
+      <body className="font-sans antialiased bg-white text-[#0A0F1E]">
         <CurrencyProvider initialCurrency={initialCurrency}>
           {children}
         </CurrencyProvider>

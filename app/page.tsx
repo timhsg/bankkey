@@ -1,566 +1,657 @@
 import Link from 'next/link'
-import ROICalculator from './_components/ROICalculator'
-import PricingSection from './_components/PricingSection'
-import HeroPreview from './_components/HeroPreview'
-import IntegrationsBar from './_components/IntegrationsBar'
-import WorkflowSteps from './_components/WorkflowSteps'
-import ForWhoSection from './_components/ForWhoSection'
 import { LogoMark } from './_components/Logo'
-import { CurrencyToggle } from './_components/CurrencyContext'
+import { AnimateIn } from './_components/AnimateIn'
 
-// ── Inline icons (Lucide-style) ───────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// BankKey — Landing CRO v1
+// Objectif : décrocher une demande de démo
+// Angle : productivité courtier, zéro mention IA dans les sections principales
+// ─────────────────────────────────────────────────────────────────────────────
 
-const iconBase = 'w-5 h-5 stroke-[1.5]'
+// ── Icônes inline ───────────────────────────────────────────────────────────
 
-const Icons = {
-  Mail: () => (
-    <svg className={iconBase} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-      <rect width="20" height="16" x="2" y="4" rx="2" />
-      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+function Icon({ d, className = 'w-5 h-5' }: { d: string; className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      {d.split('|').map((path, i) => <path key={i} d={path} />)}
     </svg>
-  ),
-  Gauge: () => (
-    <svg className={iconBase} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-      <path d="m12 14 4-4" />
-      <path d="M3.34 19a10 10 0 1 1 17.32 0" />
-    </svg>
-  ),
-  FileText: () => (
-    <svg className={iconBase} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
-      <path d="M14 2v4a2 2 0 0 0 2 2h4" />
-      <path d="M10 9H8" /><path d="M16 13H8" /><path d="M16 17H8" />
-    </svg>
-  ),
-  Send: () => (
-    <svg className={iconBase} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M22 2 11 13" />
-      <path d="M22 2 15 22l-4-9-9-4Z" />
-    </svg>
-  ),
-  Phone: () => (
-    <svg className={iconBase} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92Z" />
-    </svg>
-  ),
-  Lock: () => (
-    <svg className={iconBase} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-      <rect width="18" height="11" x="3" y="11" rx="2" />
-      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-    </svg>
-  ),
-  Shield: () => (
-    <svg className={iconBase} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
-    </svg>
-  ),
-  Database: () => (
-    <svg className={iconBase} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-      <ellipse cx="12" cy="5" rx="9" ry="3" />
-      <path d="M3 5V19A9 3 0 0 0 21 19V5" />
-      <path d="M3 12A9 3 0 0 0 21 12" />
-    </svg>
-  ),
-  Bolt: () => (
-    <svg className={iconBase} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
-    </svg>
-  ),
-  Check: () => (
-    <svg className="w-4 h-4 stroke-[2]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  ),
-  ArrowRight: () => (
-    <svg className="w-4 h-4 stroke-[2]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
-    </svg>
-  ),
+  )
 }
 
-// ── Cell utilisée dans le tableau comparatif ──────────────────────────────
+const ChevronDown = () => (
+  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m6 9 6 6 6-6" />
+  </svg>
+)
 
-function Cell({ value, accent }: { value: boolean | 'manual' | string; accent?: boolean }) {
-  const bgClass = accent ? 'bg-slate-900/5' : '';
+const ArrowRight = () => (
+  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+  </svg>
+)
 
-  if (value === true) {
-    return (
-      <td className={`py-3 px-4 text-center ${bgClass}`}>
-        <span className={`inline-flex w-5 h-5 items-center justify-center rounded-full ${accent ? 'bg-blue-900 text-white' : 'bg-emerald-50 text-emerald-600'}`}>
-          <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-        </span>
-      </td>
-    );
-  }
-  if (value === false) {
-    return (
-      <td className={`py-3 px-4 text-center ${bgClass}`}>
-        <span className="text-slate-300">—</span>
-      </td>
-    );
-  }
-  if (value === 'manual') {
-    return (
-      <td className={`py-3 px-4 text-center ${bgClass}`}>
-        <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">Manuel</span>
-      </td>
-    );
-  }
-  return <td className={`py-3 px-4 text-center text-slate-700 ${bgClass}`}>{value}</td>;
-}
+const Check = ({ className = 'w-4 h-4' }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12" />
+  </svg>
+)
 
-// ── Page ──────────────────────────────────────────────────────────────────
+// ── Données ─────────────────────────────────────────────────────────────────
+
+const PAIN_POINTS = [
+  {
+    icon: 'M3 8l7.89 5.26a2 2 0 0 0 2.22 0L21 8M5 19h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2z',
+    title: 'Des dizaines d\'emails par semaine',
+    desc: 'Empruntis, SeLoger, Pretto, formulaires web. Les demandes arrivent de partout. Trier manuellement vous coûte plusieurs heures chaque semaine.',
+  },
+  {
+    icon: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z',
+    title: 'Des prospects non qualifiés',
+    desc: 'Apport insuffisant, taux d\'endettement hors normes, situation professionnelle précaire. Vous le découvrez après 30 minutes d\'analyse.',
+  },
+  {
+    icon: 'M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z',
+    title: 'Le concurrent a répondu en premier',
+    desc: 'En financement immobilier, le premier courtier à rappeler a 3 fois plus de chances de signer. Chaque heure compte.',
+  },
+  {
+    icon: 'M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 0 2-2h2a2 2 0 0 0 2 2',
+    title: 'Des informations toujours manquantes',
+    desc: 'Avis d\'imposition, bulletins de salaire, relevés bancaires. Vous relancez. Ils ne répondent pas. Vous relancez encore.',
+  },
+  {
+    icon: 'M13 17h8m0 0V9m0 8l-8-8-4 4-6-6',
+    title: 'Des relances oubliées',
+    desc: 'Sans suivi automatisé, certains prospects passent entre les mailles. Ce dossier que vous n\'avez pas relancé, votre concurrent l\'a signé.',
+  },
+  {
+    icon: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z',
+    title: 'Trois semaines de travail pour rien',
+    desc: 'Vous avez instruit un dossier pendant des semaines. Résultat : le prospect n\'est pas finançable. Vous le saviez dès le premier email.',
+  },
+]
+
+const STEPS = [
+  {
+    num: '01',
+    title: 'La demande arrive',
+    desc: 'Gmail, Outlook, formulaire web, Empruntis, SeLoger, Pretto. BankKey centralise toutes vos sources en un seul endroit, sans configuration.',
+    detail: 'Connexion en 10 minutes, aucune migration de données.',
+  },
+  {
+    num: '02',
+    title: 'Le dossier est préparé',
+    desc: 'BankKey extrait les informations clés de chaque demande, calcule la finançabilité et identifie les informations manquantes.',
+    detail: 'Score de finançabilité, checklist documents, profil emprunteur.',
+  },
+  {
+    num: '03',
+    title: 'La réponse est rédigée',
+    desc: 'Chaque prospect reçoit une réponse personnalisée dans votre ton. Vous relisez en 30 secondes et envoyez depuis votre propre adresse Gmail.',
+    detail: 'Rien ne part sans votre validation. Vous gardez le contrôle.',
+  },
+  {
+    num: '04',
+    title: 'Vous intervenez sur les vraies opportunités',
+    desc: 'Votre tableau de bord affiche uniquement les dossiers qui méritent un appel, classés par priorité. Fini l\'administratif, place aux rendez-vous.',
+    detail: 'Briefing d\'appel structuré inclus pour chaque prospect qualifié.',
+  },
+]
+
+const BENEFITS = [
+  {
+    icon: 'M13 10V3L4 14h7v7l9-11h-7z',
+    metric: '< 5 min',
+    title: 'Délai de réponse initial',
+    desc: 'Chaque prospect reçoit une réponse dans les minutes qui suivent sa demande. Pas dans les 48 heures.',
+  },
+  {
+    icon: 'M9 19v-6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2zm0 0V9a2 2 0 0 0 2-2h2a2 2 0 0 0 2 2v10m-6 0a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2m0 0V5a2 2 0 0 0 2-2h2a2 2 0 0 0 2 2v14a2 2 0 0 0-2 2h-2a2 2 0 0 0-2-2z',
+    metric: '×2',
+    title: 'Dossiers traités par semaine',
+    desc: 'Sans recruter, sans travailler plus. Simplement en éliminant les tâches administratives répétitives.',
+  },
+  {
+    icon: 'M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z',
+    metric: '−80%',
+    title: 'Temps de qualification',
+    desc: '30 minutes par prospect en moyenne. BankKey ramène ça à 2 minutes. Vous vérifiez, vous décidez.',
+  },
+  {
+    icon: 'M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z',
+    metric: '100%',
+    title: 'Prospects répondus',
+    desc: 'Aucun prospect ne reste sans réponse, aucune relance n\'est oubliée. Votre réputation professionnelle est protégée.',
+  },
+  {
+    icon: 'M17 20h5v-2a3 3 0 0 0-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 0 1 5.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 0 1 9.288 0',
+    metric: '0 €',
+    title: 'Recrutement supplémentaire',
+    desc: 'Pas besoin d\'un assistant pour trier les emails. BankKey fait ce travail avant même que vous arriviez au bureau.',
+  },
+  {
+    icon: 'M14.828 14.828a4 4 0 0 1-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z',
+    metric: '+',
+    title: 'Expérience client',
+    desc: 'Vos prospects reçoivent une réponse rapide, personnalisée et professionnelle. Ils vous recommandent plus souvent.',
+  },
+]
+
+const BEFORE_AFTER = [
+  {
+    before: '30 minutes pour qualifier un seul prospect',
+    after: '2 minutes pour valider un dossier déjà structuré',
+  },
+  {
+    before: 'Réponse au prospect dans les 24 à 48 heures',
+    after: 'Réponse initiale envoyée en moins de 5 minutes',
+  },
+  {
+    before: 'Relances manuelles, souvent oubliées',
+    after: 'Suivi automatique — aucun prospect ne disparaît',
+  },
+  {
+    before: 'Dossier non finançable découvert après 3 semaines',
+    after: 'Score de finançabilité calculé dès la première demande',
+  },
+  {
+    before: 'Informations manquantes découvertes en réunion',
+    after: 'Checklist documents envoyée automatiquement au prospect',
+  },
+]
+
+const FAQ_ITEMS = [
+  {
+    q: 'Comment BankKey reçoit-il les demandes de mes prospects ?',
+    a: 'BankKey se connecte à votre boîte Gmail ou Outlook en lecture seule. Il reconnaît automatiquement les demandes provenant d\'Empruntis, SeLoger, Pretto, Meilleurtaux ou de votre propre formulaire web. Vous pouvez aussi transférer manuellement un email. La mise en place prend moins de 10 minutes.',
+  },
+  {
+    q: 'Est-ce que BankKey envoie des emails à ma place ?',
+    a: 'Non. BankKey rédige le brouillon, vous relisez, vous cliquez envoyer depuis votre propre adresse Gmail. Rien ne part sans votre validation. Vous gardez le contrôle total de chaque communication.',
+  },
+  {
+    q: 'Quelle différence avec mon CRM actuel ?',
+    a: 'Votre CRM gère vos dossiers en cours et vos relances commerciales. BankKey gère la phase d\'avant : la réception des demandes, la qualification initiale et la préparation du dossier. Les deux fonctionnent ensemble. BankKey ne remplace pas votre CRM.',
+  },
+  {
+    q: 'Combien de demandes BankKey peut-il traiter par mois ?',
+    a: 'Aucun plafond. Les cabinets pilotes traitent entre 50 et 200 demandes par mois. BankKey s\'adapte à votre volume.',
+  },
+  {
+    q: 'Est-ce conforme au RGPD ?',
+    a: 'Oui. L\'infrastructure est hébergée à Francfort, dans l\'Union européenne. Les données sont chiffrées en transit et au repos. Chaque cabinet est isolé — aucun croisement de données n\'est possible. Vous pouvez demander la suppression de toutes vos données sous 72 heures.',
+  },
+  {
+    q: 'Combien de temps pour démarrer ?',
+    a: 'Dix minutes. Création de compte avec Google, connexion Gmail ou Outlook, premier dossier analysé dans la foulée. Aucune formation longue, aucune migration de données.',
+  },
+  {
+    q: 'Utilisez-vous l\'intelligence artificielle ?',
+    a: 'Certaines fonctions de BankKey sont assistées par des technologies avancées de traitement du langage afin d\'accélérer l\'analyse des demandes et la rédaction des réponses. Vous n\'avez aucune configuration technique à effectuer. Le résultat, c\'est un dossier structuré et une réponse prête — le reste ne vous concerne pas.',
+  },
+  {
+    q: 'Puis-je annuler à tout moment ?',
+    a: 'Oui. Annulation en un clic depuis votre espace. Vous gardez l\'accès jusqu\'à la fin du mois payé. Vos données vous sont exportées en CSV et supprimées de nos serveurs sous 72 heures.',
+  },
+]
+
+// ── Page ─────────────────────────────────────────────────────────────────────
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-white text-slate-900 antialiased">
+    <div className="min-h-screen bg-white text-[#0A0F1E] antialiased">
 
-      {/* ───── Header ───── */}
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <LogoMark size={28} />
-            <span className="font-semibold text-slate-900 tracking-tight">BankKey</span>
+      {/* ─── HEADER ─── */}
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-[#E5E7EB]">
+        <div className="wrap h-16 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2.5">
+            <LogoMark size={24} />
+            <span className="font-bold text-[15px] tracking-tight text-navy">BankKey</span>
           </Link>
-          <nav className="hidden md:flex items-center gap-7 text-sm text-slate-600">
-            <a href="#calculator" className="hover:text-slate-900 transition-colors">ROI</a>
-            <a href="#features" className="hover:text-slate-900 transition-colors">Fonctionnalités</a>
-            <Link href="/security" className="hover:text-slate-900 transition-colors">Sécurité</Link>
-            <a href="#pricing" className="hover:text-slate-900 transition-colors">Tarifs</a>
-            <a href="#faq" className="hover:text-slate-900 transition-colors">FAQ</a>
+          <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-[#374151]">
+            <a href="#probleme" className="hover:text-navy transition-colors">Le problème</a>
+            <a href="#fonctionnement" className="hover:text-navy transition-colors">Comment ça marche</a>
+            <a href="#tarifs" className="hover:text-navy transition-colors">Tarifs</a>
+            <a href="#faq" className="hover:text-navy transition-colors">FAQ</a>
           </nav>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <span className="hidden md:inline"><CurrencyToggle /></span>
-            <Link
-              href="/pro/login"
-              className="hidden sm:inline-flex text-sm text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg font-medium transition-colors"
-            >
-              Se connecter
+          <div className="flex items-center gap-3">
+            <Link href="/pro/login" className="hidden sm:inline text-sm font-medium text-[#374151] hover:text-navy transition-colors px-3 py-2">
+              Connexion
             </Link>
-            <Link
-              href="/pro/login?mode=signup"
-              className="hidden lg:inline-flex text-sm text-slate-700 hover:text-slate-900 border border-slate-200 hover:border-slate-300 px-3 py-2 rounded-lg font-medium transition-colors"
-            >
-              Créer un compte
-            </Link>
-            <Link
-              href="/book"
-              className="text-sm bg-blue-900 hover:bg-blue-800 text-white px-3 sm:px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
-            >
-              Réserver une démo
+            <Link href="/book" className="btn-primary text-sm py-2.5 px-5">
+              Réserver une démonstration
             </Link>
           </div>
         </div>
       </header>
 
-      {/* ───── Hero avec mockup à droite ───── */}
-      <section className="relative overflow-hidden">
+      {/* ─── SECTION 1 — HERO ─── */}
+      <section className="relative overflow-hidden pt-20 pb-20 md:pt-28 md:pb-28">
+        <div className="hero-glow" />
 
-        {/* Ambiance fond — gradient subtil */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[600px] bg-gradient-to-br from-emerald-50/40 via-blue-50/30 to-amber-50/20 rounded-full blur-3xl" />
-        </div>
+        <div className="wrap relative">
+          <div className="max-w-4xl mx-auto text-center">
 
-        <div className="relative max-w-7xl mx-auto px-6 pt-20 pb-20">
-          <div className="grid lg:grid-cols-12 gap-12 items-center">
-
-            {/* Colonne gauche : titre + sub + CTA */}
-            <div className="lg:col-span-5 text-center lg:text-left">
-
-              {/* Mini-badge avec accent chaud */}
-              <div className="inline-flex items-center gap-2 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-full mb-6">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                Courtage en crédit immobilier
-              </div>
-
-              <h1 className="font-semibold text-[2.5rem] sm:text-5xl lg:text-[3.75rem] tracking-tightest leading-[1.02] mb-6 text-slate-900">
-                Vos leads triés
-                <span className="block text-slate-500 font-normal">avant votre café.</span>
-              </h1>
-
-              <p className="text-base sm:text-lg text-slate-600 leading-relaxed mb-8 max-w-lg mx-auto lg:mx-0">
-                Quand vous ouvrez Gmail le matin, BankKey a déjà classé vos 80 mails. Les 5 qui valent un appel sont en haut, avec leur score, leur profil et une réponse prête à relire.
-              </p>
-
-              <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-3 mb-3">
-                <Link href="/demo/access" className="inline-flex items-center justify-center gap-2 bg-blue-900 hover:bg-blue-800 text-white font-medium px-6 py-3 rounded-lg transition-base hover-lift w-full sm:w-auto">
-                  Tester le compte démo
-                  <Icons.ArrowRight />
-                </Link>
-                <Link href="/book" className="inline-flex items-center justify-center gap-2 text-slate-700 hover:text-slate-900 font-medium px-6 py-3 rounded-lg border border-slate-200 hover:border-slate-300 transition-base w-full sm:w-auto">
-                  Réserver 20 min avec Tim
-                </Link>
-              </div>
-              <p className="text-xs text-slate-500 mb-5 text-center lg:text-left">
-                Le compte démo s&apos;ouvre en deux clics. Pas d&apos;inscription, pas de carte.
-              </p>
-
-              {/* Mini stats / proof */}
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-2 text-xs text-slate-500">
-                <span className="flex items-center gap-1.5">
-                  <span className="w-1 h-1 rounded-full bg-emerald-500" />
-                  60 secondes par lead
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="w-1 h-1 rounded-full bg-emerald-500" />
-                  Mise en route en 10 minutes
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="w-1 h-1 rounded-full bg-emerald-500" />
-                  30 jours d&apos;essai
-                </span>
-              </div>
+            <div className="badge mb-7 reveal">
+              <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+              Conçu exclusivement pour les courtiers en crédit
             </div>
 
-            {/* Colonne droite : mockup produit */}
-            <div className="lg:col-span-7 relative">
-              <HeroPreview />
+            <h1 className="text-[2.75rem] sm:text-6xl md:text-[5.5rem] font-extrabold tracking-tightest leading-[1.0] mb-7 reveal reveal-delay-1">
+              Le premier courtier<br />
+              à répondre{' '}
+              <span className="text-gradient">décroche le dossier.</span>
+            </h1>
+
+            <p className="text-lg md:text-xl text-[#374151] leading-relaxed mb-10 max-w-2xl mx-auto reveal reveal-delay-2">
+              BankKey centralise toutes vos demandes de financement, qualifie chaque prospect et prépare votre réponse — avant même que vous arriviez au bureau. Vous intervenez uniquement sur les vraies opportunités.
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10 reveal reveal-delay-3">
+              <Link href="/book" className="btn-primary w-full sm:w-auto justify-center px-7 py-3.5 text-base">
+                Réserver une démonstration
+                <ArrowRight />
+              </Link>
+              <a href="#fonctionnement" className="btn-ghost w-full sm:w-auto justify-center px-6 py-3.5 text-base">
+                Voir comment ça fonctionne
+                <ChevronDown />
+              </a>
+            </div>
+
+            <p className="text-sm text-[#9CA3AF] reveal reveal-delay-4">
+              Essai 30 jours gratuit · Aucune carte bancaire · Mise en route en 10 minutes
+            </p>
+          </div>
+
+          {/* Dashboard mockup */}
+          <div className="mt-16 rounded-2xl border border-[#E5E7EB] shadow-[0_32px_80px_rgba(10,31,92,0.12)] overflow-hidden bg-[#F7F8FA] reveal reveal-delay-4">
+            {/* Barre fenêtre */}
+            <div className="h-10 bg-[#EAEDF0] border-b border-[#E5E7EB] flex items-center px-4 gap-2">
+              <span className="w-3 h-3 rounded-full bg-[#FF5F57]" />
+              <span className="w-3 h-3 rounded-full bg-[#FEBC2E]" />
+              <span className="w-3 h-3 rounded-full bg-[#28C840]" />
+              <span className="ml-4 text-xs text-[#9CA3AF] font-medium">BankKey — Tableau de bord</span>
+            </div>
+
+            <div className="p-6 md:p-8">
+              {/* Mini topbar */}
+              <div className="flex items-center justify-between mb-5">
+                <div>
+                  <h3 className="font-bold text-[#0A0F1E]">Lundi 7h32 — 12 demandes reçues cette nuit</h3>
+                  <p className="text-sm text-[#6B7280] mt-0.5">4 dossiers qualifiés · 8 écartés (non finançables ou hors périmètre)</p>
+                </div>
+                <span className="badge hidden sm:inline-flex">Mise à jour automatique</span>
+              </div>
+
+              {/* Leads qualifiés */}
+              <div className="grid sm:grid-cols-2 gap-3 mb-4">
+                {[
+                  { nom: 'M. Fontaine', ville: 'Lyon 6e', projet: 'Résidence principale · 380 000 €', apport: '60 000 € · CDI · 7 ans ancienneté', score: 94, badge: 'À appeler', badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200', src: 'Empruntis' },
+                  { nom: 'Mme Legrand', ville: 'Bordeaux', projet: 'Investissement locatif · 220 000 €', apport: '30 000 € · Fonctionnaire', score: 81, badge: 'À appeler', badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200', src: 'SeLoger' },
+                  { nom: 'M. & Mme Moreau', ville: 'Genève', projet: 'Résidence principale · 650 000 CHF', apport: '130 000 CHF · Indépendant', score: 72, badge: 'Informations manquantes', badgeColor: 'bg-amber-50 text-amber-700 border-amber-200', src: 'Formulaire web' },
+                  { nom: 'Mme Dubois', ville: 'Paris 15e', projet: 'Résidence principale · 490 000 €', apport: '45 000 € · CDI · 2 ans', score: 67, badge: 'À examiner', badgeColor: 'bg-blue-50 text-blue-700 border-blue-200', src: 'Pretto' },
+                ].map((lead) => (
+                  <div key={lead.nom} className="bg-white rounded-xl border border-[#E5E7EB] p-4 hover:shadow-card transition-shadow cursor-pointer">
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div>
+                        <p className="font-bold text-sm text-[#0A0F1E]">{lead.nom} · {lead.ville}</p>
+                        <p className="text-xs text-[#6B7280] mt-0.5">{lead.projet}</p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="font-extrabold text-navy text-lg leading-none">{lead.score}</p>
+                        <p className="text-[10px] text-[#9CA3AF]">/ 100</p>
+                      </div>
+                    </div>
+                    <p className="text-xs text-[#6B7280] mb-3">{lead.apport}</p>
+                    <div className="flex items-center justify-between">
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${lead.badgeColor}`}>{lead.badge}</span>
+                      <span className="text-[10px] text-[#9CA3AF]">{lead.src}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <p className="text-xs text-center text-[#9CA3AF]">
+                + 8 demandes écartées automatiquement (apport insuffisant, taux d&apos;endettement hors normes) · récupérables en un clic
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Bar logos plateformes compatibles */}
-      <IntegrationsBar />
-
-      {/* ───── Trust bar (avec icônes colorées chaudes) ───── */}
-      <section className="border-y border-slate-100 bg-gradient-to-r from-slate-50 via-white to-slate-50">
-        <div className="max-w-6xl mx-auto px-6 py-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              { icon: <Icons.Shield />,   label: 'Conforme RGPD',         color: 'text-emerald-600 bg-emerald-50' },
-              { icon: <Icons.Database />, label: 'Hébergé dans l\'UE',     color: 'text-blue-600 bg-blue-50' },
-              { icon: <Icons.Lock />,     label: 'Chiffrement TLS + AES', color: 'text-purple-600 bg-purple-50' },
-              { icon: <Icons.Bolt />,     label: 'Mise en service 10 min', color: 'text-amber-600 bg-amber-50' },
-            ].map((item, i) => (
-              <div key={i} className="flex items-center gap-3 justify-center md:justify-start">
-                <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${item.color}`}>
-                  {item.icon}
-                </div>
-                <span className="text-sm font-medium text-slate-700">{item.label}</span>
-              </div>
+      {/* ─── Logos sources ─── */}
+      <div className="border-y border-[#E5E7EB] bg-[#F7F8FA] py-5">
+        <div className="wrap">
+          <p className="text-center text-xs font-semibold text-[#9CA3AF] uppercase tracking-widest mb-4">Sources de prospects gérées par BankKey</p>
+          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
+            {['Empruntis', 'SeLoger', 'Pretto', 'Meilleurtaux', 'Formulaire web', 'Transfert email'].map((src) => (
+              <span key={src} className="text-sm font-semibold text-[#9CA3AF]">{src}</span>
             ))}
           </div>
         </div>
-      </section>
-
-      {/* ───── Workflow visuel (3 mini-mockups) ───── */}
-      <WorkflowSteps />
-
-      {/* ───── ROI Calculator ───── */}
-      <div id="calculator">
-        <ROICalculator />
       </div>
 
-      {/* ───── Features ───── */}
-      <section id="features" className="bg-slate-50 border-y border-slate-100 py-20 md:py-24">
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="text-center mb-14 md:mb-16">
-            <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Sous le capot</p>
-            <h2 className="font-semibold text-3xl md:text-4xl tracking-tightest text-slate-900">
-              Six trucs que vous faites à la main.<br />
-              <span className="text-slate-500 font-normal">Maintenant faits avant que vous arriviez.</span>
+      {/* ─── SECTION 2 — LE PROBLÈME ─── */}
+      <section id="probleme" className="py-20 md:py-28">
+        <div className="wrap">
+          <AnimateIn className="text-center mb-14">
+            <p className="label mb-3">Le quotidien actuel</p>
+            <h2 className="text-4xl md:text-5xl font-extrabold tracking-tightest mb-4">
+              Vous reconnaissez<br />
+              <span className="text-gradient">cette situation ?</span>
             </h2>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-slate-200 rounded-2xl overflow-hidden border border-slate-200">
-            {[
-              { icon: <Icons.Mail />, title: 'Tri de la boîte mail', desc: 'Gmail, Outlook, un transfert ou un formulaire web. Le lead arrive par où vous voulez, BankKey le range au bon endroit.' },
-              { icon: <Icons.Gauge />, title: 'Score de bancabilité', desc: 'Une note sur 100 selon revenus, apport, situation pro et maturité du projet. Vous décidez du poids de chaque critère.' },
-              { icon: <Icons.FileText />, title: 'Profil emprunteur', desc: 'Les champs habituels (revenus, apport, charges, projet) extraits du mail. Vous corrigez en un clic si BankKey a mal lu.' },
-              { icon: <Icons.Send />, title: 'Brouillon de réponse', desc: 'Un mail dans votre ton, à relire et envoyer depuis votre Gmail. Rien ne part automatiquement.' },
-              { icon: <Icons.Phone />, title: 'Briefing d\'appel', desc: 'Contexte du dossier, vrai besoin, question d\'ouverture. Vous ne démarrez plus à froid.' },
-              { icon: <Icons.Bolt />, title: 'Priorisation', desc: 'Les hot leads en haut. Les newsletters et factures écartées, mais récupérables si le filtre s\'est trompé.' },
-            ].map((f, i) => (
-              <div key={i} className="bg-white p-7">
-                <div className="text-blue-900 mb-4">{f.icon}</div>
-                <h3 className="text-sm font-semibold text-slate-900 mb-2">{f.title}</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">{f.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ───── Comparison ───── */}
-      <section id="comparison" className="max-w-5xl mx-auto px-6 py-20 md:py-24">
-        <div className="text-center mb-14">
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Positionnement</p>
-          <h2 className="font-semibold text-3xl md:text-4xl tracking-tightest text-slate-900 mb-4">
-            On ne remplace pas votre CRM.
-            <span className="block text-slate-500 font-normal">On vous aide à le remplir mieux.</span>
-          </h2>
-          <p className="text-slate-600 max-w-xl mx-auto">
-            Aprico, Marketis, votre Excel maison. Tout reste. BankKey gère la pile d&apos;emails du matin, et vous remplissez votre CRM avec ce qui en sort vraiment.
-          </p>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm border-collapse">
-            <thead>
-              <tr className="border-b border-slate-200">
-                <th className="text-left py-4 pr-4 font-medium text-slate-500"></th>
-                <th className="text-center py-4 px-4 font-semibold text-slate-700">Excel + Outlook</th>
-                <th className="text-center py-4 px-4 font-semibold text-slate-700">CRM courtage spécialisé</th>
-                <th className="text-center py-4 px-4 font-semibold text-slate-900 bg-slate-900/5 rounded-t-lg">
-                  <span className="inline-flex items-center gap-1.5">
-                    <LogoMark size={14} />
-                    BankKey
-                  </span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                { feature: 'Lecture automatique de la boîte mail',     excel: false, crm: false, bk: true },
-                { feature: 'Qualification IA des leads entrants',      excel: false, crm: false, bk: true },
-                { feature: 'Score de bancabilité automatique',         excel: false, crm: 'manual', bk: true },
-                { feature: 'Pré-rédaction des réponses email',         excel: false, crm: false, bk: true },
-                { feature: 'Briefing d\'appel structuré',               excel: false, crm: false, bk: true },
-                { feature: 'Checklist documents par profil',           excel: false, crm: 'manual', bk: true },
-                { feature: 'Gestion du pipeline dossiers',             excel: 'manual', crm: true, bk: false },
-                { feature: 'Envoi multi-banques',                      excel: false, crm: true, bk: false },
-                { feature: 'Archivage IOBSP 5 ans',                    excel: 'manual', crm: true, bk: false },
-                { feature: 'Conformité KYC intégrée',                  excel: false, crm: true,  bk: false },
-              ].map((row, i) => (
-                <tr key={i} className={`border-b border-slate-100 ${i % 2 === 0 ? '' : 'bg-slate-50/50'}`}>
-                  <td className="py-3 pr-4 text-slate-700">{row.feature}</td>
-                  <Cell value={row.excel} />
-                  <Cell value={row.crm} />
-                  <Cell value={row.bk} accent />
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <p className="text-xs text-slate-400 text-center mt-8">
-          BankKey s&apos;intègre à votre CRM existant via export CSV (et bientôt webhooks).
-        </p>
-      </section>
-
-      {/* ───── Pour qui ───── */}
-      <ForWhoSection />
-
-      {/* ───── Pilot program ───── */}
-      <section className="border-y border-slate-100 py-20 md:py-24 bg-white">
-        <div className="max-w-3xl mx-auto px-6 text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Programme pilote 2026</p>
-          <h2 className="font-semibold text-3xl md:text-4xl tracking-tightest text-slate-900 mb-5">
-            Vingt cabinets fondateurs.
-            <span className="block text-slate-500 font-normal">Une place vous attend.</span>
-          </h2>
-          <p className="text-slate-600 leading-relaxed mb-8 max-w-xl mx-auto">
-            Vingt places, pas une de plus. Vous bloquez votre tarif à vie, vous avez le numéro direct de Tim, et chaque feature que vous demandez passe en priorité sur la roadmap.
-          </p>
-
-          <div className="grid grid-cols-3 gap-4 mb-8 max-w-lg mx-auto">
-            {[
-              { value: 'À vie',  label: 'Tarif pilote conservé' },
-              { value: 'Direct', label: 'Ligne fondateur' },
-              { value: 'Priorité', label: 'Sur les features ajoutées' },
-            ].map((b, i) => (
-              <div key={i} className="bg-white border border-slate-200 rounded-xl px-3 py-4">
-                <p className="text-base font-semibold text-slate-900 tracking-tight">{b.value}</p>
-                <p className="text-[11px] text-slate-500 mt-1 leading-tight">{b.label}</p>
-              </div>
-            ))}
-          </div>
-
-          <Link href="/book" className="inline-flex items-center gap-2 bg-blue-900 hover:bg-blue-800 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors">
-            Postuler au programme pilote
-            <Icons.ArrowRight />
-          </Link>
-        </div>
-      </section>
-
-      {/* ───── Security ───── */}
-      <section id="security" className="max-w-5xl mx-auto px-6 py-20 md:py-24">
-        <div className="grid md:grid-cols-5 gap-10 md:gap-12 items-start">
-          <div className="md:col-span-2">
-            <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Confidentialité</p>
-            <h2 className="font-semibold text-3xl md:text-4xl tracking-tightest text-slate-900 mb-4">
-              Vos prospects restent vos prospects.
-            </h2>
-            <p className="text-slate-600 leading-relaxed mb-5">
-              Les fichiers que vous traitez touchent à la vie privée et à l&apos;argent. BankKey applique les règles de la finance européenne : chiffrement, isolation par cabinet, suppression sur demande.
+            <p className="text-[#6B7280] text-lg max-w-xl mx-auto">
+              Chaque matin, les mêmes tâches chronophages. Chaque semaine, des prospects perdus faute de réactivité.
             </p>
-            <Link href="/security" className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-900 hover:text-slate-600 transition-colors">
-              Voir la page sécurité complète
-              <Icons.ArrowRight />
-            </Link>
-          </div>
+          </AnimateIn>
 
-          <div className="md:col-span-3 space-y-5">
-            {[
-              { title: 'Hébergement européen', desc: 'Infrastructure à Francfort. Les données ne quittent pas l\'Union européenne.' },
-              { title: 'Chiffrement de bout en bout', desc: 'TLS 1.3 en transit, AES-256 au repos. Tokens Gmail chiffrés via Supabase Vault.' },
-              { title: 'Isolation par cabinet', desc: 'Row Level Security PostgreSQL. Aucun croisement possible entre les comptes.' },
-              { title: 'Effacement sous 72 heures', desc: 'Demande par email. Production et sauvegardes. Attestation envoyée à la fin.' },
-            ].map((s) => (
-              <div key={s.title} className="flex gap-4 border-l-2 border-slate-200 pl-5">
-                <div>
-                  <h3 className="text-sm font-semibold text-slate-900 mb-1">{s.title}</h3>
-                  <p className="text-sm text-slate-600 leading-relaxed">{s.desc}</p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {PAIN_POINTS.map((p, i) => (
+              <AnimateIn key={p.title} delay={i * 60} className="card border-red-50 bg-white hover:border-red-100">
+                <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-red-400 mb-4">
+                  <Icon d={p.icon} />
                 </div>
-              </div>
+                <h3 className="font-bold text-[15px] mb-2 text-[#0A0F1E]">{p.title}</h3>
+                <p className="text-sm text-[#6B7280] leading-relaxed">{p.desc}</p>
+              </AnimateIn>
             ))}
           </div>
-        </div>
-      </section>
 
-      {/* ───── Pricing ───── */}
-      <PricingSection />
-
-      {/* ───── FAQ ───── */}
-      <section id="faq" className="max-w-3xl mx-auto px-6 py-20 md:py-24">
-        <div className="text-center mb-14 md:mb-16">
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Questions fréquentes</p>
-          <h2 className="font-semibold text-3xl md:text-4xl tracking-tightest text-slate-900">
-            Les vraies questions des courtiers.
-          </h2>
-        </div>
-
-        <div className="divide-y divide-slate-200 border-y border-slate-200">
-          {[
-            {
-              q: 'Différence avec mon CRM ?',
-              a: 'Le CRM gère vos dossiers signés. BankKey gère la pile d\'emails du matin. On ne remplace rien, on remplit votre CRM avec ce qui en sort vraiment.',
-            },
-            {
-              q: 'Combien de dossiers BankKey peut traiter par mois ?',
-              a: 'Pas de plafond. Les pilotes tournent entre 50 et 200 emails par mois. La limite, c\'est votre boîte mail, pas la nôtre.',
-            },
-            {
-              q: 'BankKey envoie des emails à votre place ?',
-              a: 'Non, et c\'est exprès. On rédige le brouillon, vous le relisez, vous cliquez envoyer depuis Gmail. Aucun mail ne part sans votre validation.',
-            },
-            {
-              q: 'Si BankKey se trompe sur un champ ?',
-              a: 'Vous cliquez "Corriger" sur la fiche, vous changez la valeur, le score se recalcule. C\'est vous qui décidez.',
-            },
-            {
-              q: 'Combien de temps pour démarrer ?',
-              a: 'Dix minutes. Création de compte avec Google, connexion Gmail (ou un simple transfert email), premier lead analysé dans la foulée.',
-            },
-            {
-              q: 'Mes données restent confidentielles ?',
-              a: 'Hébergement à Francfort, chiffrement TLS + AES-256, isolation par cabinet. Vos emails ne servent à rien d\'autre qu\'à vous. Le détail des sous-traitants est sur la page sécurité.',
-            },
-            {
-              q: 'Si je veux arrêter ?',
-              a: 'Annulation en un clic. Vous gardez l\'accès jusqu\'à la fin du mois payé, vous exportez tout en CSV, vos données sont supprimées sous 72 heures.',
-            },
-            {
-              q: 'Je peux tester avant de payer ?',
-              a: 'Trente jours offerts, sans carte. Ou directement le compte démo (bouton "Tester le compte démo" en haut de page).',
-            },
-          ].map((item, i) => (
-            <details key={i} className="group py-5">
-              <summary className="flex items-center justify-between cursor-pointer list-none">
-                <span className="text-sm font-medium text-slate-900 pr-4">{item.q}</span>
-                <span className="text-slate-400 group-open:rotate-45 transition-transform shrink-0">
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 5v14" /><path d="M5 12h14" />
-                  </svg>
-                </span>
-              </summary>
-              <p className="text-sm text-slate-600 leading-relaxed mt-3 pr-8">{item.a}</p>
-            </details>
-          ))}
-        </div>
-      </section>
-
-      {/* ───── Final CTA — chaude, gradient ───── */}
-      <section className="relative border-t border-slate-100 bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white overflow-hidden">
-
-        {/* Ambiance gradient + grain subtil */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-[500px] h-[300px] bg-emerald-500/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 right-1/4 w-[400px] h-[300px] bg-amber-500/10 rounded-full blur-3xl" />
-        </div>
-
-        <div className="relative max-w-4xl mx-auto px-6 py-20 md:py-24 text-center">
-          <div className="inline-flex items-center gap-2 text-xs font-medium text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-full mb-6">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-soft-pulse" />
-            Vingt places ouvertes pour 2026
-          </div>
-
-          <h2 className="font-semibold text-3xl sm:text-4xl md:text-5xl tracking-tightest mb-4 leading-[1.05]">
-            Répondez en premier
-            <span className="block text-slate-400 font-normal">dès demain matin.</span>
-          </h2>
-          <p className="text-slate-300 text-base md:text-lg mb-10 leading-relaxed max-w-xl mx-auto">
-            Pendant que vous lisez vos 80 mails, un autre courtier a déjà rappelé votre prospect. Dix minutes pour installer BankKey, et c&apos;est vous qui passez en premier.
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6">
-            <Link href="/book" className="inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-100 text-slate-900 font-medium px-7 py-3.5 rounded-lg transition-base hover-lift w-full sm:w-auto">
-              Réserver une démo personnalisée
-              <Icons.ArrowRight />
-            </Link>
-            <Link href="/pro/login?mode=signup" className="inline-flex items-center justify-center gap-2 text-slate-300 hover:text-white font-medium px-6 py-3 rounded-lg border border-slate-700 hover:border-slate-600 transition-base w-full sm:w-auto">
-              Commencer l&apos;essai gratuit
-            </Link>
-          </div>
-
-          <p className="text-xs text-slate-400">
-            Sans carte bancaire. Mise en route en moins de 10 minutes. Annulable à tout moment.
-          </p>
-        </div>
-      </section>
-
-      {/* ───── Footer ───── */}
-      <footer className="bg-blue-900 text-slate-400 border-t border-slate-200">
-        <div className="max-w-6xl mx-auto px-6 py-14">
-          <div className="grid md:grid-cols-4 gap-10 mb-12">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <LogoMark size={28} variant="dark" />
-                <span className="font-semibold text-white">BankKey</span>
-              </div>
-              <p className="text-xs leading-relaxed">
-                Qualification automatique des emails de demande de financement, pour les cabinets de courtage en crédit immobilier.
+          <AnimateIn delay={200} className="mt-12 text-center">
+            <div className="inline-block bg-[#F7F8FA] border border-[#E5E7EB] rounded-xl px-8 py-5">
+              <p className="text-lg font-bold text-[#0A0F1E]">
+                En moyenne, un courtier passe{' '}
+                <span className="text-gradient">3 à 4 heures par semaine</span>
+                {' '}sur des tâches qui ne génèrent aucune commission.
               </p>
             </div>
+          </AnimateIn>
+        </div>
+      </section>
 
-            <div>
-              <h4 className="text-xs font-semibold text-white uppercase tracking-widest mb-4">Produit</h4>
-              <ul className="space-y-2.5 text-xs">
-                <li><a href="#calculator" className="hover:text-white transition-colors">Calculateur ROI</a></li>
-                <li><a href="#features" className="hover:text-white transition-colors">Fonctionnalités</a></li>
-                <li><a href="#pricing" className="hover:text-white transition-colors">Tarifs</a></li>
-                <li><Link href="/demo" className="hover:text-white transition-colors">Démo interactive</Link></li>
-                <li><Link href="/book" className="hover:text-white transition-colors">Réserver une démo</Link></li>
-              </ul>
-            </div>
+      {/* ─── SECTION 3 — COMMENT ÇA FONCTIONNE ─── */}
+      <section id="fonctionnement" className="bg-[#F7F8FA] border-y border-[#E5E7EB] py-20 md:py-28">
+        <div className="wrap">
+          <AnimateIn className="text-center mb-16">
+            <p className="label mb-3">Comment ça fonctionne</p>
+            <h2 className="text-4xl md:text-5xl font-extrabold tracking-tightest mb-4">
+              Simple. Efficace. <span className="text-gradient">Immédiat.</span>
+            </h2>
+            <p className="text-[#6B7280] text-lg max-w-xl mx-auto">
+              BankKey fonctionne en arrière-plan. Vous ouvrez votre tableau de bord, vos dossiers sont prêts.
+            </p>
+          </AnimateIn>
 
-            <div>
-              <h4 className="text-xs font-semibold text-white uppercase tracking-widest mb-4">Entreprise</h4>
-              <ul className="space-y-2.5 text-xs">
-                <li><a href="mailto:contact@bankkey.ch" className="hover:text-white transition-colors">Contact</a></li>
-                <li><Link href="/security" className="hover:text-white transition-colors">Sécurité</Link></li>
-                <li><a href="mailto:dpo@bankkey.ch" className="hover:text-white transition-colors">DPO</a></li>
-                <li><a href="#faq" className="hover:text-white transition-colors">FAQ</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-xs font-semibold text-white uppercase tracking-widest mb-4">Légal</h4>
-              <ul className="space-y-2.5 text-xs">
-                <li><Link href="/terms" className="hover:text-white transition-colors">Conditions générales</Link></li>
-                <li><Link href="/privacy" className="hover:text-white transition-colors">Confidentialité</Link></li>
-                <li><Link href="/security" className="hover:text-white transition-colors">Sécurité</Link></li>
-              </ul>
-            </div>
+          <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
+            {STEPS.map((s, i) => (
+              <AnimateIn key={s.num} delay={i * 80} className="bg-white rounded-2xl border border-[#E5E7EB] p-7 hover:shadow-card transition-shadow">
+                <div className="flex items-start gap-5">
+                  <div className="w-12 h-12 rounded-xl bg-brand-gradient flex items-center justify-center text-white font-extrabold text-sm shrink-0">
+                    {s.num}
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg mb-2">{s.title}</h3>
+                    <p className="text-[#374151] leading-relaxed mb-3">{s.desc}</p>
+                    <p className="text-sm text-accent font-medium flex items-center gap-1.5">
+                      <Check className="w-3.5 h-3.5" />
+                      {s.detail}
+                    </p>
+                  </div>
+                </div>
+              </AnimateIn>
+            ))}
           </div>
 
-          <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
+          <AnimateIn delay={200} className="mt-12">
+            <div className="bg-white rounded-2xl border border-[#E5E7EB] p-7 flex flex-col sm:flex-row items-center gap-6">
+              <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center shrink-0">
+                <svg className="w-7 h-7 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                </svg>
+              </div>
+              <div>
+                <p className="font-bold text-[#0A0F1E] text-lg mb-1">Le lundi matin, pendant que vous prenez votre café</p>
+                <p className="text-[#6B7280]">BankKey a déjà analysé les 12 demandes reçues depuis vendredi soir. 4 dossiers qualifiés vous attendent. Vous commencez votre semaine en appelant des prospects finançables — pas en triant vos emails.</p>
+              </div>
+            </div>
+          </AnimateIn>
+        </div>
+      </section>
+
+      {/* ─── SECTION 4 — BÉNÉFICES ─── */}
+      <section className="py-20 md:py-28">
+        <div className="wrap">
+          <AnimateIn className="text-center mb-14">
+            <p className="label mb-3">Ce que vous gagnez</p>
+            <h2 className="text-4xl md:text-5xl font-extrabold tracking-tightest mb-4">
+              Moins d&apos;administratif.<br />
+              <span className="text-gradient">Plus de dossiers signés.</span>
+            </h2>
+          </AnimateIn>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {BENEFITS.map((b, i) => (
+              <AnimateIn key={b.title} delay={i * 60} className="card">
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="w-10 h-10 rounded-lg bg-brand-gradient flex items-center justify-center text-white shrink-0">
+                    <Icon d={b.icon} />
+                  </div>
+                  <p className="stat-num">{b.metric}</p>
+                </div>
+                <h3 className="font-bold text-[15px] mb-2">{b.title}</h3>
+                <p className="text-sm text-[#6B7280] leading-relaxed">{b.desc}</p>
+              </AnimateIn>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── SECTION 5 — AVANT / APRÈS ─── */}
+      <section className="bg-[#F7F8FA] border-y border-[#E5E7EB] py-20 md:py-28">
+        <div className="wrap">
+          <AnimateIn className="text-center mb-14">
+            <p className="label mb-3">La différence en pratique</p>
+            <h2 className="text-4xl md:text-5xl font-extrabold tracking-tightest mb-4">
+              Votre semaine<br />
+              <span className="text-gradient">avant et après BankKey.</span>
+            </h2>
+          </AnimateIn>
+
+          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            {/* Avant */}
+            <AnimateIn direction="left" className="bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden">
+              <div className="bg-[#FEF2F2] border-b border-red-100 px-6 py-4">
+                <p className="font-bold text-red-700 flex items-center gap-2">
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
+                  Avant BankKey
+                </p>
+              </div>
+              <ul className="divide-y divide-[#F3F4F6]">
+                {BEFORE_AFTER.map((row) => (
+                  <li key={row.before} className="px-6 py-4 flex items-start gap-3">
+                    <span className="w-5 h-5 rounded-full bg-red-50 flex items-center justify-center shrink-0 mt-0.5">
+                      <svg className="w-3 h-3 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                    </span>
+                    <span className="text-sm text-[#374151]">{row.before}</span>
+                  </li>
+                ))}
+              </ul>
+            </AnimateIn>
+
+            {/* Après */}
+            <AnimateIn direction="right" delay={80} className="bg-white rounded-2xl border-2 border-accent overflow-hidden shadow-[0_8px_40px_rgba(59,95,224,0.1)]">
+              <div className="bg-gradient-to-r from-navy to-accent px-6 py-4">
+                <p className="font-bold text-white flex items-center gap-2">
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="20 6 9 17 4 12"/></svg>
+                  Avec BankKey
+                </p>
+              </div>
+              <ul className="divide-y divide-[#F3F4F6]">
+                {BEFORE_AFTER.map((row) => (
+                  <li key={row.after} className="px-6 py-4 flex items-start gap-3">
+                    <span className="w-5 h-5 rounded-full bg-emerald-50 flex items-center justify-center shrink-0 mt-0.5">
+                      <Check className="w-3 h-3 text-emerald-600" />
+                    </span>
+                    <span className="text-sm font-medium text-[#0A0F1E]">{row.after}</span>
+                  </li>
+                ))}
+              </ul>
+            </AnimateIn>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Tarifs ─── */}
+      <section id="tarifs" className="py-20 md:py-28">
+        <div className="wrap">
+          <AnimateIn className="text-center mb-14">
+            <p className="label mb-3">Tarif</p>
+            <h2 className="text-4xl md:text-5xl font-extrabold tracking-tightest mb-4">
+              Un dossier signé<br />
+              <span className="text-gradient">rembourse 12 mois.</span>
+            </h2>
+            <p className="text-[#6B7280] text-lg max-w-lg mx-auto">
+              La commission moyenne sur un dossier immobilier est de 2 500 €. BankKey coûte 199 € par mois.
+            </p>
+          </AnimateIn>
+
+          <AnimateIn className="max-w-md mx-auto">
+            <div className="rounded-2xl border-2 border-accent p-8 shadow-[0_8px_40px_rgba(59,95,224,0.12)] bg-white">
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="text-5xl font-extrabold text-navy tracking-tightest">199</span>
+                <span className="text-2xl font-bold text-[#9CA3AF]">€</span>
+                <span className="text-[#6B7280] font-medium">/ mois</span>
+              </div>
+              <p className="text-sm text-[#9CA3AF] mb-6">199 CHF / mois pour la Suisse</p>
+
+              <ul className="space-y-3 mb-8">
+                {[
+                  'Demandes illimitées, toutes sources',
+                  'Qualification et score de finançabilité',
+                  'Réponse initiale rédigée pour chaque prospect',
+                  'Briefing d\'appel structuré',
+                  'Checklist documents FR / CH',
+                  'Relances automatiques',
+                  'Tableau de bord prospects',
+                  'Export CSV inclus',
+                  'Support direct avec le fondateur',
+                ].map((f) => (
+                  <li key={f} className="flex items-center gap-3 text-sm text-[#374151]">
+                    <span className="w-5 h-5 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
+                      <Check className="w-3 h-3 text-emerald-600" />
+                    </span>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+
+              <Link href="/book" className="btn-primary w-full justify-center py-3.5">
+                Réserver une démonstration
+                <ArrowRight />
+              </Link>
+              <p className="text-center text-xs text-[#9CA3AF] mt-3">
+                30 jours d&apos;essai gratuit · Sans carte bancaire · Annulable à tout moment
+              </p>
+            </div>
+          </AnimateIn>
+
+          <AnimateIn delay={100} className="mt-8 text-center">
+            <p className="text-sm text-[#9CA3AF]">
+              Programme fondateur — 50 cabinets pilotes · Tarif bloqué à vie · France & Suisse
+            </p>
+          </AnimateIn>
+        </div>
+      </section>
+
+      {/* ─── SECTION 6 — FAQ ─── */}
+      <section id="faq" className="bg-[#F7F8FA] border-t border-[#E5E7EB] py-20 md:py-28">
+        <div className="wrap max-w-2xl mx-auto">
+          <AnimateIn className="text-center mb-14">
+            <p className="label mb-3">Questions fréquentes</p>
+            <h2 className="text-4xl font-extrabold tracking-tightest">Tout ce que vous devez savoir.</h2>
+          </AnimateIn>
+
+          <div className="divide-y divide-[#E5E7EB] bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden">
+            {FAQ_ITEMS.map((item, i) => (
+              <details key={i} className="group">
+                <summary className="flex items-center justify-between cursor-pointer list-none px-6 py-5 gap-4 hover:bg-[#F7F8FA] transition-colors">
+                  <span className="font-semibold text-[#0A0F1E] text-[15px]">{item.q}</span>
+                  <svg className="w-5 h-5 text-[#9CA3AF] shrink-0 group-open:rotate-45 transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 5v14" /><path d="M5 12h14" />
+                  </svg>
+                </summary>
+                <div className="px-6 pb-5">
+                  <p className="text-sm text-[#374151] leading-relaxed">{item.a}</p>
+                </div>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── SECTION 7 — CTA FINAL ─── */}
+      <section className="relative overflow-hidden py-24 md:py-36">
+        <div className="absolute inset-0 bg-brand-gradient" />
+        <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse 60% 70% at 80% 50%, rgba(59,95,224,0.35), transparent)' }} />
+
+        <div className="relative wrap text-center">
+          <AnimateIn direction="none">
+            <p className="text-blue-300 text-sm font-semibold uppercase tracking-widest mb-6">Pour les courtiers qui veulent aller plus loin</p>
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white tracking-tightest mb-5 leading-[1.05]">
+              Concentrez-vous sur<br />les rendez-vous.
+            </h2>
+            <p className="text-xl text-blue-200 mb-10 max-w-lg mx-auto font-medium">
+              BankKey s&apos;occupe du reste.
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
+              <Link href="/book" className="inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-navy font-bold px-8 py-4 rounded-lg transition-colors text-base shadow-[0_4px_24px_rgba(0,0,0,0.15)] w-full sm:w-auto">
+                Réserver une démonstration
+                <ArrowRight />
+              </Link>
+              <Link href="/demo/access" className="inline-flex items-center justify-center gap-2 text-white hover:text-blue-200 font-medium px-6 py-4 rounded-lg border border-white/25 hover:border-white/40 transition-colors w-full sm:w-auto">
+                Voir le compte démo
+              </Link>
+            </div>
+
+            <p className="text-sm text-blue-300">
+              Essai 30 jours gratuit · Sans carte bancaire · Mise en route en 10 minutes
+            </p>
+          </AnimateIn>
+        </div>
+      </section>
+
+      {/* ─── FOOTER ─── */}
+      <footer className="bg-navy">
+        <div className="wrap py-12">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 mb-10">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <LogoMark size={22} variant="dark" />
+                <span className="font-bold text-white">BankKey</span>
+              </div>
+              <p className="text-xs text-slate-400 max-w-xs leading-relaxed">
+                Le logiciel de qualification des demandes de financement pour les courtiers en crédit immobilier — France & Suisse.
+              </p>
+            </div>
+            <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-400">
+              <a href="#fonctionnement" className="hover:text-white transition-colors">Comment ça marche</a>
+              <a href="#tarifs" className="hover:text-white transition-colors">Tarifs</a>
+              <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
+              <Link href="/security" className="hover:text-white transition-colors">Sécurité</Link>
+              <Link href="/privacy" className="hover:text-white transition-colors">Confidentialité</Link>
+              <Link href="/terms" className="hover:text-white transition-colors">CGU</Link>
+              <a href="mailto:contact@bankkey.ch" className="hover:text-white transition-colors">Contact</a>
+            </nav>
+          </div>
+          <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-slate-500">
             <p>© 2026 BankKey. Tous droits réservés.</p>
-            <p className="text-slate-500">Pour les courtiers en crédit immobilier · France & Suisse</p>
+            <p>Courtage en crédit immobilier · France & Suisse</p>
           </div>
         </div>
       </footer>
+
     </div>
   )
 }

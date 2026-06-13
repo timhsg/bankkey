@@ -8,23 +8,34 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      colors: {
+        navy:    '#0A1F5C',
+        accent:  '#3b5fe0',
+        'blue-mid': '#1D4ED8',
+        'text-base': '#0A0F1E',
+        'text-2':    '#374151',
+        'text-muted':'#6B7280',
+        'bg-subtle': '#F7F8FA',
+        'border-base': '#E5E7EB',
+      },
       fontFamily: {
-        sans:    ['var(--font-sans)',    ...defaultTheme.fontFamily.sans],
+        sans:    ['var(--font-sans)', ...defaultTheme.fontFamily.sans],
         display: ['var(--font-display)', ...defaultTheme.fontFamily.sans],
       },
       letterSpacing: {
-        tight: '-0.011em',
-        tighter: '-0.022em',
-        tightest: '-0.033em',
+        tight:    '-0.02em',
+        tighter:  '-0.03em',
+        tightest: '-0.04em',
       },
-      keyframes: {
-        fadeUp: {
-          '0%':   { opacity: '0', transform: 'translateY(10px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
-        },
+      backgroundImage: {
+        'brand-gradient': 'linear-gradient(135deg, #0A1F5C 0%, #3b5fe0 100%)',
+        'hero-glow': 'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(59,95,224,0.12) 0%, transparent 70%)',
       },
-      animation: {
-        'fade-up': 'fadeUp 0.35s ease-out forwards',
+      boxShadow: {
+        'card':   '0 1px 3px rgba(10,31,92,0.06), 0 8px 24px rgba(10,31,92,0.06)',
+        'card-hover': '0 4px 24px rgba(10,31,92,0.10)',
+        'btn':    '0 1px 2px rgba(10,31,92,0.12), 0 4px 16px rgba(59,95,224,0.18)',
+        'btn-hover': '0 4px 24px rgba(59,95,224,0.28)',
       },
     },
   },
