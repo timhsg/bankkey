@@ -1,5 +1,4 @@
 {
-  "comment": "Les crons sont pilotes par GitHub Actions (.github/workflows/cron.yml) pour contourner la limite du plan Vercel Hobby. Si tu passes en Vercel Pro, tu peux re-declarer un bloc \"crons\" ici a la place.",
   "functions": {
     "app/api/cron/sync-gmail/route.ts": {
       "maxDuration": 60
