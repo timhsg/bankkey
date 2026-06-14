@@ -359,6 +359,7 @@ function ProspectsContent() {
                   type="text"
                   value={search}
                   onChange={e => setSearch(e.target.value)}
+                  aria-label="Rechercher un prospect"
                   placeholder="Rechercher un nom, un email, une description..."
                   className="w-full bg-[#F7F8FA] border border-transparent rounded-md pl-9 pr-3 py-2 text-sm placeholder-[#9CA3AF] focus:outline-none focus:bg-white focus:border-accent transition-all"
                 />
@@ -366,6 +367,7 @@ function ProspectsContent() {
               <select
                 value={sort}
                 onChange={e => setSort(e.target.value as 'recent' | 'score')}
+                aria-label="Trier les prospects"
                 className="bg-[#F7F8FA] border border-transparent rounded-md px-3 py-2 text-sm font-medium text-[#374151] focus:outline-none focus:bg-white focus:border-accent cursor-pointer"
               >
                 <option value="recent">Plus récents</option>

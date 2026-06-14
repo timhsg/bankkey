@@ -438,8 +438,10 @@ export default function SettingsPage() {
                         max={100}
                         step={1}
                         value={value}
+                        aria-label={`Poids du critère : ${item.label}`}
+                        aria-valuetext={`${value} points`}
                         onChange={(e) => update('scoring_weights', updateScoringWeight(weights, item.key, Number(e.target.value)))}
-                        className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-blue-900
+                        className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-[#0A1F5C]
                                    [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4
                                    [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full
                                    [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2

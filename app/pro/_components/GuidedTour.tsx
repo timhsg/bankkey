@@ -304,6 +304,9 @@ export function GuidedTour() {
 
       {/* ── Tooltip / Modal ── */}
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Visite guidée — ${step.title}`}
         className="absolute pointer-events-auto bg-white rounded-2xl shadow-[0_24px_80px_rgba(10,31,92,0.32)] overflow-hidden ease-out"
         style={
           isCentered || !tooltipPos

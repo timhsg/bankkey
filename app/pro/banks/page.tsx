@@ -259,6 +259,7 @@ export default function BanksPage() {
                     type="text"
                     value={search}
                     onChange={e => setSearch(e.target.value)}
+                    aria-label="Rechercher un prospect ou une banque"
                     placeholder="Rechercher un prospect ou une banque..."
                     className="w-full bg-[#F7F8FA] border border-transparent rounded-md pl-9 pr-3 py-2 text-sm placeholder-[#9CA3AF] focus:outline-none focus:bg-white focus:border-accent transition-all"
                   />
