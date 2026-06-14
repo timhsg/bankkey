@@ -74,10 +74,27 @@ export default async function OpengraphImage() {
           </div>
         </div>
 
-        {/* Footer */}
+        {/* Footer avec CTA */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ fontSize: 24, color: '#fff', fontWeight: 600 }}>bankkey.ch</div>
-          <div style={{ fontSize: 22, color: '#93A4D8' }}>Courtiers en crédit · France & Suisse</div>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              background: '#fff',
+              color: '#0A1F5C',
+              fontSize: 26,
+              fontWeight: 800,
+              padding: '18px 34px',
+              borderRadius: 12,
+            }}
+          >
+            Réservez une démonstration →
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+            <div style={{ fontSize: 24, color: '#fff', fontWeight: 700 }}>bankkey.ch</div>
+            <div style={{ fontSize: 20, color: '#93A4D8' }}>Courtiers en crédit · France & Suisse</div>
+          </div>
         </div>
       </div>
     ),
