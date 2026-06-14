@@ -40,23 +40,24 @@ export default function IntegrationsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-5 h-5 border-2 border-slate-200 border-t-slate-600 rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-[#F7F8FA]">
+        <div className="w-5 h-5 border-2 border-[#E5E7EB] border-t-navy rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[#F7F8FA]">
 
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-6 py-3">
-          <h1 className="text-base font-semibold text-slate-900 tracking-tight pl-12 lg:pl-0">Recevoir des prospects</h1>
-          <p className="text-[11px] text-slate-500 mt-0.5 pl-12 lg:pl-0">Choisissez la méthode qui correspond à votre cabinet</p>
+      <header className="bg-white border-b border-[#E5E7EB] sticky top-0 z-10">
+        <div className="max-w-5xl mx-auto px-6 lg:px-8 py-5">
+          <p className="text-[11px] font-bold uppercase tracking-widest text-[#9CA3AF] mb-1.5 pl-12 lg:pl-0">Configuration</p>
+          <h1 className="text-2xl font-extrabold text-navy tracking-tightest leading-none pl-12 lg:pl-0">Recevoir des prospects</h1>
+          <p className="text-xs text-[#6B7280] mt-1.5 pl-12 lg:pl-0">Choisissez la méthode qui correspond à votre cabinet</p>
         </div>
-      </div>
+      </header>
 
-      <main className="max-w-5xl mx-auto px-6 py-8 space-y-6">
+      <main className="max-w-5xl mx-auto px-6 lg:px-8 py-8 space-y-6">
 
         {/* Pickup : 3 chemins principaux + 1 avancé */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -182,7 +183,7 @@ function WebsiteEmbedPath({ appUrl, ingestKey }: { appUrl: string; ingestKey: st
 
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-2">Code à coller</p>
-        <div className="bg-blue-900 text-emerald-300 rounded-xl px-4 py-3 relative">
+        <div className="bg-navy text-emerald-300 rounded-xl px-4 py-3 relative">
           <code className="text-xs font-mono break-all">{code}</code>
           <button
             onClick={() => { navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 2500) }}
@@ -354,7 +355,7 @@ function CsvImportPath() {
                   <select
                     value={mapping[header] ?? ''}
                     onChange={(e) => setMapping(m => ({ ...m, [header]: e.target.value }))}
-                    className="text-xs border border-slate-200 rounded-md px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-900 shrink-0 w-48"
+                    className="text-xs border border-slate-200 rounded-md px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-accent shrink-0 w-48"
                   >
                     {BANKKEY_FIELDS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
                   </select>
@@ -388,7 +389,7 @@ function CsvImportPath() {
             <button
               onClick={doImport}
               disabled={importing || Object.values(mapping).filter(v => v).length === 0}
-              className="bg-blue-900 hover:bg-blue-800 disabled:bg-slate-300 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-base"
+              className="bg-navy hover:opacity-90 disabled:bg-slate-300 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-base"
             >
               {importing ? `Import en cours... (${parsed.rows.length} lignes)` : `Importer ${parsed.rows.length} prospect${parsed.rows.length > 1 ? 's' : ''}`}
             </button>
@@ -497,7 +498,7 @@ function AdvancedWebhookPath({ appUrl, ingestKey }: { appUrl: string; ingestKey:
         qui peut envoyer un POST JSON.
       </p>
 
-      <div className="bg-blue-900 text-white rounded-xl p-4">
+      <div className="bg-navy text-white rounded-xl p-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">URL Webhook POST</span>
           <button onClick={() => copy('url', webhookUrl)} className="text-xs bg-white/10 hover:bg-white/20 px-2 py-1 rounded transition-base">
@@ -540,7 +541,7 @@ function PathCard({ id, active, onClick, icon, title, desc, difficulty, time }: 
       onClick={onClick}
       className={`text-left p-5 rounded-2xl border transition-base ${
         active
-          ? 'bg-blue-900 text-white border-blue-900 shadow-lg'
+          ? 'bg-navy text-white border-blue-900 shadow-lg'
           : 'bg-white border-slate-200 hover:border-slate-300 hover-lift'
       }`}
     >

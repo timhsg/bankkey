@@ -131,6 +131,7 @@ export default function LeadDetailPage() {
 
   const [prospect, setProspect] = useState<ProspectFull | null>(null)
   const [loading,  setLoading]  = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [tab,      setTab]      = useState<Tab>('overview')
   const [copied,   setCopied]   = useState(false)
   const [sending,  setSending]  = useState(false)
@@ -139,36 +140,76 @@ export default function LeadDetailPage() {
 
   useEffect(() => {
     async function load() {
-      const [{ data: p }, { data: prof }] = await Promise.all([
-        supabase.from('prospects').select('*').eq('id', params.id).single(),
-        supabase.from('profiles').select('gmail_access_token, gmail_refresh_token').single(),
-      ])
+      try {
+        // Vérifier d'abord la session utilisateur
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) {
+          setLoadError('not_authenticated')
+          setLoading(false)
+          return
+        }
 
-      setProspect(p as ProspectFull)
-      setProfile(prof)
+        // Requête prospect (RLS appliquée automatiquement par Supabase)
+        const { data: p, error: pErr } = await supabase
+          .from('prospects')
+          .select('*')
+          .eq('id', params.id)
+          .maybeSingle()
 
-      if (p?.status === 'new') {
-        await supabase.from('prospects').update({ status: 'viewed' }).eq('id', params.id)
+        if (pErr) {
+          console.error('[lead] erreur Supabase:', pErr)
+          setLoadError(`supabase: ${pErr.message}`)
+          setLoading(false)
+          return
+        }
+
+        if (!p) {
+          // Le prospect n'existe pas OU appartient à un autre user (RLS bloque)
+          setLoadError('not_found_or_forbidden')
+          setLoading(false)
+          return
+        }
+
+        const { data: prof } = await supabase
+          .from('profiles')
+          .select('gmail_access_token, gmail_refresh_token')
+          .single()
+
+        setProspect(p as ProspectFull)
+        setProfile(prof)
+
+        if (p.status === 'new') {
+          await supabase.from('prospects').update({ status: 'viewed' }).eq('id', params.id)
+        }
+
+        // Activity peut être null ou undefined sur les prospects historiques
+        const activityArr: Activity[] = Array.isArray(p.activity) ? (p.activity as Activity[]) : []
+        const lastViewLog = activityArr.filter(a => a.type === 'viewed').pop()
+        const lastViewTime = lastViewLog ? new Date(lastViewLog.at).getTime() : 0
+        const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000
+        if (lastViewTime < oneDayAgo) {
+          void logActivity(supabase, params.id, activityViewed())
+        }
+
+        setLoading(false)
+      } catch (err) {
+        console.error('[lead] erreur chargement:', err)
+        setLoadError(err instanceof Error ? err.message : 'unknown')
+        setLoading(false)
       }
-
-      const lastViewLog = (p?.activity as Activity[] | undefined)
-        ?.filter(a => a.type === 'viewed')
-        .pop()
-      const lastViewTime = lastViewLog ? new Date(lastViewLog.at).getTime() : 0
-      const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000
-      if (lastViewTime < oneDayAgo) {
-        void logActivity(supabase, params.id, activityViewed())
-      }
-
-      setLoading(false)
     }
     void load()
   }, [params.id, supabase])
 
-  const documents: DocumentChecklistResult | null = useMemo(
-    () => prospect?.qualification ? generateDocumentChecklist(prospect.qualification) : null,
-    [prospect?.qualification]
-  )
+  const documents: DocumentChecklistResult | null = useMemo(() => {
+    if (!prospect?.qualification) return null
+    try {
+      return generateDocumentChecklist(prospect.qualification)
+    } catch (err) {
+      console.error('[lead] generateDocumentChecklist threw:', err)
+      return null
+    }
+  }, [prospect?.qualification])
 
   const [sentToast, setSentToast] = useState(false)
   const [sendError, setSendError] = useState<string | null>(null)
@@ -240,9 +281,31 @@ export default function LeadDetailPage() {
   }
 
   if (!prospect) {
+    const messages: Record<string, { title: string; desc: string }> = {
+      not_authenticated:        { title: 'Session expirée',         desc: 'Reconnectez-vous pour accéder à cette fiche.' },
+      not_found_or_forbidden:   { title: 'Fiche inaccessible',      desc: 'Ce prospect n\'existe plus ou appartient à un autre cabinet. Si vous étiez sur le compte démo, rejouez le seed Supabase (supabase/seed-demo-reset.sql).' },
+    }
+    const m = loadError && messages[loadError]
+      ? messages[loadError]
+      : { title: 'Prospect introuvable', desc: loadError ? `Erreur technique : ${loadError}` : 'Cette fiche n\'a pas pu être chargée.' }
+
     return (
-      <div className="min-h-screen bg-[#F7F8FA] flex items-center justify-center">
-        <p className="text-[#6B7280] text-sm">Prospect introuvable.</p>
+      <div className="min-h-screen bg-[#F7F8FA] flex items-center justify-center px-6">
+        <div className="bg-white border border-[#E5E7EB] rounded-xl p-8 max-w-md w-full text-center shadow-card">
+          <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center mx-auto mb-4">
+            <svg className="w-5 h-5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+          </div>
+          <h2 className="text-lg font-extrabold text-navy mb-2">{m.title}</h2>
+          <p className="text-sm text-[#6B7280] mb-6 leading-relaxed">{m.desc}</p>
+          <button
+            onClick={() => router.push('/pro/prospects')}
+            className="btn-primary text-sm"
+          >
+            Retour aux prospects
+          </button>
+        </div>
       </div>
     )
   }
@@ -251,6 +314,12 @@ export default function LeadDetailPage() {
   const s    = prospect.scoring
   const p    = prospect.prospection
   const temp = s?.temperature ? TEMP[s.temperature] : null
+
+  // Une prospection est "complète" si elle a un briefing d'appel OU un corps
+  // d'email substantiel. Les dossiers démo historiques ont un email tronqué
+  // ("Bonjour prénom...") sans callScript → on affiche un message dédié.
+  const prospectionComplete =
+    !!(p?.callScript?.briefing) || (p?.email?.body?.length ?? 0) > 80
   const fullName = q ? [q.firstName, q.lastName].filter(Boolean).join(' ') : null
   const currency = q ? detectCurrency(q) : '€'
   const cityFromAddress = q?.address?.split(',')[0]?.trim()
@@ -553,8 +622,35 @@ export default function LeadDetailPage() {
               </div>
             )}
 
-            {/* ─── Communication ─── */}
-            {tab === 'communication' && p && (
+            {/* ─── Communication : dossier démo historique (prospection partielle) ─── */}
+            {tab === 'communication' && p && !prospectionComplete && (
+              <div className="border border-[#E5E7EB] rounded-xl bg-[#F7F8FA] px-6 py-10 text-center">
+                <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect width="20" height="16" x="2" y="4" rx="2"/>
+                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                  </svg>
+                </div>
+                <h3 className="text-base font-extrabold text-navy mb-2">Réponse non générée pour ce dossier exemple</h3>
+                <p className="text-sm text-[#6B7280] leading-relaxed max-w-md mx-auto mb-5">
+                  Ce dossier fait partie de l&apos;historique pré-rempli du compte démo.
+                  Pour voir un brouillon de réponse complet et un briefing d&apos;appel,
+                  ouvrez l&apos;un des <strong className="text-navy">10 dossiers récents</strong> en haut de la liste.
+                  <br /><br />
+                  Sur votre compte, <strong className="text-navy">chaque demande reçue</strong> génère automatiquement
+                  une réponse personnalisée et un briefing.
+                </p>
+                <button
+                  onClick={() => router.push('/pro/prospects')}
+                  className="btn-primary text-xs py-2 px-4"
+                >
+                  Voir les dossiers récents
+                </button>
+              </div>
+            )}
+
+            {/* ─── Communication : prospection complète ─── */}
+            {tab === 'communication' && p && prospectionComplete && (
               <div className="space-y-6">
 
                 {/* Réponse email */}

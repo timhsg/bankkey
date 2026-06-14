@@ -121,7 +121,7 @@ function ProspectsContent() {
       supabase.from('prospects')
         .select('id, email_from_name, email_from, email_subject, received_at, created_at, status, scoring, qualification')
         .not('status', 'in', '(archived,filtered)')
-        .order('created_at', { ascending: false })
+        .order('received_at', { ascending: false, nullsFirst: false })
         .limit(100),
     ])
 
@@ -324,7 +324,7 @@ function ProspectsContent() {
 
         {/* Filtres + recherche */}
         {prospects.length > 0 && (
-          <div className="bg-white border border-[#E5E7EB] rounded-xl p-4 space-y-3">
+          <div data-tour="prospects-filters" className="bg-white border border-[#E5E7EB] rounded-xl p-4 space-y-3">
 
             {/* Filtres pills */}
             <div className="flex items-center gap-1.5 flex-wrap">
@@ -397,7 +397,7 @@ function ProspectsContent() {
 
         {/* ── Table dense bancaire ── */}
         {filtered.length > 0 && (
-          <div className="bg-white border border-[#E5E7EB] rounded-xl overflow-hidden">
+          <div data-tour="prospects-table" className="bg-white border border-[#E5E7EB] rounded-xl overflow-hidden">
 
             {/* Header de table */}
             <div className="hidden md:grid grid-cols-12 gap-3 px-5 py-2.5 border-b border-[#E5E7EB] bg-[#F7F8FA] text-[10px] font-bold uppercase tracking-wider text-[#6B7280]">

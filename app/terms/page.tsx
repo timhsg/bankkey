@@ -15,7 +15,7 @@ export default function TermsPage() {
         <div className="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <LogoMark size={28} />
-            <span className="font-semibold text-slate-900 tracking-tight">BankKey</span>
+            <span className="font-bold text-navy tracking-tight">BankKey</span>
           </Link>
           <Link href="/" className="text-xs text-slate-500 hover:text-slate-900 transition-colors">
             ← Accueil
@@ -26,7 +26,7 @@ export default function TermsPage() {
       <article className="max-w-3xl mx-auto px-6 py-16">
 
         <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Conditions générales</p>
-        <h1 className="text-4xl font-semibold tracking-tight text-slate-900 mb-3">Conditions d&apos;utilisation et de vente</h1>
+        <h1 className="text-4xl font-extrabold tracking-tightest text-navy mb-3">Conditions d&apos;utilisation et de vente</h1>
         <p className="text-sm text-slate-500 mb-12">Dernière mise à jour : 7 juin 2026 · Version 1.0</p>
 
         <div className="space-y-8">

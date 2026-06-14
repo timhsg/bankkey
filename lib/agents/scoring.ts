@@ -2,153 +2,165 @@ import Anthropic from '@anthropic-ai/sdk';
 import type { QualificationResult, ScoringResult, BrokerMemory } from '@/types';
 import type { SectorId } from '@/lib/sectors';
 import { buildScoringWeights } from '@/lib/broker/memory';
+import { detectJurisdiction, buildExpertiseContext } from './expertise';
 
 const client = new Anthropic();
 
-const SYSTEM_PROMPT = `Tu es un expert en lead scoring.
+const SYSTEM_PROMPT = `Tu es un expert en évaluation de bancabilité crédit immobilier.
+Tu connais à la perfection les règles HCSF (France) et FINMA (Suisse).
 Applique le barème fourni de manière mécanique et précise.
+Tu détectes les drapeaux rouges du métier (endettement > 35%, apport insuffisant, situation pro fragile).
+Tu identifies aussi les drapeaux verts (compromis signé, CDI stable, apport solide).
 Réponds UNIQUEMENT avec un objet JSON valide, sans aucun texte avant ou après, sans balises markdown.`;
 
-// Barème crédit immobilier — basé sur les vrais critères bancaires
+// ═══════════════════════════════════════════════════════════════════════
+//  Barème crédit immobilier — règles bancaires réelles
+//  Mis à jour conformément aux décisions HCSF 2024 et FINMA 2025
+// ═══════════════════════════════════════════════════════════════════════
+
 const BAREME_CREDIT = `
-═══ EMPRUNTEUR (crédit immobilier) ═══════════════════════════════════
-Critère                                                          Points
-─────────────────────────────────────────────────────────────────────
-■ SITUATION PROFESSIONNELLE
+═══════════════════════════════════════════════════════════
+  BARÈME DE BANCABILITÉ — crédit immobilier
+═══════════════════════════════════════════════════════════
+
+▌SITUATION PROFESSIONNELLE (35 points max)
   employment_status = "fonctionnaire"                              +30
   employment_status = "cdi"                                        +25
   employment_status = "retraite" (pension fixe)                    +20
-  employment_status = "independant"                                +15
-  employment_status = "cdd"                                         +8
+  employment_status = "independant" (≥3 ans présumés)              +12
+  employment_status = "cdd"                                         +5
   employment_status = "sans_emploi"                                 +0
-  employment_status = null (non précisé)                            +5
+  employment_status = null (non précisé)                            +3
 
-■ APPORT PERSONNEL (rapport apport / prix du bien)
-  Apport ≥ 20% du prix                                             +25
-  Apport 10-20% du prix                                            +15
-  Apport 5-10% du prix                                              +8
-  Apport < 5% ou null                                               +3
+▌APPORT PERSONNEL (25 points max)
+  Calcul : (down_payment / price) × 100
+  Apport ≥ 30% du prix                                             +25
+  Apport 20-30%                                                    +22
+  Apport 10-20%                                                    +15
+  Apport 5-10%                                                      +6
+  Apport < 5% (très limite HCSF)                                    +0
+  Données manquantes (l'un des deux null)                           +5
 
-■ TAUX D'ENDETTEMENT
-  Calculer : (existing_debts_monthly / monthly_income) * 100
-  Endettement actuel = 0 (aucun crédit en cours)                   +20
+▌TAUX D'ENDETTEMENT ACTUEL (20 points max)
+  Calcul : (existing_debts_monthly / monthly_income) × 100
+  Endettement = 0 (aucun crédit en cours)                          +20
   Endettement < 10%                                                +15
-  Endettement 10-25%                                                +8
-  Endettement > 25% (risque dépassement 35%)                        +0
-  Données manquantes → utiliser indices du texte (+5 si "aucun crédit")
+  Endettement 10-20%                                                +8
+  Endettement 20-30%                                                +3
+  Endettement > 30% (très proche limite HCSF 35%)                   +0
+  Données manquantes (l'un des deux null)                           +5
 
-■ MATURITÉ DU PROJET
-  urgencySignals mentionne "compromis signé"                       +20
+▌MATURITÉ DU PROJET (20 points max — non cumulables si redondants)
+  urgencySignals contient "compromis signé"                        +20
+  financing_status = "obtained" (accord de principe)               +18
   purchase_timeline = "less_3_months"                              +12
   purchase_timeline = "3_to_6_months"                               +6
-  financing_status = "obtained" (accord bancaire existant)         +10
   financing_status = "in_progress"                                  +5
 
-■ QUALITÉ DU CONTACT
+▌QUALITÉ DU CONTACT (5 points max)
   email ET phone tous deux non null                                 +5
   email OU phone non null (un seul)                                 +3
 
-─────────────────────────────────────────────────────────────────────
-Maximum théorique                                                  100
+═══════════════════════════════════════════════════════════
+  PLAFONDS DE SCORE
+═══════════════════════════════════════════════════════════
+  • Score final plafonné à 100
+  • Si revenus ET situation pro ET apport tous null → max 35
+  • Si situation pro = "sans_emploi" ou "cdd" sans autre force → max 50
+  • Si endettement calculé > 30% → ne pas dépasser 65 (warm)
 
-NB : si les revenus ne sont pas mentionnés et qu'aucun indice de
-situation pro n'est donné, le score plafonne à 45 (warm max).
+═══════════════════════════════════════════════════════════
+  TEMPÉRATURES
+═══════════════════════════════════════════════════════════
+  0-30  = cold (lead à recontacter manuellement plus tard)
+  31-60 = warm (qualification à approfondir avant banque)
+  61-100 = hot (dossier prêt pour montage banque immédiat)
 
-Rappel températures : 0-30 = cold | 31-60 = warm | 61-100 = hot`;
+═══════════════════════════════════════════════════════════
+  DRAPEAUX À DÉTECTER (à mentionner dans explanation)
+═══════════════════════════════════════════════════════════
 
-function buildPrompt(q: QualificationResult, sector: SectorId = 'credit'): string {
-  // Secteur 'credit' uniquement pour le MVP
+🔴 ROUGES (mentionner si présents) :
+  • Apport calculé < 5% du prix
+  • Endettement calculé > 30%
+  • employment_status = "cdd" ou "sans_emploi"
+  • Données critiques manquantes (revenus + apport + situation tous null)
+
+🟢 VERTS (mentionner si présents) :
+  • Apport ≥ 20%
+  • Compromis signé
+  • Accord de principe d'une autre banque
+  • Couple CDI + aucun endettement
+`;
+
+function buildPrompt(q: QualificationResult, sector: SectorId, jurisdiction: 'FR' | 'CH' | 'unknown'): string {
   if (sector === 'credit') {
-    const bareme = BAREME_CREDIT;
-    return `Données du contact :
-${JSON.stringify(q)}
+    return `Données du contact à scorer :
+${JSON.stringify(q, null, 2)}
 
-BARÈME DE SCORING :
-${bareme}
+Juridiction détectée : ${jurisdiction}
+
+${BAREME_CREDIT}
 
 RÈGLES ABSOLUES :
-1. Ne jamais attribuer de points pour un champ null
+1. Ne jamais attribuer de points pour un champ null (cf. fallbacks dans le barème)
 2. Score final plafonné à 100
 3. COHÉRENCE : somme des "points" dans keyFactors = score retourné
-4. N'inclure que les critères qui ont contribué positivement
+4. N'inclure dans keyFactors QUE les critères ayant contribué positivement
+5. L'explanation doit citer explicitement 1-2 drapeaux (rouge ou vert) détectés
+   et lister 1-2 informations critiques manquantes le cas échéant
 
 Retourne ce JSON :
 {
   "score": number,
   "temperature": "cold" | "warm" | "hot",
-  "explanation": "2-3 phrases claires mentionnant les points forts ET les informations manquantes",
+  "explanation": "3-4 phrases factuelles : points forts, informations manquantes, drapeaux détectés. Doit aider le courtier à décider en 5 secondes.",
   "keyFactors": [{ "factor": "libellé court", "impact": "positive", "points": number }]
 }`;
   }
 
-  // Secteur immobilier : barème complet existant
+  // Fallback immobilier (gardé pour compatibilité, non utilisé en MVP)
   return `Données du prospect :
 ${JSON.stringify(q)}
-
-BARÈME DE SCORING — appliquer UNIQUEMENT le barème du type détecté :
 
 ═══ VENDEUR ═══════════════════════════════════════════════
 Critère                                           Points
 ─────────────────────────────────────────────────────────
-address non null (adresse précise)                  +20
+address non null                                    +20
 propertyType ET surface tous les deux non null      +10
 sell_timeline = "less_3_months"                     +30
 sell_timeline = "3_to_6_months"                     +20
 sell_timeline = "more_6_months"                      +8
-sell_timeline = null                                  +0  ← ne pas inventer
-Motivation FORTE dans motivationSignals             +25
-  (divorce, mutation, succession, difficultés fin.)
-Motivation MODÉRÉE dans motivationSignals           +10
-  (déménagement, upgrade, nouveau projet)
-  NB : si motivation forte → +25, pas +25+10
-email OU phone non null (contact disponible)        +10
-price non null (prix de vente défini)                +5
-─────────────────────────────────────────────────────────
-Maximum possible                                    100
+Motivation FORTE                                    +25
+email OU phone non null                             +10
+price non null                                       +5
 
 ═══ ACHETEUR ══════════════════════════════════════════════
-Critère                                           Points
-─────────────────────────────────────────────────────────
-price non null (budget défini)                      +15
+price non null                                      +15
 financing_status = "obtained"                       +25
 financing_status = "in_progress"                    +10
-financing_status = "none" ou null                    +0
 purchase_timeline = "less_3_months"                 +25
 purchase_timeline = "3_to_6_months"                 +20
-purchase_timeline = "more_6_months"                  +8
-purchase_timeline = null                              +0  ← ne pas inventer
-address non null (zone géographique définie)        +10
+address non null                                    +10
 propertyType ET (surface OU rooms) non null         +15
-email OU phone non null (contact disponible)        +10
-─────────────────────────────────────────────────────────
-Maximum possible                                    100
+email OU phone non null                             +10
 
-═══ TYPE INCONNU ══════════════════════════════════════════
-Si type = "inconnu" ou "locataire" :
-Attribuer un score de 10 avec temperature "cold".
-Explication : "Type de prospect non déterminé — qualification manuelle requise."
-keyFactors : tableau vide []
+═══ TYPE INCONNU OU LOCATAIRE ═════════════════════════════
+Score = 10, temperature = "cold"
 
-RÈGLES ABSOLUES :
-1. Appliquer UN SEUL barème selon le type du prospect
-2. Ne jamais attribuer de points pour un champ null
-3. Ne pas inventer de timeline ni de motivation non présents dans les données
-4. Score final = somme des points positifs, plafonné à 100 (jamais > 100)
-5. COHÉRENCE OBLIGATOIRE : la somme des "points" dans keyFactors doit être EXACTEMENT égale au score retourné
-6. N'inclure dans keyFactors que les critères qui ont contribué positivement au score
-7. impact = "positive" pour tous les facteurs retenus (ne pas mettre "negative")
+RÈGLES :
+1. Appliquer UN SEUL barème selon le type
+2. Pas de points pour un champ null
+3. Somme keyFactors = score
+4. Plafond 100
 
 Retourne ce JSON :
 {
   "score": number,
   "temperature": "cold" | "warm" | "hot",
-  "explanation": "2-3 phrases claires pour un agent immobilier — mentionner les points forts ET les informations manquantes importantes",
-  "keyFactors": [
-    { "factor": "libellé court du critère", "impact": "positive", "points": number }
-  ]
-}
-
-Rappel températures : 0-30 = cold | 31-60 = warm | 61-100 = hot`;
+  "explanation": "3 phrases factuelles avec drapeaux et infos manquantes",
+  "keyFactors": [{ "factor": "libellé court", "impact": "positive", "points": number }]
+}`;
 }
 
 function parseJSON<T>(text: string): T {
@@ -168,14 +180,22 @@ export async function runScoringAgent(
   sector: SectorId = 'credit',
   brokerMemory?: BrokerMemory | null,
 ): Promise<ScoringResult> {
+  // Détecter juridiction pour injecter l'expertise pays-spécifique
+  const allText = `${qualification.address ?? ''} ${qualification.description ?? ''}`;
+  const jurisdiction = detectJurisdiction(allText);
+
+  // Pondérations personnalisées du cabinet
   const customWeights = buildScoringWeights(brokerMemory);
-  const systemPrompt = SYSTEM_PROMPT + customWeights;
+
+  // System prompt enrichi : règles HCSF/FINMA + drapeaux à détecter
+  const expertiseContext = buildExpertiseContext(jurisdiction);
+  const systemPrompt = SYSTEM_PROMPT + expertiseContext + customWeights;
 
   const message = await client.messages.create({
     model: 'claude-haiku-4-5',
     max_tokens: 1024,
     system: systemPrompt,
-    messages: [{ role: 'user', content: buildPrompt(qualification, sector) }],
+    messages: [{ role: 'user', content: buildPrompt(qualification, sector, jurisdiction) }],
   });
 
   const content = message.content[0];

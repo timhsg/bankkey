@@ -100,7 +100,7 @@ export default function TodayPage() {
       supabase.from('prospects')
         .select('id, email_from_name, email_from, email_subject, received_at, created_at, status, scoring, qualification')
         .not('status', 'in', '(archived,filtered)')
-        .order('created_at', { ascending: false })
+        .order('received_at', { ascending: false, nullsFirst: false })
         .limit(50),
     ])
 
@@ -177,7 +177,7 @@ export default function TodayPage() {
       <main className="max-w-7xl mx-auto px-6 lg:px-8 py-8 space-y-6">
 
         {/* ── 4 stats cards bancaires ── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div data-tour="stats-cards" className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
             {
               label: 'Demandes reçues',
@@ -240,7 +240,7 @@ export default function TodayPage() {
         </div>
 
         {/* ── Action principale du jour ── */}
-        <div className="bg-white border border-[#E5E7EB] rounded-xl overflow-hidden shadow-card">
+        <div data-tour="top-prospects" className="bg-white border border-[#E5E7EB] rounded-xl overflow-hidden shadow-card">
 
           {/* En-tête section */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-[#F3F4F6]">

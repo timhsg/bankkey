@@ -128,25 +128,25 @@ export default function NewProspectPage() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[#F7F8FA]">
 
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
-          <Link href="/pro/prospects" className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 transition-colors pl-12 lg:pl-0">
+      <header className="bg-white border-b border-[#E5E7EB] sticky top-0 z-10">
+        <div className="max-w-2xl mx-auto px-6 lg:px-8 py-4 flex items-center justify-between gap-4">
+          <Link href="/pro/prospects" className="flex items-center gap-1.5 text-sm font-semibold text-[#6B7280] hover:text-navy transition-colors pl-12 lg:pl-0">
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>
             </svg>
             Prospects
           </Link>
         </div>
-      </div>
+      </header>
 
-      <main className="max-w-2xl mx-auto px-6 py-8 space-y-6">
+      <main className="max-w-2xl mx-auto px-6 lg:px-8 py-8 space-y-6">
 
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-2">Nouveau prospect</p>
-          <h1 className="text-2xl font-semibold text-slate-900 tracking-tight mb-2">Ajouter un prospect manuellement</h1>
-          <p className="text-sm text-slate-600 leading-relaxed max-w-xl">
+          <p className="text-[11px] font-bold uppercase tracking-widest text-accent mb-2">Nouveau prospect</p>
+          <h1 className="text-3xl font-extrabold text-navy tracking-tightest mb-2">Ajouter un prospect manuellement</h1>
+          <p className="text-sm text-[#6B7280] leading-relaxed max-w-xl">
             Pour les prospects qui ne viennent pas d&apos;un email : recommandation, agence partenaire, téléphone, ancien client. Vous pourrez ensuite suivre les banques sollicitées et enregistrer la décision finale comme pour un prospect qualifié par l&apos;IA.
           </p>
         </div>
@@ -163,7 +163,7 @@ export default function NewProspectPage() {
                   onClick={() => set('source', s.value)}
                   className={`text-left px-3 py-2.5 rounded-lg border transition-base ${
                     form.source === s.value
-                      ? 'bg-blue-900 text-white border-blue-900'
+                      ? 'bg-navy text-white border-blue-900'
                       : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
                   }`}
                 >
@@ -195,7 +195,7 @@ export default function NewProspectPage() {
               <select
                 value={form.employment}
                 onChange={(e) => set('employment', e.target.value)}
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900 bg-white"
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent bg-white"
               >
                 {EMPLOYMENT.map(e => <option key={e.value} value={e.value}>{e.label}</option>)}
               </select>
@@ -218,7 +218,7 @@ export default function NewProspectPage() {
               onChange={(e) => set('notes', e.target.value)}
               placeholder="Détails sur le client, contexte, urgence, recommandeur..."
               rows={3}
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-900 resize-none placeholder-slate-300"
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-accent resize-none placeholder-slate-300"
             />
           </Section>
 
@@ -229,7 +229,7 @@ export default function NewProspectPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="bg-blue-900 hover:bg-blue-800 disabled:bg-slate-300 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-base"
+              className="bg-navy hover:opacity-90 disabled:bg-slate-300 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-base"
             >
               {submitting ? 'Création...' : 'Créer le prospect'}
             </button>
@@ -270,7 +270,7 @@ function Input({ label, value, onChange, placeholder, type = 'text', required }:
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         required={required}
-        className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-900 transition-base placeholder-slate-300"
+        className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-accent transition-base placeholder-slate-300"
       />
     </div>
   )
@@ -291,7 +291,7 @@ function Toggle({ label, value, onChange, desc }: {
       <button
         type="button"
         onClick={() => onChange(!value)}
-        className={`relative w-10 h-5 rounded-full transition-base ${value ? 'bg-blue-900' : 'bg-slate-200'}`}
+        className={`relative w-10 h-5 rounded-full transition-base ${value ? 'bg-navy' : 'bg-slate-200'}`}
       >
         <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-base ${value ? 'left-5' : 'left-0.5'}`} />
       </button>

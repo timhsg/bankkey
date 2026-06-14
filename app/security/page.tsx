@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { LogoMark } from '@/app/_components/Logo'
+import { LogoMark, Wordmark } from '@/app/_components/Logo'
 
 export const metadata: Metadata = {
   title: 'Sécurité & confidentialité — BankKey',
@@ -65,8 +65,7 @@ export default function SecurityPage() {
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-[#E5E7EB]">
         <div className="wrap h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <LogoMark size={24} />
-            <span className="font-bold text-[15px] tracking-tight text-navy">BankKey</span>
+            <Wordmark size={24} />
           </Link>
           <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-[#374151]">
             <Link href="/#fonctionnement" className="hover:text-navy transition-colors">Comment ça marche</Link>

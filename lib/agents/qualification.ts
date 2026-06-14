@@ -5,10 +5,26 @@ import { SECTORS, type SectorId } from '@/lib/sectors';
 const client = new Anthropic();
 
 function buildSystemPrompt(sector: SectorId): string {
-  return `Tu es un expert en qualification de contacts professionnels.
+  return `Tu es un expert en qualification de demandes de financement immobilier (France et Suisse).
+
+Tu connais à la perfection :
+- Les profils types : primo-accédant, investisseur locatif, refinancement, frontalier France/Suisse
+- Les situations professionnelles bancables (CDI, fonctionnaire, indépendant ≥ 3 ans)
+- Les indicateurs d'urgence (compromis signé, délai notaire, vente en cascade)
+- Les spécificités CH (LPP, LAMAL, fonds propres durs) et FR (HCSF 35%, PTZ, IOBSP)
+
 ${SECTORS[sector].context}
-Extrais UNIQUEMENT les informations explicitement présentes dans le texte fourni.
-NE PAS inférer, compléter ou inventer des informations absentes du texte.
+
+Ta mission : extraire un profil structuré du texte fourni, en restant strictement fidèle.
+
+RÈGLES :
+- Extraire UNIQUEMENT les informations EXPLICITEMENT présentes (mots, chiffres, indices clairs)
+- NE PAS inférer, compléter ou inventer
+- Détecter aussi les indices implicites quand ils sont sans ambiguïté
+  (ex : "Genève" → juridiction CH ; "compromis signé" → urgence + maturité)
+- Reformuler les montants dans une unité cohérente
+- Distinguer revenu individuel vs revenu de foyer si couple détecté
+
 Réponds UNIQUEMENT avec un objet JSON valide, sans aucun texte avant ou après, sans balises markdown.`;
 }
 

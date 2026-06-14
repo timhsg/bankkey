@@ -248,7 +248,7 @@ export default function Sidebar() {
         lg:translate-x-0
       `}>
         {/* ── Cabinet badge en haut ── */}
-        <div className="flex items-center justify-between p-3 border-b border-[#E5E7EB]">
+        <div data-tour="cabinet-badge" className="flex items-center justify-between p-3 border-b border-[#E5E7EB]">
           <div className="flex items-center gap-2.5 flex-1 min-w-0">
             <div className="w-9 h-9 rounded-lg bg-brand-gradient flex items-center justify-center shrink-0 shadow-[0_1px_3px_rgba(10,31,92,0.16)]">
               <span className="text-[12px] font-extrabold text-white tracking-tight">{cabinetInitials}</span>
@@ -323,6 +323,17 @@ export default function Sidebar() {
               <p className="text-[11px] text-[#6B7280] truncate font-medium">{email}</p>
             </div>
           </div>
+          <Link
+            href="/pro?tour=1"
+            className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-md text-[12px] text-[#6B7280] hover:bg-[#F3F4F6] hover:text-navy transition-colors mt-0.5 font-medium"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            Visite guidée
+          </Link>
           <button
             onClick={logout}
             className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-md text-[12px] text-[#6B7280] hover:bg-[#F3F4F6] hover:text-navy transition-colors mt-0.5 font-medium"

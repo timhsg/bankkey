@@ -72,7 +72,7 @@ function BillingContent() {
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="w-5 h-5 border-2 border-slate-200 border-t-slate-600 rounded-full animate-spin" />
+        <div className="w-5 h-5 border-2 border-slate-200 border-t-navy rounded-full animate-spin" />
       </div>
     )
   }
@@ -86,14 +86,17 @@ function BillingContent() {
     : 0
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[#F7F8FA]">
 
       {/* Header */}
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
-          <h1 className="text-base font-semibold text-slate-900 tracking-tight pl-12 lg:pl-0">Abonnement</h1>
+      <header className="bg-white border-b border-[#E5E7EB] sticky top-0 z-10">
+        <div className="max-w-3xl mx-auto px-6 lg:px-8 py-5 flex items-end justify-between gap-4">
+          <div className="pl-12 lg:pl-0">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-[#9CA3AF] mb-1.5">Configuration</p>
+            <h1 className="text-2xl font-extrabold text-navy tracking-tightest leading-none">Abonnement</h1>
+          </div>
         </div>
-      </div>
+      </header>
 
       <main className="max-w-3xl mx-auto px-5 py-10 space-y-6">
 
@@ -165,7 +168,7 @@ function BillingContent() {
               <button
                 onClick={startCheckout}
                 disabled={submitting}
-                className="text-xs bg-blue-900 hover:bg-blue-800 disabled:bg-slate-300 text-white px-4 py-2 rounded-lg transition-colors font-medium"
+                className="text-xs bg-navy hover:opacity-90 disabled:bg-slate-300 text-white px-4 py-2 rounded-lg transition-colors font-medium"
               >
                 {submitting ? '...' : 'Passer à Pro'}
               </button>
@@ -185,7 +188,7 @@ function BillingContent() {
 
         {/* CTA Pro si trial */}
         {isTrial && (
-          <div className="bg-blue-900 text-white rounded-2xl p-7">
+          <div className="bg-navy text-white rounded-2xl p-7">
             <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-3">Passer à Pro</p>
             <div className="flex items-baseline gap-2 mb-3">
               <span className="text-4xl font-semibold tracking-tight">{format(getPrice('pro'))}</span>
@@ -243,7 +246,7 @@ export default function BillingPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="w-5 h-5 border-2 border-slate-200 border-t-slate-600 rounded-full animate-spin" />
+        <div className="w-5 h-5 border-2 border-slate-200 border-t-navy rounded-full animate-spin" />
       </div>
     }>
       <BillingContent />

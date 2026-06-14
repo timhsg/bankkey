@@ -78,8 +78,8 @@ export default function SourcesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-5 h-5 border-2 border-slate-200 border-t-slate-600 rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-[#F7F8FA]">
+        <div className="w-5 h-5 border-2 border-[#E5E7EB] border-t-navy rounded-full animate-spin" />
       </div>
     )
   }
@@ -89,14 +89,15 @@ export default function SourcesPage() {
   const categories: Array<MailChannel['category']> = ['oauth', 'imap', 'forwarding', 'api']
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[#F7F8FA]">
 
       {/* Header */}
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
+      <header className="bg-white border-b border-[#E5E7EB] sticky top-0 z-10">
+        <div className="max-w-5xl mx-auto px-6 lg:px-8 py-5 flex items-end justify-between gap-4">
           <div className="pl-12 lg:pl-0">
-            <h1 className="text-base font-semibold text-slate-900 tracking-tight">Sources de leads</h1>
-            <p className="text-[11px] text-slate-500 mt-0.5">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-[#9CA3AF] mb-1.5">Configuration</p>
+            <h1 className="text-2xl font-extrabold text-navy tracking-tightest leading-none">Sources de leads</h1>
+            <p className="text-xs text-[#6B7280] mt-1.5 tabular-nums">
               {anyChannelLive
                 ? `${totalLeads} leads analysés · ${totalHot} prioritaires`
                 : 'Choisissez un ou plusieurs canaux d\'ingestion'}
@@ -106,7 +107,7 @@ export default function SourcesPage() {
             <button
               onClick={syncGmail}
               disabled={syncing}
-              className="flex items-center gap-1.5 text-xs font-medium bg-white border border-slate-200 hover:border-slate-300 text-slate-700 px-2.5 py-1.5 sm:px-3 rounded-lg transition-base disabled:opacity-50 shrink-0"
+              className="flex items-center gap-1.5 text-xs font-semibold bg-white border border-[#D1D5DB] hover:border-navy text-[#374151] hover:text-navy px-3 py-2 rounded-lg transition-all disabled:opacity-50 shrink-0"
               aria-label="Synchroniser"
             >
               {syncing
@@ -123,9 +124,9 @@ export default function SourcesPage() {
             </button>
           )}
         </div>
-      </div>
+      </header>
 
-      <main className="max-w-5xl mx-auto px-6 py-8 space-y-10">
+      <main className="max-w-5xl mx-auto px-6 lg:px-8 py-8 space-y-10">
 
         {/* ═══ Si Gmail connecté : carte état actif ═══ */}
         {gmailConnected && (

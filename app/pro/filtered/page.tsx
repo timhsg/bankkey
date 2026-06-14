@@ -76,45 +76,46 @@ export default function FilteredPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-5 h-5 border-2 border-slate-200 border-t-slate-600 rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-[#F7F8FA]">
+        <div className="w-5 h-5 border-2 border-[#E5E7EB] border-t-navy rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen">
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between gap-4">
-            <div className="min-w-0">
-              <h1 className="text-base font-semibold text-slate-900 tracking-tight pl-12 lg:pl-0">Emails filtrés</h1>
-              <p className="text-xs text-slate-500 mt-0.5 pl-12 lg:pl-0 truncate">
-                Emails écartés par le pré-filtre (spam, perso, promotionnel)
+    <div className="min-h-screen bg-[#F7F8FA]">
+      <header className="bg-white border-b border-[#E5E7EB] sticky top-0 z-10">
+        <div className="max-w-5xl mx-auto px-6 lg:px-8 py-5">
+          <div className="flex items-end justify-between gap-4">
+            <div className="min-w-0 pl-12 lg:pl-0">
+              <p className="text-[11px] font-bold uppercase tracking-widest text-[#9CA3AF] mb-1.5">Activité</p>
+              <h1 className="text-2xl font-extrabold text-navy tracking-tightest leading-none">Emails écartés</h1>
+              <p className="text-xs text-[#6B7280] mt-1.5 truncate">
+                Spam, perso, promotionnel — récupérables en un clic
               </p>
             </div>
             <Link
               href="/pro/prospects"
-              className="text-xs text-slate-500 hover:text-slate-900 transition-colors shrink-0"
+              className="text-xs font-semibold text-[#6B7280] hover:text-navy transition-colors shrink-0"
             >
               ← Prospects
             </Link>
           </div>
         </div>
-      </div>
+      </header>
 
-      <main className="max-w-5xl mx-auto px-6 py-8 space-y-6">
+      <main className="max-w-5xl mx-auto px-6 lg:px-8 py-8 space-y-6">
         {/* Statistiques */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: 'Total filtrés', value: stats.total },
             { label: 'Spam', value: stats.spam },
             { label: 'Personnel', value: stats.personal },
             { label: 'Promotionnel', value: stats.promotion },
           ].map((s, i) => (
-            <div key={i} className="bg-white border border-slate-200 rounded-xl px-4 py-3">
-              <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">{s.label}</p>
-              <p className="text-2xl font-semibold text-slate-900 mt-1">{s.value}</p>
+            <div key={i} className="bg-white border border-[#E5E7EB] rounded-xl px-5 py-4 hover:shadow-card transition-shadow">
+              <p className="text-[11px] font-bold text-[#6B7280] uppercase tracking-wider">{s.label}</p>
+              <p className="text-3xl font-extrabold text-navy tracking-tightest tabular-nums mt-1 leading-none">{s.value}</p>
             </div>
           ))}
         </div>

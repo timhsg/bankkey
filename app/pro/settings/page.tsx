@@ -229,29 +229,32 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="w-5 h-5 border-2 border-slate-200 border-t-slate-600 rounded-full animate-spin" />
+        <div className="w-5 h-5 border-2 border-slate-200 border-t-navy rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[#F7F8FA]">
 
       {/* Header avec actions */}
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
-          <h1 className="text-base font-semibold text-slate-900 tracking-tight pl-12 lg:pl-0">Mon profil</h1>
+      <header className="bg-white border-b border-[#E5E7EB] sticky top-0 z-10">
+        <div className="max-w-3xl mx-auto px-6 lg:px-8 py-5 flex items-end justify-between gap-4">
+          <div className="pl-12 lg:pl-0">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-[#9CA3AF] mb-1.5">Configuration</p>
+            <h1 className="text-2xl font-extrabold text-navy tracking-tightest leading-none">Mon profil</h1>
+          </div>
           <button
             onClick={save}
             disabled={saving}
-            className="text-xs bg-blue-900 hover:bg-blue-800 disabled:bg-slate-300 text-white px-4 py-1.5 rounded-lg transition-colors font-medium"
+            className="btn-primary text-xs py-2 px-4 disabled:opacity-50"
           >
-            {saving ? 'Sauvegarde...' : saved ? 'Sauvegardé' : 'Sauvegarder'}
+            {saving ? 'Sauvegarde...' : saved ? 'Sauvegardé ✓' : 'Sauvegarder'}
           </button>
         </div>
-      </div>
+      </header>
 
-      <main className="max-w-3xl mx-auto px-5 py-10 space-y-6">
+      <main className="max-w-3xl mx-auto px-6 lg:px-8 py-10 space-y-6">
 
         {/* Intro + jauge */}
         <div>
@@ -340,7 +343,7 @@ export default function SettingsPage() {
                   onClick={() => update('tone', t.id as BrokerMemory['tone'])}
                   className={`text-left p-3 rounded-xl border transition-colors ${
                     memory.tone === t.id
-                      ? 'bg-blue-900 text-white border-blue-900'
+                      ? 'bg-navy text-white border-blue-900'
                       : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
                   }`}
                 >
@@ -358,7 +361,7 @@ export default function SettingsPage() {
             </div>
             <button
               onClick={() => update('vouvoiement', !(memory.vouvoiement ?? true))}
-              className={`relative w-10 h-5 rounded-full transition-colors ${memory.vouvoiement === false ? 'bg-slate-200' : 'bg-blue-900'}`}
+              className={`relative w-10 h-5 rounded-full transition-colors ${memory.vouvoiement === false ? 'bg-slate-200' : 'bg-navy'}`}
             >
               <span
                 className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-all ${memory.vouvoiement === false ? 'left-0.5' : 'left-5'}`}
@@ -521,7 +524,7 @@ export default function SettingsPage() {
             <button
               onClick={save}
               disabled={saving}
-              className="text-xs bg-blue-900 hover:bg-blue-800 disabled:bg-slate-300 text-white px-5 py-2 rounded-lg transition-colors font-medium"
+              className="text-xs bg-navy hover:opacity-90 disabled:bg-slate-300 text-white px-5 py-2 rounded-lg transition-colors font-medium"
             >
               {saving ? 'Sauvegarde...' : saved ? '✓ Sauvegardé' : 'Sauvegarder'}
             </button>
@@ -561,7 +564,7 @@ function Field({ label, value, onChange, placeholder, type = 'text' }: {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent transition-all placeholder-slate-300"
+        className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all placeholder-slate-300"
       />
     </div>
   )
@@ -583,7 +586,7 @@ function Textarea({ label, value, onChange, placeholder, hint, rows = 4 }: {
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         rows={rows}
-        className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent transition-all resize-none placeholder-slate-300 leading-relaxed"
+        className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all resize-none placeholder-slate-300 leading-relaxed"
       />
       {hint && <p className="text-[11px] text-slate-400 mt-1.5">{hint}</p>}
     </div>

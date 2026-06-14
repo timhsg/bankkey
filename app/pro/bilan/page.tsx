@@ -239,7 +239,7 @@ export default function BilanPage() {
           <>
             {/* ── Section : Acquisition ── */}
             <Section title="Acquisition" subtitle="Demandes reçues et traitées ce mois">
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div data-tour="bilan-kpis" className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <Kpi label="Demandes reçues" value={stats.total} delta={delta(stats.total, previousMonthStats?.total)} icon="inbox" />
                 <Kpi label="Prioritaires"    value={stats.hot}   delta={delta(stats.hot, previousMonthStats?.hot)} accent="emerald" icon="bolt" />
                 <Kpi label="Écartés"         value={stats.filtered} hint="Spam, perso, non finançable" icon="filter" />

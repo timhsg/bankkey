@@ -2,19 +2,128 @@ import Anthropic from '@anthropic-ai/sdk';
 import type { QualificationResult, ScoringResult, ProspectionResult, BrokerMemory } from '@/types';
 import type { SectorId } from '@/lib/sectors';
 import { buildBrokerContext, applyBrokerMemoryToEmail } from '@/lib/broker/memory';
+import {
+  buildExpertiseContext,
+  detectJurisdiction,
+  analyzeCompleteness,
+  type CompletenessAnalysis,
+} from './expertise';
 
 const client = new Anthropic();
 
 const SYSTEM_PROMPT_BY_SECTOR: Record<SectorId, string> = {
-  credit: `Tu es un expert en prospection pour un cabinet de courtage en crédit immobilier.
-Ton ton est rassurant, précis et orienté solution. Tu mets en avant l'expertise bancaire et le gain de temps.
-Tu n'inventes jamais d'informations absentes du profil fourni.
+  credit: `Tu es un courtier en crédit immobilier expérimenté qui rédige un premier email professionnel à un prospect.
+
+PRINCIPES DE TON :
+- Rassurant, précis, orienté solution
+- Jamais robotique ni générique — chaque mot doit sembler humain
+- Le courtier connaît son métier : il cite des règles précises quand pertinent (HCSF, apport, endettement)
+- N'invente JAMAIS d'informations absentes du profil
+
+PRINCIPE DE CONTENU CRITIQUE :
+Adapte radicalement le ton et la structure du mail selon la complétude du profil fourni.
+Tu travailles en 3 modes que tu reçois explicitement (COMPLETE / PARTIAL / INCOMPLETE).
+Chaque mode a sa structure imposée — respecte-la à la lettre.
+
 Réponds UNIQUEMENT avec un objet JSON valide, sans aucun texte avant ou après, sans balises markdown.`,
 };
 
-function buildPrompt(q: QualificationResult, s: ScoringResult): string {
-  // Construire le profil uniquement avec les données disponibles
-  const lines: string[] = [`Type : ${q.type}`, `Score : ${s.score}/100 (${s.temperature})`];
+// ═══════════════════════════════════════════════════════════════════════
+//  Instructions par mode (3 niveaux d'adaptation)
+// ═══════════════════════════════════════════════════════════════════════
+
+function buildModeInstructions(
+  mode: CompletenessAnalysis['level'],
+  missing: string[],
+  redFlags: string[],
+  greenFlags: string[],
+): string {
+  if (mode === 'complete') {
+    return `
+═══ MODE : COMPLETE (profil suffisamment renseigné) ═══
+
+L'email doit :
+1. Saluer (utiliser le prénom si connu)
+2. Confirmer la prise en compte de la demande de financement
+3. Mettre en avant 1 ou 2 points forts du dossier issus de greenFlags :
+   ${greenFlags.length > 0 ? greenFlags.map(g => `   • ${g}`).join('\n') : '   (aucun signal vert détecté)'}
+4. Indiquer un délai concret (24-48 h ouvrées) pour un retour
+5. Proposer un créneau d'échange téléphonique de 15 min OU
+   joindre une checklist des documents à préparer (au choix selon contexte)
+6. Signature standard
+
+STRUCTURE OBLIGATOIRE — un mail clair, 90-130 mots, fluide.
+PAS de "merci pour votre intérêt", PAS de "j'espère que vous allez bien".
+
+${redFlags.length > 0 ? `
+ATTENTION — drapeaux rouges détectés :
+${redFlags.map(r => `  • ${r}`).join('\n')}
+→ NE PAS les mentionner directement dans l'email. Le courtier les abordera en RDV.
+→ Adopter un ton un peu plus prudent ("nous allons étudier ensemble vos possibilités") plutôt qu'enthousiaste.
+` : ''}
+`
+  }
+
+  if (mode === 'partial') {
+    return `
+═══ MODE : PARTIAL (informations clés manquantes) ═══
+
+L'email doit :
+1. Saluer (utiliser le prénom si connu)
+2. Confirmer la prise en compte de la demande
+3. Mentionner 1 point positif si disponible :
+   ${greenFlags.length > 0 ? `   ${greenFlags.slice(0, 1).map(g => `• ${g}`).join('')}` : '   (aucun, rester factuel)'}
+4. EXPLIQUER POURQUOI on a besoin de plus d'infos (en 1 phrase courte)
+   Exemple : "Pour vous orienter vers les meilleures banques selon votre profil, j'ai besoin de quelques précisions."
+5. DEMANDER UNIQUEMENT les éléments manquants suivants, formulés simplement :
+${missing.map(m => `   → ${m}`).join('\n')}
+   ⚠️ Reformuler en langage naturel (pas une liste froide).
+   Exemple : "Pourriez-vous me préciser vos revenus mensuels nets et le montant de votre apport disponible ?"
+6. Signature standard
+
+STRUCTURE OBLIGATOIRE — 80-110 mots. Pas plus.
+Le ton est celui d'un courtier sympathique qui montre qu'il prend le dossier au sérieux.
+`
+  }
+
+  // INCOMPLETE
+  return `
+═══ MODE : INCOMPLETE (très peu d'infos exploitables) ═══
+
+L'email doit :
+1. Saluer (utiliser le prénom si connu, sinon "Bonjour,")
+2. Confirmer la réception de la demande
+3. Expliquer brièvement la démarche (1 phrase) :
+   "Pour vous proposer un accompagnement adapté, j'aurais besoin d'en savoir un peu plus sur votre projet."
+4. POSER 3 QUESTIONS OUVERTES MAXIMUM qui structurent un premier échange :
+   - Sur le projet (achat principal, locatif, refinancement…)
+   - Sur la situation pro (CDI / indépendant / etc.)
+   - Sur le timing souhaité
+   ⚠️ Phrases simples, jamais une liste. Une question par paragraphe court.
+5. Proposer un appel de 15 min comme alternative ("ou si vous préférez, un appel de 15 min")
+6. Signature standard
+
+STRUCTURE OBLIGATOIRE — 90-120 mots.
+Le ton est celui d'un courtier qui rassure et ne juge pas le manque d'infos.
+`
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Prompt principal
+// ═══════════════════════════════════════════════════════════════════════
+
+function buildPrompt(
+  q: QualificationResult,
+  s: ScoringResult,
+  completeness: CompletenessAnalysis,
+  jurisdiction: 'FR' | 'CH' | 'unknown',
+): string {
+  const lines: string[] = [
+    `Type : ${q.type}`,
+    `Score : ${s.score}/100 (${s.temperature})`,
+    `Juridiction détectée : ${jurisdiction}`,
+    `Complétude profil : ${completeness.level} (${completeness.score}/100)`,
+  ];
 
   if (q.firstName) lines.push(`Prénom : ${q.firstName}`);
   if (q.lastName) lines.push(`Nom : ${q.lastName}`);
@@ -22,72 +131,77 @@ function buildPrompt(q: QualificationResult, s: ScoringResult): string {
   if (q.address) lines.push(`Localisation : ${q.address}`);
   if (q.surface) lines.push(`Surface : ${q.surface} m²`);
   if (q.rooms) lines.push(`Pièces : ${q.rooms}`);
-  if (q.price) lines.push(`Prix : ${q.price.toLocaleString('fr-FR')} €`);
+  if (q.price) lines.push(`Prix : ${q.price.toLocaleString('fr-FR')} ${jurisdiction === 'CH' ? 'CHF' : '€'}`);
+
+  if (q.monthly_income !== null) lines.push(`Revenus mensuels : ${q.monthly_income.toLocaleString('fr-FR')}`);
+  if (q.down_payment !== null)   lines.push(`Apport : ${q.down_payment.toLocaleString('fr-FR')}`);
+  if (q.existing_debts_monthly !== null) lines.push(`Crédits en cours : ${q.existing_debts_monthly === 0 ? 'aucun' : q.existing_debts_monthly + '/mois'}`);
+  if (q.employment_status) lines.push(`Situation pro : ${q.employment_status}`);
+  if (q.is_couple !== null) lines.push(`Couple : ${q.is_couple ? 'oui' : 'non'}`);
 
   if (q.sell_timeline) {
     const labels = { less_3_months: '< 3 mois', '3_to_6_months': '3-6 mois', more_6_months: '> 6 mois' };
-    lines.push(`Délai de vente : ${labels[q.sell_timeline]}`);
+    lines.push(`Délai vente : ${labels[q.sell_timeline]}`);
   }
   if (q.purchase_timeline) {
     const labels = { less_3_months: '< 3 mois', '3_to_6_months': '3-6 mois', more_6_months: '> 6 mois' };
-    lines.push(`Délai d'achat : ${labels[q.purchase_timeline]}`);
+    lines.push(`Délai achat : ${labels[q.purchase_timeline]}`);
   }
   if (q.financing_status) {
-    const labels = { obtained: 'Financement obtenu', in_progress: 'Financement en cours', none: 'Sans financement' };
+    const labels = { obtained: 'Financement obtenu', in_progress: 'En cours', none: 'Pas commencé' };
     lines.push(`Financement : ${labels[q.financing_status]}`);
   }
 
   if (q.motivationSignals.length > 0) lines.push(`Motivation : ${q.motivationSignals.join(', ')}`);
   if (q.urgencySignals.length > 0) lines.push(`Urgence : ${q.urgencySignals.join(', ')}`);
   if (q.description) lines.push(`Description : ${q.description}`);
-  lines.push(`Analyse : ${s.explanation}`);
 
-  // Adapter les instructions selon le type et la disponibilité des données
-  const typeInstructions = {
-    vendeur: `CONTEXTE VENDEUR : mettre en avant l'estimation gratuite, la connaissance du marché local, et la capacité à vendre rapidement au meilleur prix.`,
-    acheteur: `CONTEXTE ACHETEUR : mettre en avant les biens disponibles correspondant au projet, la réactivité et l'accompagnement personnalisé.`,
-    locataire: `CONTEXTE LOCATAIRE : mettre en avant les biens disponibles à la location, le suivi de la demande, et la réactivité.`,
-    inconnu: `CONTEXTE INCONNU : rester général, proposer une prise de contact pour clarifier le projet. Ne pas présumer du type de projet.`,
-  };
+  const modeInstructions = buildModeInstructions(
+    completeness.level,
+    completeness.missing,
+    completeness.redFlags,
+    completeness.greenFlags,
+  );
 
-  const hasName = q.firstName ? `Utiliser le prénom "${q.firstName}" dans la salutation.` : `Pas de prénom connu — commencer par "Bonjour," sans prénom.`;
+  const hasName = q.firstName
+    ? `Utiliser le prénom "${q.firstName}" dans la salutation.`
+    : `Aucun prénom connu — commencer par "Bonjour," sans prénom.`;
 
-  const dataRichness = lines.length > 8 ? 'riche' : 'limité';
-  const dataNote = dataRichness === 'limité'
-    ? `DONNÉES LIMITÉES : le profil est incomplet. Rester dans ce qui est connu, ne rien inventer. Proposer un rendez-vous pour en apprendre plus.`
-    : `Personnaliser avec les informations disponibles dans le profil.`;
+  return `Génère l'email de réponse et le briefing d'appel pour ce prospect.
 
-  return `Génère les outils de prospection pour ce prospect.
-
-PROFIL :
+PROFIL EXTRAIT :
 ${lines.join('\n')}
 
-${typeInstructions[q.type]}
+${modeInstructions}
 
-RÈGLES ABSOLUES :
-- Ton professionnel, chaleureux, humain — jamais robotique ni générique
+RÈGLES TRANSVERSALES :
 - ${hasName}
-- ${dataNote}
-- Ne jamais inventer de détails absents du profil (prix, adresse, surface...)
 - Français impeccable et naturel
-- Email : entre 80 et 120 mots exactement (compter avant de répondre)
-- Pas de bullet points dans l'email
-- Script : phrases naturelles comme une vraie conversation téléphonique
+- Ne JAMAIS inventer un montant, une banque, un délai, une référence légale non présente dans les données
 - Pas de "J'espère que ce message vous trouve en bonne santé"
 - Pas de "N'hésitez pas à me contacter" en closing
-- Signature email : "Cordialement, [votre prénom] — Agence [nom de votre agence]"
-  (utiliser ces placeholders tels quels — ils seront remplacés par l'agence)
+- Signature email : "Cordialement, [votre prénom] — Cabinet [nom de votre agence]"
+  (utiliser ces placeholders tels quels)
+- Objet du mail : sobre, max 60 caractères, sans point d'exclamation
+
+CALL SCRIPT (briefing pour le courtier qui va appeler) :
+- briefing : 1 phrase factuelle dense — prénom, type projet, point clé du profil, niveau d'urgence
+- need : ce que le prospect cherche vraiment (1 phrase)
+- keyQuestion : LA question qui va débloquer / qualifier le mieux le dossier en premier
+  ${completeness.level === 'incomplete' ? 'Pour ce profil incomplet : poser la question qui révèle la SITUATION PROFESSIONNELLE.' : ''}
+  ${completeness.level === 'partial' ? `Pour ce profil partiel : poser la question sur le ${completeness.missing[0] ?? 'point clé manquant'}.` : ''}
+  ${completeness.level === 'complete' ? 'Pour ce profil complet : poser la question qui valide la motivation profonde ou le timing.' : ''}
 
 Retourne ce JSON :
 {
   "email": {
-    "subject": "objet percutant et personnalisé (max 60 caractères, sans point d'exclamation)",
-    "body": "corps complet avec salutation, corps, proposition concrète, signature placeholder"
+    "subject": "objet sobre, max 60 caractères",
+    "body": "corps complet avec salutation, contenu adapté au mode, signature placeholder"
   },
   "callScript": {
-    "briefing": "1 phrase max : prénom + type + situation clé + urgence. Ex: 'Marc Durand, vendeur T3 Lyon 6ème, mutation pro — départ fin juillet, vente urgente.'",
-    "need": "Ce que le prospect veut concrètement obtenir de cet appel (1 phrase)",
-    "keyQuestion": "La question la plus importante à poser en PREMIER, celle qui qualifie ou débloquerait la situation"
+    "briefing": "phrase courte et dense",
+    "need": "ce que veut le prospect en 1 phrase",
+    "keyQuestion": "la question d'ouverture la plus efficace"
   }
 }`;
 }
@@ -110,15 +224,23 @@ export async function runProspectionAgent(
   sector: SectorId = 'credit',
   brokerMemory?: BrokerMemory | null,
 ): Promise<ProspectionResult> {
-  // Injecter le contexte du cabinet dans le system prompt
+  // 1. Détecter la juridiction (FR / CH / unknown) depuis les données
+  const allText = `${qualification.address ?? ''} ${qualification.description ?? ''}`;
+  const jurisdiction = detectJurisdiction(allText);
+
+  // 2. Analyser la complétude → détermine le mode (complete / partial / incomplete)
+  const completeness = analyzeCompleteness(qualification);
+
+  // 3. Construire le system prompt avec l'expertise injectée
   const brokerContext = buildBrokerContext(brokerMemory);
-  const systemPrompt = SYSTEM_PROMPT_BY_SECTOR[sector] + brokerContext;
+  const expertiseContext = buildExpertiseContext(jurisdiction);
+  const systemPrompt = SYSTEM_PROMPT_BY_SECTOR[sector] + expertiseContext + brokerContext;
 
   const message = await client.messages.create({
     model: 'claude-sonnet-4-5',
     max_tokens: 2048,
     system: systemPrompt,
-    messages: [{ role: 'user', content: buildPrompt(qualification, scoring) }],
+    messages: [{ role: 'user', content: buildPrompt(qualification, scoring, completeness, jurisdiction) }],
   });
 
   const content = message.content[0];
@@ -126,7 +248,7 @@ export async function runProspectionAgent(
 
   const result = parseJSON<ProspectionResult>(content.text);
 
-  // Appliquer la signature et placeholders sur l'email rédigé
+  // 4. Appliquer la signature du cabinet
   if (brokerMemory) {
     result.email.body = applyBrokerMemoryToEmail(result.email.body, brokerMemory);
   }

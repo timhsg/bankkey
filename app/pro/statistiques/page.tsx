@@ -162,25 +162,26 @@ export default function InsightsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-5 h-5 border-2 border-slate-200 border-t-slate-600 rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-[#F7F8FA]">
+        <div className="w-5 h-5 border-2 border-[#E5E7EB] border-t-navy rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[#F7F8FA]">
 
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
+      <header className="bg-white border-b border-[#E5E7EB] sticky top-0 z-10">
+        <div className="max-w-5xl mx-auto px-6 lg:px-8 py-5 flex items-end justify-between gap-4">
           <div className="pl-12 lg:pl-0">
-            <h1 className="text-base font-semibold text-slate-900 tracking-tight">Statistiques du cabinet</h1>
-            <p className="text-[11px] text-slate-500 mt-0.5">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-[#9CA3AF] mb-1.5">Pipeline</p>
+            <h1 className="text-2xl font-extrabold text-navy tracking-tightest leading-none">Statistiques</h1>
+            <p className="text-xs text-[#6B7280] mt-1.5 tabular-nums">
               {stats.total} dossier{stats.total > 1 ? 's' : ''} avec décision bancaire enregistrée
             </p>
           </div>
         </div>
-      </div>
+      </header>
 
       <main className="max-w-5xl mx-auto px-6 py-8 space-y-8">
 

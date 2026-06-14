@@ -4,7 +4,7 @@ import { Suspense, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { LogoMark } from '@/app/_components/Logo'
+import { LogoMark, Wordmark } from '@/app/_components/Logo'
 
 // ─────────────────────────────────────────────────────────────
 // /pro/login — split 2 colonnes
@@ -128,11 +128,8 @@ function LoginInner() {
         </div>
 
         {/* Logo */}
-        <Link href="/" className="relative flex items-center gap-2.5 z-10">
-          <div className="w-9 h-9 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
-            <LogoMark size={18} variant="dark" />
-          </div>
-          <span className="font-bold tracking-tight text-lg">BankKey</span>
+        <Link href="/" className="relative flex items-center z-10">
+          <Wordmark size={28} tone="onDark" />
         </Link>
 
         {/* Pitch */}
@@ -181,8 +178,7 @@ function LoginInner() {
         {/* Header mobile */}
         <div className="lg:hidden border-b border-[#E5E7EB] bg-white px-6 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <LogoMark size={22} />
-            <span className="font-bold text-navy tracking-tight text-sm">BankKey</span>
+            <Wordmark size={22} />
           </Link>
           <Link href="/" className="text-xs text-[#6B7280] hover:text-navy">Accueil</Link>
         </div>

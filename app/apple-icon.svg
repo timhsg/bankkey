@@ -1,12 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
-  <rect width="180" height="180" rx="40" fill="#1e3a8a"/>
-  <!-- Anneau de la clé -->
-  <circle cx="72" cy="85" r="32" fill="none" stroke="white" stroke-width="15"/>
-  <!-- Trou central -->
-  <circle cx="72" cy="85" r="11" fill="white"/>
-  <!-- Tige -->
-  <rect x="101" y="77" width="52" height="16" rx="8" fill="white"/>
-  <!-- Dents -->
-  <rect x="127" y="93" width="13" height="17" rx="6" fill="white"/>
-  <rect x="145" y="93" width="10" height="13" rx="5" fill="white"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" fill="none">
+  <defs>
+    <linearGradient id="bk-apple" x1="0" y1="0" x2="180" y2="180" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0A1F5C"/>
+      <stop offset="1" stop-color="#3b5fe0"/>
+    </linearGradient>
+  </defs>
+  <rect width="180" height="180" rx="44" fill="url(#bk-apple)"/>
+  <g stroke="#FFFFFF" stroke-width="15" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="72" cy="76" r="25" fill="none"/>
+    <path d="M89 93 L132 132"/>
+    <path d="M118 118 L131 105"/>
+    <path d="M132 130 L143 119"/>
+  </g>
+  <circle cx="72" cy="76" r="9" fill="#FFFFFF"/>
 </svg>

@@ -1,13 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <!-- Fond carré arrondi bleu marine (plus professionnel que le noir) -->
-  <rect width="32" height="32" rx="7" fill="#1e3a8a"/>
-  <!-- Anneau de la clé -->
-  <circle cx="13" cy="14" r="5" fill="none" stroke="white" stroke-width="2.5"/>
-  <!-- Trou central de la clé -->
-  <circle cx="13" cy="14" r="1.8" fill="white"/>
-  <!-- Tige de la clé -->
-  <rect x="17.5" y="12.75" width="8.5" height="2.5" rx="1.25" fill="white"/>
-  <!-- Dents (vers le bas) -->
-  <rect x="21.5" y="15.25" width="2" height="2.5" rx="1" fill="white"/>
-  <rect x="24.5" y="15.25" width="2" height="2" rx="1" fill="white"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <defs>
+    <linearGradient id="bk-fav" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0A1F5C"/>
+      <stop offset="1" stop-color="#3b5fe0"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="8" fill="url(#bk-fav)"/>
+  <g stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12.5" cy="13" r="4.3" fill="none"/>
+    <path d="M15.4 16.1 L23 23"/>
+    <path d="M20.4 20 L22.6 17.8"/>
+    <path d="M23 22.6 L25 20.6"/>
+  </g>
+  <circle cx="12.5" cy="13" r="1.5" fill="#FFFFFF"/>
 </svg>

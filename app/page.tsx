@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { LogoMark } from './_components/Logo'
+import { LogoMark, Wordmark } from './_components/Logo'
 import { AnimateIn } from './_components/AnimateIn'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -205,9 +205,8 @@ export default function LandingPage() {
       {/* ─── HEADER ─── */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-[#E5E7EB]">
         <div className="wrap h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <LogoMark size={24} />
-            <span className="font-bold text-[15px] tracking-tight text-navy">BankKey</span>
+          <Link href="/" className="flex items-center">
+            <Wordmark size={24} />
           </Link>
           <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-[#374151]">
             <a href="#probleme" className="hover:text-navy transition-colors">Le problème</a>
@@ -628,8 +627,7 @@ export default function LandingPage() {
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 mb-10">
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <LogoMark size={22} variant="dark" />
-                <span className="font-bold text-white">BankKey</span>
+                <Wordmark size={22} tone="onDark" />
               </div>
               <p className="text-xs text-slate-400 max-w-xs leading-relaxed">
                 Le logiciel de qualification des demandes de financement pour les courtiers en crédit immobilier — France & Suisse.
