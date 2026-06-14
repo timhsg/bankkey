@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { EmptyState } from '../_components/EmptyState'
 
 interface RelevanceCheck {
   relevant?: boolean
@@ -122,12 +123,16 @@ export default function FilteredPage() {
 
         {/* Liste */}
         {emails.length === 0 ? (
-          <div className="bg-white border border-slate-200 rounded-xl p-10 text-center">
-            <p className="text-sm text-slate-600 mb-1">Aucun email filtré.</p>
-            <p className="text-xs text-slate-400">
-              Le pré-filtre n&apos;a écarté aucun email. Vos prospects légitimes sont dans <Link href="/pro/prospects" className="underline">Prospects</Link>.
-            </p>
-          </div>
+          <EmptyState
+            title="Aucun email écarté"
+            description="Le pré-filtre n'a rien écarté pour l'instant. Vos demandes légitimes apparaissent directement dans Prospects."
+            action={{ label: 'Voir mes prospects', href: '/pro/prospects' }}
+            icon={
+              <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+              </svg>
+            }
+          />
         ) : (
           <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
             <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
