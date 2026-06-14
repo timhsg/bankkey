@@ -1,0 +1,30 @@
+name: BankKey Cron
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'   # Sync Gmail — toutes les 15 minutes
+    - cron: '15 8 * * *'     # Brief matinal — 8h15 UTC
+    - cron: '0 9 1 * *'      # Bilan mensuel — 1er du mois, 9h UTC
+  workflow_dispatch: {}       # Bouton "Run workflow" manuel pour tester
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync Gmail (15 min)
+        if: github.event.schedule == '*/15 * * * *' || github.event_name == 'workflow_dispatch'
+        run: |
+          curl -fsS --max-time 120 -X GET "https://bankkey.ch/api/cron/sync-gmail" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
+
+      - name: Brief matinal (8h15)
+        if: github.event.schedule == '15 8 * * *'
+        run: |
+          curl -fsS --max-time 120 -X GET "https://bankkey.ch/api/cron/send-daily-brief" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
+
+      - name: Bilan mensuel (1er, 9h)
+        if: github.event.schedule == '0 9 1 * *'
+        run: |
+          curl -fsS --max-time 120 -X GET "https://bankkey.ch/api/cron/send-monthly-digest" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
