@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { LogoMark, Wordmark } from './_components/Logo'
+import ROICalculator from './_components/ROICalculator'
 import { AnimateIn } from './_components/AnimateIn'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -445,6 +446,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* ─── Calculateur ROI ─── */}
+      <ROICalculator />
 
       {/* ─── SECTION 5 — AVANT / APRÈS ─── */}
       <section className="bg-[#F7F8FA] border-y border-[#E5E7EB] py-20 md:py-28">
