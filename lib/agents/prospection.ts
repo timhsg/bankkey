@@ -264,7 +264,7 @@ export async function runProspectionAgent(
     max_tokens: 2048,
     system: systemPrompt,
     messages: [{ role: 'user', content: buildPrompt(qualification, scoring, completeness, jurisdiction) }],
-  });
+  }, { timeout: 45_000 });
 
   const content = message.content[0];
   if (content.type !== 'text') throw new Error('Type de réponse inattendu de l\'IA');

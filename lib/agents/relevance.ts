@@ -311,7 +311,7 @@ Réponds UNIQUEMENT avec ce JSON (sans markdown) :
     max_tokens: 256,
     system: 'Tu es un classificateur strict. Par défaut tu rejettes. Tu n\'acceptes que les vraies demandes de crédit immobilier. Réponds UNIQUEMENT en JSON valide.',
     messages: [{ role: 'user', content: prompt }],
-  })
+  }, { timeout: 20_000 })
 
   const content = message.content[0]
   if (content.type !== 'text') {

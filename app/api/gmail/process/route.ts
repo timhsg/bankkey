@@ -113,10 +113,8 @@ export async function POST(request: NextRequest) {
 
 // ── Traitement par utilisateur ────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function processUserEmails(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  supabase: any,
+  supabase: ReturnType<typeof createAdminClient>,
   userId: string,
   accessToken: string,
   refreshToken: string,

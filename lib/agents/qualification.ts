@@ -163,7 +163,7 @@ export async function runQualificationAgent(
     max_tokens: 2048,
     system: buildSystemPrompt(sector),
     messages: [{ role: 'user', content: buildPrompt(listing) }],
-  });
+  }, { timeout: 30_000 });
 
   const content = message.content[0];
   if (content.type !== 'text') throw new Error('Type de réponse inattendu de l\'IA');

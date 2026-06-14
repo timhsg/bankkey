@@ -196,7 +196,7 @@ export async function runScoringAgent(
     max_tokens: 1024,
     system: systemPrompt,
     messages: [{ role: 'user', content: buildPrompt(qualification, sector, jurisdiction) }],
-  });
+  }, { timeout: 30_000 });
 
   const content = message.content[0];
   if (content.type !== 'text') throw new Error('Type de réponse inattendu de l\'IA');
