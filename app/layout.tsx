@@ -24,6 +24,16 @@ export const metadata: Metadata = {
     url: 'https://bankkey.ch',
     siteName: 'BankKey',
   },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'BankKey — l\'instrument de qualification du courtier crédit',
+    description: 'Vos demandes de financement triées, qualifiées et préparées avant votre café.',
+  },
+  keywords: [
+    'courtier crédit immobilier', 'logiciel courtier', 'qualification leads courtage',
+    'gestion demandes de financement', 'CRM courtage', 'IOBSP', 'courtier France Suisse',
+  ],
+  applicationName: 'BankKey',
   robots: { index: true, follow: true },
 };
 
