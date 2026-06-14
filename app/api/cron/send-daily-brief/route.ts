@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
+import { isCronAuthorized } from '@/lib/cron-auth'
 import { sendEmail } from '@/lib/email/resend'
 import { computeDailyBrief } from '@/lib/email/compute-daily-brief'
 import { renderDailyBriefHTML, renderDailyBriefText } from '@/lib/email/templates/daily-brief'
@@ -25,9 +26,7 @@ interface SendResult {
 }
 
 export async function GET(request: NextRequest) {
-  const authHeader = request.headers.get('authorization')
-  const cronSecret = process.env.CRON_SECRET
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  if (!isCronAuthorized(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

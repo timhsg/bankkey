@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
+import { isCronAuthorized } from '@/lib/cron-auth'
 import { sendEmail } from '@/lib/email/resend'
 import { computeDigestForUser } from '@/lib/email/compute-digest'
 import { renderMonthlyDigestHTML, renderMonthlyDigestText } from '@/lib/email/templates/monthly-digest'
@@ -25,10 +26,8 @@ interface SendResult {
 }
 
 export async function GET(request: NextRequest) {
-  // Auth Vercel cron
-  const authHeader = request.headers.get('authorization')
-  const cronSecret = process.env.CRON_SECRET
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  // Auth Vercel cron (strict en production)
+  if (!isCronAuthorized(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

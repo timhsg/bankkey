@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/server'
+import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { exchangeCode, getConnectedEmail } from '@/lib/gmail'
 
 /**
@@ -18,6 +18,16 @@ export async function GET(request: NextRequest) {
   if (error || !code || !userId) {
     console.error('[gmail/callback] OAuth error:', error)
     return NextResponse.redirect(`${appUrl}/pro/onboarding?error=oauth_failed`)
+  }
+
+  // ── Sécurité : le state (userId) doit correspondre à la SESSION en cours.
+  // Sans ça, un attaquant pourrait injecter ses tokens Gmail dans le compte
+  // d'une victime (CSRF d'association de compte OAuth).
+  const sessionClient = await createClient()
+  const { data: { user: sessionUser } } = await sessionClient.auth.getUser()
+  if (!sessionUser || sessionUser.id !== userId) {
+    console.error('[gmail/callback] state ne correspond pas à la session')
+    return NextResponse.redirect(`${appUrl}/pro/login?error=session_mismatch`)
   }
 
   try {

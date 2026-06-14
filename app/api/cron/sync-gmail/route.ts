@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
+import { isCronAuthorized } from '@/lib/cron-auth'
 
 // ════════════════════════════════════════════════════════════════════════
 //  Cron Vercel — synchronisation Gmail automatique
@@ -20,13 +21,11 @@ interface SyncResult {
 }
 
 export async function GET(request: NextRequest) {
-  // 1. Vérification de la signature Vercel Cron
-  const authHeader = request.headers.get('authorization')
-  const cronSecret = process.env.CRON_SECRET
-
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  // 1. Vérification de la signature Vercel Cron (strict en production)
+  if (!isCronAuthorized(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+  const cronSecret = process.env.CRON_SECRET
 
   const admin = createAdminClient()
 
@@ -64,8 +63,9 @@ export async function GET(request: NextRequest) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Internal-Request': 'true',
-          'X-Cron-Secret': cronSecret ?? '',
+          // Auth machine-à-machine : le process route n'accepte plus que
+          // le Bearer CRON_SECRET (ou une session navigateur).
+          'Authorization': `Bearer ${cronSecret ?? ''}`,
         },
         body: JSON.stringify({ userId: profile.id }),
       })

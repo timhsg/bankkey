@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/server'
+import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { getUnreadEmails, markAsRead } from '@/lib/gmail'
 import { runQualificationAgent } from '@/lib/agents/qualification'
 import { runScoringAgent } from '@/lib/agents/scoring'
@@ -26,40 +26,52 @@ import type { SectorId } from '@/lib/sectors'
  *   → Marque l'email comme lu
  */
 export async function POST(request: NextRequest) {
-  // Authentification du cron (ou appel authentifié depuis le dashboard)
+  // ── Authentification ──
+  // Deux voies SEULEMENT :
+  //  1. Cron machine de confiance : Authorization: Bearer CRON_SECRET
+  //  2. Navigateur authentifié : session Supabase valide (cookies)
+  // Le header "X-Internal-Request" n'est PLUS accepté (bypass supprimé).
   const authHeader = request.headers.get('Authorization')
-  const isCron     = authHeader === `Bearer ${process.env.CRON_SECRET}`
-  const isInternal = request.headers.get('X-Internal-Request') === 'true'
-
-  if (!isCron && !isInternal) {
-    return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
-  }
+  const cronSecret = process.env.CRON_SECRET
+  const isCron = !!cronSecret && authHeader === `Bearer ${cronSecret}`
 
   const body = await request.json().catch(() => ({})) as { userId?: string }
 
-  // Rate limit appels manuels par utilisateur : 6 sync / heure max
-  // (le cron est exempté car déjà espacé naturellement)
-  if (isInternal && body.userId) {
-    const limit = rateLimit(`gmail-sync:${body.userId}`, 6, 60 * 60_000)
+  // Détermine quel·s utilisateur·s traiter, selon la voie d'auth
+  let targetUserId: string | null = null   // null = tous (cron global)
+
+  if (isCron) {
+    // Appel machine : peut cibler un user précis (body.userId) ou tous
+    targetUserId = body.userId ?? null
+  } else {
+    // Appel navigateur : session obligatoire, et on ne traite QUE soi-même.
+    // body.userId est ignoré → impossible de déclencher le compte d'un autre.
+    const supabaseAuth = await createClient()
+    const { data: { user } } = await supabaseAuth.auth.getUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+    }
+    const limit = rateLimit(`gmail-sync:${user.id}`, 6, 60 * 60_000)
     if (!limit.ok) {
       return NextResponse.json(
         { error: 'Limite de synchronisation atteinte (6/heure). Réessayez plus tard.', resetAt: limit.resetAt },
         { status: 429 },
       )
     }
+    targetUserId = user.id
   }
 
   const supabase = createAdminClient()
 
-  // Cibler un utilisateur spécifique ou traiter tout le monde (cron)
+  // Cibler un utilisateur spécifique ou traiter tout le monde (cron global)
   let query = supabase
     .from('profiles')
     .select('id, sector, broker_memory, gmail_access_token, gmail_refresh_token, gmail_token_expiry')
     .not('gmail_access_token', 'is', null)
     .not('gmail_refresh_token', 'is', null)
 
-  if (body.userId) {
-    query = query.eq('id', body.userId) as typeof query
+  if (targetUserId) {
+    query = query.eq('id', targetUserId) as typeof query
   }
 
   const { data: profiles, error: profilesError } = await query
