@@ -14,11 +14,11 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://bankkey.ch'),
-  title: 'BankKey — Qualification automatique pour courtiers crédit',
-  description: 'BankKey lit vos emails de demande de financement, score la bancabilité et prépare la réponse. Vos 6 vrais dossiers en haut. Avant votre café.',
+  title: 'BankKey — le logiciel des courtiers qui répondent en premier',
+  description: 'BankKey centralise vos demandes de financement, les qualifie et prépare vos réponses. Vous ne traitez que les dossiers qui valent un appel — avant votre café.',
   openGraph: {
-    title: 'BankKey — Qualification automatique pour courtiers crédit',
-    description: 'Vos emails qualifiés, scorés et préparés en moins de 60 secondes.',
+    title: 'Le premier courtier à répondre décroche le dossier.',
+    description: 'BankKey centralise, qualifie et prépare vos demandes de financement. Vous gagnez des heures et vous répondez en premier.',
     type: 'website',
     locale: 'fr_CH',
     url: 'https://bankkey.ch',
@@ -26,8 +26,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'BankKey — l\'instrument de qualification du courtier crédit',
-    description: 'Vos demandes de financement triées, qualifiées et préparées avant votre café.',
+    title: 'Le premier courtier à répondre décroche le dossier.',
+    description: 'BankKey centralise, qualifie et prépare vos demandes de financement. Vous répondez en premier.',
   },
   keywords: [
     'courtier crédit immobilier', 'logiciel courtier', 'qualification leads courtage',
