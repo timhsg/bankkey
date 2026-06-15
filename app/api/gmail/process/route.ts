@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
-import { getUnreadEmails, markAsRead } from '@/lib/gmail'
+import { getUnreadEmails, markAsRead, type GmailMessage } from '@/lib/gmail'
+import { outlookConfigured, getOutlookUnread, markOutlookRead } from '@/lib/outlook'
 import { runQualificationAgent } from '@/lib/agents/qualification'
 import { runScoringAgent } from '@/lib/agents/scoring'
 import { runProspectionAgent } from '@/lib/agents/prospection'
@@ -74,18 +75,15 @@ export async function POST(request: NextRequest) {
     query = query.eq('id', targetUserId) as typeof query
   }
 
-  const { data: profiles, error: profilesError } = await query
-
-  if (profilesError || !profiles?.length) {
-    return NextResponse.json({ processed: 0, message: 'Aucun compte Gmail connecté' })
-  }
+  const { data: profiles } = await query
 
   let totalProcessed = 0
   const errors: string[] = []
 
-  for (const profile of profiles) {
+  // ── Comptes Gmail ──
+  for (const profile of profiles ?? []) {
     try {
-      const processed = await processUserEmails(
+      totalProcessed += await processUserEmails(
         supabase,
         profile.id,
         profile.gmail_access_token,
@@ -93,18 +91,44 @@ export async function POST(request: NextRequest) {
         (profile.sector as SectorId) ?? 'credit',
         profile.broker_memory ?? null,
       )
-      totalProcessed += processed
-
-      // Mettre à jour le timestamp du dernier traitement
       await supabase
         .from('profiles')
         .update({ gmail_last_processed_at: new Date().toISOString() })
         .eq('id', profile.id)
-
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
-      console.error(`[process] userId=${profile.id}`, msg)
-      errors.push(`${profile.id}: ${msg}`)
+      console.error(`[process] gmail userId=${profile.id}`, msg)
+      errors.push(`gmail ${profile.id}: ${msg}`)
+    }
+  }
+
+  // ── Comptes Outlook (uniquement si l'app Azure est configurée) ──
+  if (outlookConfigured()) {
+    try {
+      let oQuery = supabase
+        .from('profiles')
+        .select('id, sector, broker_memory, outlook_access_token, outlook_refresh_token')
+        .not('outlook_access_token', 'is', null)
+      if (targetUserId) oQuery = oQuery.eq('id', targetUserId) as typeof oQuery
+
+      const { data: oProfiles } = await oQuery
+      for (const profile of oProfiles ?? []) {
+        try {
+          totalProcessed += await processUserOutlook(
+            supabase,
+            profile.id,
+            profile.outlook_access_token,
+            (profile.sector as SectorId) ?? 'credit',
+            profile.broker_memory ?? null,
+          )
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err)
+          console.error(`[process] outlook userId=${profile.id}`, msg)
+          errors.push(`outlook ${profile.id}: ${msg}`)
+        }
+      }
+    } catch {
+      // Colonnes outlook_* absentes (migration 010 non appliquée) → on ignore.
     }
   }
 
@@ -112,6 +136,106 @@ export async function POST(request: NextRequest) {
 }
 
 // ── Traitement par utilisateur ────────────────────────────────────────────────
+
+/**
+ * Boucle de traitement partagée Gmail / Outlook.
+ * Reçoit une liste d'emails normalisés + un callback markRead spécifique à la source.
+ */
+async function processInbox(
+  supabase: ReturnType<typeof createAdminClient>,
+  userId: string,
+  sector: SectorId,
+  brokerMemory: import('@/types').BrokerMemory | null,
+  emails: GmailMessage[],
+  source: 'gmail' | 'outlook',
+  markRead: (messageId: string) => Promise<void>,
+): Promise<number> {
+  let count = 0
+
+  for (const email of emails) {
+    // Déduplication (l'id du message est stocké dans gmail_message_id pour les 2 sources)
+    const { data: existing } = await supabase
+      .from('prospects')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('gmail_message_id', email.id)
+      .maybeSingle()
+
+    if (existing) continue
+    if (!email.body.trim() || email.body.trim().length < 30) continue
+
+    try {
+      const detected = detectSource(email.fromEmail ?? '', email.subject ?? '', email.body)
+      const relevance = await classifyRelevance(email.fromEmail ?? '', email.subject ?? '', email.body)
+
+      if (!relevance.relevant) {
+        await supabase.from('prospects').insert({
+          user_id:          userId,
+          source,
+          gmail_message_id: email.id,
+          gmail_thread_id:  email.threadId,
+          email_from_name:  email.fromName,
+          email_from:       email.fromEmail,
+          email_subject:    email.subject,
+          email_body:       email.body,
+          sector,
+          status:           'filtered',
+          relevance,
+          detected_source:  detected,
+          received_at:      email.receivedAt.toISOString(),
+          activity: [
+            activityEmailReceived(detected.sourceName),
+            activityFiltered(relevance.reason ?? 'Email non pertinent'),
+          ],
+        })
+        continue
+      }
+
+      const qualification = await runQualificationAgent(email.body, sector)
+      const scoring       = await runScoringAgent(qualification, sector, brokerMemory)
+      const prospection   = await runProspectionAgent(qualification, scoring, sector, brokerMemory)
+
+      const { data: inserted } = await supabase
+        .from('prospects')
+        .insert({
+          user_id:          userId,
+          source,
+          gmail_message_id: email.id,
+          gmail_thread_id:  email.threadId,
+          email_from_name:  email.fromName,
+          email_from:       email.fromEmail,
+          email_subject:    email.subject,
+          email_body:       email.body,
+          sector,
+          qualification,
+          scoring,
+          prospection,
+          detected_source:  detected,
+          relevance,
+          status:           'new',
+          received_at:      email.receivedAt.toISOString(),
+          activity: [
+            activityEmailReceived(detected.sourceName),
+            activityQualified(scoring.score, scoring.temperature),
+          ],
+        })
+        .select('id')
+        .single()
+
+      if (inserted?.id && scoring.score >= HOT_LEAD_THRESHOLD) {
+        await sendHotLeadNotification({ supabase, prospectId: inserted.id, userId, qualification, scoring, prospection })
+      }
+
+      await markRead(email.id)
+      count++
+    } catch (err) {
+      console.error(`[process] ${source} email ${email.id}:`, err)
+      // Continuer sur les autres emails même si l'un échoue
+    }
+  }
+
+  return count
+}
 
 async function processUserEmails(
   supabase: ReturnType<typeof createAdminClient>,
@@ -122,115 +246,18 @@ async function processUserEmails(
   brokerMemory: import('@/types').BrokerMemory | null,
 ): Promise<number> {
   const emails = await getUnreadEmails(accessToken, refreshToken, 20)
-  let count = 0
+  return processInbox(supabase, userId, sector, brokerMemory, emails, 'gmail',
+    (id) => markAsRead(accessToken, refreshToken, id))
+}
 
-  for (const email of emails) {
-    // Déduplication : cet email a-t-il déjà été traité ?
-    const { data: existing } = await supabase
-      .from('prospects')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('gmail_message_id', email.id)
-      .single()
-
-    if (existing) continue  // Déjà analysé
-
-    // Ne pas analyser les propres emails envoyés
-    if (!email.body.trim() || email.body.trim().length < 30) continue
-
-    try {
-      // 0a. Détection automatique de la source (Empruntis, SeLoger, etc.)
-      const detected = detectSource(
-        email.fromEmail ?? '',
-        email.subject ?? '',
-        email.body,
-      )
-
-      // 0b. Pré-filtrage : éviter spam, newsletter, perso, auto-reply
-      const relevance = await classifyRelevance(
-        email.fromEmail ?? '',
-        email.subject ?? '',
-        email.body,
-      )
-
-      // Si non pertinent, on stocke quand même avec un statut "filtré" pour traçabilité
-      if (!relevance.relevant) {
-        await supabase.from('prospects').insert({
-          user_id:           userId,
-          source:            'gmail',
-          gmail_message_id:  email.id,
-          gmail_thread_id:   email.threadId,
-          email_from_name:   email.fromName,
-          email_from:        email.fromEmail,
-          email_subject:     email.subject,
-          email_body:        email.body,
-          sector,
-          status:            'filtered',
-          relevance:         relevance,
-          detected_source:   detected,
-          received_at:       email.receivedAt,
-          activity:          [
-            activityEmailReceived(detected.sourceName),
-            activityFiltered(relevance.reason ?? 'Email non pertinent'),
-          ],
-        })
-        continue
-      }
-
-      // 1-3. Pipeline des 3 agents si pertinent
-      const qualification = await runQualificationAgent(email.body, sector)
-      const scoring       = await runScoringAgent(qualification, sector, brokerMemory)
-      const prospection   = await runProspectionAgent(qualification, scoring, sector, brokerMemory)
-
-      // Stocker dans Supabase avec activité initiale
-      const { data: inserted } = await supabase
-        .from('prospects')
-        .insert({
-          user_id:           userId,
-          source:            'gmail',
-          gmail_message_id:  email.id,
-          gmail_thread_id:   email.threadId,
-          email_from_name:   email.fromName,
-          email_from:        email.fromEmail,
-          email_subject:     email.subject,
-          email_body:        email.body,
-          sector,
-          qualification,
-          scoring,
-          prospection,
-          detected_source:   detected,
-          relevance:         relevance,
-          status:            'new',
-          received_at:       email.receivedAt.toISOString(),
-          activity:          [
-            activityEmailReceived(detected.sourceName),
-            activityQualified(scoring.score, scoring.temperature),
-          ],
-        })
-        .select('id')
-        .single()
-
-      // Notification "lead chaud" si score ≥ 70 (non-bloquant)
-      if (inserted?.id && scoring.score >= HOT_LEAD_THRESHOLD) {
-        await sendHotLeadNotification({
-          supabase,
-          prospectId: inserted.id,
-          userId,
-          qualification,
-          scoring,
-          prospection,
-        })
-      }
-
-      // Marquer comme lu pour ne pas le retraiter
-      await markAsRead(accessToken, refreshToken, email.id)
-      count++
-
-    } catch (err) {
-      console.error(`[process] email ${email.id}:`, err)
-      // Continuer sur les autres emails même si l'un échoue
-    }
-  }
-
-  return count
+async function processUserOutlook(
+  supabase: ReturnType<typeof createAdminClient>,
+  userId: string,
+  accessToken: string,
+  sector: SectorId,
+  brokerMemory: import('@/types').BrokerMemory | null,
+): Promise<number> {
+  const emails = await getOutlookUnread(accessToken, 20)
+  return processInbox(supabase, userId, sector, brokerMemory, emails, 'outlook',
+    (id) => markOutlookRead(accessToken, id))
 }

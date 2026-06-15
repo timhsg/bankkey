@@ -27,9 +27,10 @@ export const MAIL_CHANNELS: MailChannel[] = [
   {
     id: 'outlook',
     name: 'Outlook 365',
-    description: 'Microsoft 365 / Outlook.com — connexion OAuth Microsoft',
-    status: 'beta',
+    description: 'Microsoft 365 / Outlook.com — connexion OAuth Microsoft, comme Gmail',
+    status: 'live',
     category: 'oauth',
+    connectUrl: '/api/outlook/connect',
   },
 
   // ─── IMAP (mot de passe d'application) ──────────────────────────
@@ -72,8 +73,8 @@ export const MAIL_CHANNELS: MailChannel[] = [
   // ─── Forwarding (universel mais manuel) ─────────────────────────
   {
     id: 'forwarding',
-    name: 'Email forwarding',
-    description: 'Adresse @in.bankkey.ch unique — faites suivre depuis n\'importe quelle source',
+    name: 'Transfert email (toute source)',
+    description: 'Une adresse BankKey unique. Créez une règle de transfert auto depuis Outlook, Empruntis, SeLoger, Pretto, Meilleurtaux ou n\'importe quelle boîte — les leads arrivent ici. Marche partout, sans connexion.',
     status: 'live',
     category: 'forwarding',
   },
