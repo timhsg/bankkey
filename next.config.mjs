@@ -80,11 +80,17 @@ const nextConfig = {
 import { withSentryConfig } from '@sentry/nextjs'
 
 const sentryOptions = {
-  silent: !process.env.SENTRY_AUTH_TOKEN,
+  silent: true,
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,
   disableLogger: true,
   hideSourceMaps: true,
+  telemetry: false,
+  // Upload de sourcemaps + création de release DÉSACTIVÉS tant que le projet
+  // Sentry n'est pas correctement configuré (sinon le build crache des
+  // erreurs "Project not found"). Le capture runtime via DSN reste actif.
+  sourcemaps: { disable: true },
+  release: { create: false, finalize: false },
 }
 
 export default process.env.SENTRY_DSN
