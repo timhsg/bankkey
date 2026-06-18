@@ -120,7 +120,7 @@ BEGIN
     -- Faux Gmail connecté pour que la page Sources affiche les stats détectées
     gmail_connected_email = 'marie@lefevre-courtage.fr',
     gmail_last_processed_at = (NOW() - INTERVAL '15 minutes')::timestamptz,
-    forwarding_address = 'dossiers-lefevre@inbound.bankkey.ch'
+    forwarding_address = 'lefevre-demo@in.bankkey.ch'
   WHERE id = demo_user_id;
 
   DELETE FROM deal_outcomes WHERE user_id = demo_user_id;

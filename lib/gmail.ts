@@ -153,11 +153,16 @@ export async function getUnreadEmails(
 
   const gmail = google.gmail({ version: 'v1', auth })
 
+  // IMPORTANT : on NE filtre PAS par expéditeur ni par catégorie ici.
+  // Les leads (Empruntis, SeLoger, Pretto…) sont envoyés depuis des adresses
+  // no-reply/notification ET classés par Gmail dans Promotions/Updates.
+  // Les exclure ferait rater l'essentiel des leads. On récupère donc large
+  // (INBOX, non lus, < 30 jours) et c'est l'agent de pertinence (strict,
+  // "default reject") qui écarte le bruit en aval.
   const list = await gmail.users.messages.list({
     userId: 'me',
     labelIds: ['INBOX', 'UNREAD'],
-    // Exclure les newsletters, notifications automatiques et no-reply
-    q: '-from:noreply -from:no-reply -from:notification -from:newsletter -category:promotions -category:updates',
+    q: 'newer_than:30d',
     maxResults,
   })
 

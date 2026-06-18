@@ -11,7 +11,7 @@ import { sendHotLeadNotification, HOT_LEAD_THRESHOLD } from '@/lib/email/send-ho
 //  /api/ingest/email — Email Inbound (Resend / SendGrid / Postmark)
 //
 //  Permet aux courtiers de transférer leurs emails de leads vers une
-//  adresse unique de type :  dossiers-<cabinet>@inbound.bankkey.ch
+//  adresse unique de type :  x<hash>@in.bankkey.ch (générée à l'inscription)
 //
 //  Ce endpoint accepte un POST JSON (format Resend Inbound) :
 //    { from, to, subject, text, html, headers }

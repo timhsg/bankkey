@@ -20,14 +20,14 @@ juste la réception d'email entrant via Resend.
 ### Étapes (≈ 15 min, une seule fois)
 
 1. **Resend → Domains** : tu as déjà `bankkey.ch` pour l'envoi. Pour la réception,
-   active **Inbound** sur un sous-domaine, ex. `inbound.bankkey.ch`.
+   active **Inbound** sur un sous-domaine, ex. `in.bankkey.ch`.
 2. **DNS (chez ton registrar / Vercel DNS)** : ajoute l'enregistrement **MX** fourni
-   par Resend pour `inbound.bankkey.ch` (Resend te donne la valeur exacte, type
+   par Resend pour `in.bankkey.ch` (Resend te donne la valeur exacte, type
    `feedback-smtp.eu-west-1.amazonses.com` ou équivalent, priorité 10).
 3. **Resend → Inbound → Add endpoint** : pointe le webhook vers
    `https://bankkey.ch/api/ingest/email` (méthode POST).
 4. **Adresse des courtiers** : chaque profil a un champ `forwarding_address`
-   (ex. `dossiers-lefevre@inbound.bankkey.ch`). Le code route l'email entrant vers
+   (ex. `dossiers-lefevre@in.bankkey.ch`). Le code route l'email entrant vers
    le bon courtier en cherchant cette adresse. Vérifie que tes nouveaux comptes en
    reçoivent une (le seed démo en met une ; pour les vrais comptes, à générer à
    l'inscription si ce n'est pas déjà le cas).
