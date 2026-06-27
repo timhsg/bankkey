@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
-import { exchangeCode, getConnectedEmail } from '@/lib/gmail'
+import { exchangeCode, getConnectedEmail, watchInbox } from '@/lib/gmail'
 
 /**
  * Callback OAuth Google.
@@ -39,7 +39,11 @@ export async function GET(request: NextRequest) {
     }
 
     // Récupérer l'email du compte connecté
-    const gmailEmail = await getConnectedEmail(tokens.access_token, tokens.refresh_token)
+    const gmailEmail = await getConnectedEmail({
+      accessToken:  tokens.access_token,
+      refreshToken: tokens.refresh_token,
+      expiryDate:   tokens.expiry_date ?? null,
+    })
 
     // Stocker les tokens dans Supabase (admin client pour bypass RLS)
     const supabase = createAdminClient()
@@ -57,6 +61,20 @@ export async function GET(request: NextRequest) {
       .eq('id', userId)
 
     if (dbError) throw dbError
+
+    // Démarrer la surveillance temps réel immédiatement (non bloquant :
+    // si Pub/Sub n'est pas encore configuré, le cron de secours prend le relais).
+    if (process.env.GMAIL_PUBSUB_TOPIC) {
+      try {
+        await watchInbox({
+          accessToken:  tokens.access_token,
+          refreshToken: tokens.refresh_token,
+          expiryDate:   tokens.expiry_date ?? null,
+        })
+      } catch (watchErr) {
+        console.error('[gmail/callback] démarrage watch échoué (non bloquant)', watchErr)
+      }
+    }
 
     return NextResponse.redirect(`${appUrl}/pro?connected=gmail`)
 

@@ -2,7 +2,12 @@ name: BankKey Cron
 
 on:
   schedule:
-    - cron: '*/15 * * * *'   # Sync Gmail — toutes les 15 minutes
+    # NB : GitHub Actions n'est PAS temps réel (souvent 5-20 min de retard, parfois
+    # sauté en cas de charge). Pour tenir la promesse "réponse < 5 min", passer à
+    # une ingestion push (Gmail watch + Pub/Sub) ou au webhook Resend inbound.
+    # En attendant, on resserre la cadence à 5 minutes.
+    - cron: '*/5 * * * *'    # Sync Gmail (filet de secours) — toutes les 5 min
+    - cron: '30 7 * * *'     # Renouvellement watch Gmail — 7h30 UTC (avant expiration 7j)
     - cron: '15 8 * * *'     # Brief matinal — 8h15 UTC
     - cron: '0 9 1 * *'      # Bilan mensuel — 1er du mois, 9h UTC
   workflow_dispatch: {}       # Bouton "Run workflow" manuel pour tester
@@ -11,10 +16,16 @@ jobs:
   trigger:
     runs-on: ubuntu-latest
     steps:
-      - name: Sync Gmail (15 min)
-        if: github.event.schedule == '*/15 * * * *' || github.event_name == 'workflow_dispatch'
+      - name: Sync Gmail (5 min)
+        if: github.event.schedule == '*/5 * * * *' || github.event_name == 'workflow_dispatch'
         run: |
           curl -fsS --max-time 120 -X GET "https://bankkey.ch/api/cron/sync-gmail" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
+
+      - name: Renouvellement watch Gmail (7h30)
+        if: github.event.schedule == '30 7 * * *'
+        run: |
+          curl -fsS --max-time 120 -X GET "https://bankkey.ch/api/cron/renew-gmail-watch" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
 
       - name: Brief matinal (8h15)

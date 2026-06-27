@@ -29,9 +29,10 @@ BankKey est un SaaS qui qualifie automatiquement les emails de demande de financ
 | Auth | Supabase Auth (email+password) | RLS strict par cabinet |
 | DB | Supabase PostgreSQL | Hébergé EU (Francfort) |
 | IA | Claude (Anthropic) | claude-haiku-4-5 (qualif+score), claude-sonnet-4-5 (prospection) |
-| Email | Gmail OAuth pour ingestion + envoi | Resend pour transactionnels (pas encore prod) |
-| Paiement | Stripe (à venir) | Pas encore configuré |
+| Email | Gmail OAuth pour ingestion + envoi | Resend pour transactionnels (intégré, activable via clés env) |
+| Paiement | Stripe | Configuré : checkout + webhook signé + portail abonnement |
 | Domaine | bankkey.ch | Vercel DNS configuré |
+| Crons | GitHub Actions (.github/workflows/cron.yml) | Sync Gmail /5 min, brief 8h15, digest mensuel — PAS Vercel cron |
 
 ## 3. Structure du repo (clés)
 
@@ -119,6 +120,28 @@ types/index.ts              # Types partagés (QualificationResult, ScoringResul
 - **Email** : pas encore configuré (support@bankkey.ch, dpo@bankkey.ch sont mentionnés mais pas créés)
 
 ## 7. Statut actuel (mettre à jour à chaque session)
+
+### 🆕 Livré le 27 juin 2026 — audit complet + corrections
+
+**Bug Gmail corrigé (important)**
+- Cause : `lib/gmail.ts` faisait `setCredentials({ access_token, refresh_token })` SANS
+  `expiry_date` et ne persistait jamais le token rafraîchi → la connexion Gmail
+  marchait ~1h puis tombait en panne (token expiré, jamais rafraîchi).
+- Fix : nouvel `authedClient()` + interface `GmailCredentials` (expiry_date + callback
+  `onRefresh` qui réécrit `gmail_access_token`/`gmail_token_expiry` en base).
+  Routes mises à jour : gmail/callback, gmail/process, gmail/reply.
+
+**Sécurité & config**
+- `/api/ingest/email` : fail-closed en production si `WEBHOOK_INBOUND_SECRET` absent (503).
+- `.env.local.example` : complété (21 variables réelles documentées, avec [REQUIS]/[OPTIONNEL]).
+- Migration dupliquée `010_welcome_email.sql` → renommée `013_welcome_email.sql`.
+- Cron Gmail resserré de 15 → 5 min (en attendant une ingestion push temps réel).
+
+**À traiter (cf. REVIEW.md à la racine)**
+- 🔴 Promesse "< 5 min" vs cron GitHub (non temps réel) → passer à Gmail push / Resend inbound.
+- 🟠 Rate-limit in-memory inefficace en serverless → Upstash/Vercel KV.
+- 🟠 Tokens Gmail stockés en clair → envisager chiffrement colonne.
+- 🟠 Vérifier les IDs de modèles (`claude-sonnet-4-5`) avant dépréciation.
 
 ### 🆕 Livré le 10 juin 2026
 
@@ -246,6 +269,8 @@ L'utilisateur applique les SQL sur Supabase Dashboard → SQL Editor.
 - Le `<` dans du JSX text doit être `&lt;` (problème historique)
 - Le défaut `'immobilier'` partout doit être `'credit'` (problème historique récurrent)
 - Quand on ajoute des champs à `QualificationResult`, mettre `max_tokens: 2048` minimum
+- **Gmail/OAuth** : toujours passer par `authedClient()` de `lib/gmail.ts` (expiry + persistance).
+  Ne JAMAIS refaire un `setCredentials` brut sans `expiry_date` → re-casserait la synchro après 1h.
 
 ## 10. Comment je dois travailler
 

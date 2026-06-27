@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
   const admin = createAdminClient()
   const { data: profile } = await admin
     .from('profiles')
-    .select('gmail_access_token, gmail_refresh_token')
+    .select('gmail_access_token, gmail_refresh_token, gmail_token_expiry')
     .eq('id', user.id)
     .single()
 
@@ -33,8 +33,20 @@ export async function POST(request: NextRequest) {
 
   try {
     await sendReply(
-      profile.gmail_access_token,
-      profile.gmail_refresh_token,
+      {
+        accessToken:  profile.gmail_access_token,
+        refreshToken: profile.gmail_refresh_token,
+        expiryDate:   profile.gmail_token_expiry ? new Date(profile.gmail_token_expiry).getTime() : null,
+        onRefresh: async (next) => {
+          await admin
+            .from('profiles')
+            .update({
+              gmail_access_token: next.accessToken,
+              gmail_token_expiry: next.expiryDate ? new Date(next.expiryDate).toISOString() : null,
+            })
+            .eq('id', user.id)
+        },
+      },
       to,
       subject ?? '',
       body,

@@ -45,6 +45,52 @@ function createOAuthClient() {
   )
 }
 
+// ── Client authentifié + refresh automatique ───────────────────────────────────
+//
+//  ⚠️ Bug historique corrigé ici :
+//  Avant, on faisait `setCredentials({ access_token, refresh_token })` SANS
+//  `expiry_date`. La librairie Google considérait alors le token comme toujours
+//  valide et ne le rafraîchissait JAMAIS. Résultat : la connexion Gmail marchait
+//  juste après l'autorisation, puis tombait en panne ~1h plus tard (token expiré
+//  → 401), donc plus aucun email synchronisé ensuite.
+//
+//  Fix :
+//   1. On passe `expiry_date` → la librairie sait quand rafraîchir
+//      (si inconnu = anciennes lignes, on met `1` pour forcer un refresh).
+//   2. On écoute l'événement `tokens` → on persiste le nouveau token en base
+//      via `onRefresh`, pour que la prochaine exécution reparte d'un token frais.
+
+export interface GmailCredentials {
+  accessToken: string
+  refreshToken: string
+  /** Timestamp ms d'expiration (depuis profiles.gmail_token_expiry). */
+  expiryDate?: number | null
+  /** Appelé quand la librairie rafraîchit le token → à persister en base. */
+  onRefresh?: (tokens: { accessToken: string; expiryDate: number | null }) => void | Promise<void>
+}
+
+function authedClient(creds: GmailCredentials) {
+  const auth = createOAuthClient()
+  auth.setCredentials({
+    access_token:  creds.accessToken,
+    refresh_token: creds.refreshToken,
+    // expiry inconnu → on force un refresh immédiat en marquant le token expiré.
+    expiry_date:   creds.expiryDate ?? 1,
+  })
+
+  if (creds.onRefresh) {
+    auth.on('tokens', (t) => {
+      if (!t.access_token) return
+      // Persistance best-effort (ne doit jamais faire planter la synchro).
+      void Promise.resolve(
+        creds.onRefresh!({ accessToken: t.access_token, expiryDate: t.expiry_date ?? null }),
+      ).catch((e) => console.error('[gmail] échec persistance token rafraîchi', e))
+    })
+  }
+
+  return auth
+}
+
 /** Génère l'URL vers laquelle rediriger l'utilisateur */
 export function getOAuthUrl(userId: string) {
   return createOAuthClient().generateAuthUrl({
@@ -62,9 +108,8 @@ export async function exchangeCode(code: string) {
 }
 
 /** Récupère l'email du compte Google connecté */
-export async function getConnectedEmail(accessToken: string, refreshToken: string) {
-  const auth = createOAuthClient()
-  auth.setCredentials({ access_token: accessToken, refresh_token: refreshToken })
+export async function getConnectedEmail(creds: GmailCredentials) {
+  const auth = authedClient(creds)
   const oauth2 = google.oauth2({ version: 'v2', auth })
   const { data } = await oauth2.userinfo.get()
   return data.email ?? null
@@ -144,12 +189,10 @@ function extractText(payload: any): string {
  * Filtre les expéditeurs automatiques (no-reply, notifications, etc.)
  */
 export async function getUnreadEmails(
-  accessToken: string,
-  refreshToken: string,
+  creds: GmailCredentials,
   maxResults = 20,
 ): Promise<GmailMessage[]> {
-  const auth = createOAuthClient()
-  auth.setCredentials({ access_token: accessToken, refresh_token: refreshToken })
+  const auth = authedClient(creds)
 
   const gmail = google.gmail({ version: 'v1', auth })
 
@@ -206,12 +249,10 @@ export async function getUnreadEmails(
 
 /** Marque un email comme lu (pour éviter de le retraiter) */
 export async function markAsRead(
-  accessToken: string,
-  refreshToken: string,
+  creds: GmailCredentials,
   messageId: string,
 ) {
-  const auth = createOAuthClient()
-  auth.setCredentials({ access_token: accessToken, refresh_token: refreshToken })
+  const auth = authedClient(creds)
   const gmail = google.gmail({ version: 'v1', auth })
 
   await gmail.users.messages.modify({
@@ -225,15 +266,13 @@ export async function markAsRead(
 
 /** Envoie une réponse dans le même thread Gmail */
 export async function sendReply(
-  accessToken: string,
-  refreshToken: string,
+  creds: GmailCredentials,
   to: string,
   subject: string,
   body: string,
   threadId?: string,
 ) {
-  const auth = createOAuthClient()
-  auth.setCredentials({ access_token: accessToken, refresh_token: refreshToken })
+  const auth = authedClient(creds)
   const gmail = google.gmail({ version: 'v1', auth })
 
   const replySubject = subject.toLowerCase().startsWith('re:') ? subject : `Re: ${subject}`
@@ -257,4 +296,52 @@ export async function sendReply(
     userId: 'me',
     requestBody: { raw: encoded, threadId },
   })
+}
+
+// ── Push temps réel (Gmail watch + Pub/Sub) ─────────────────────────────────────
+//
+//  `watch` demande à Google de publier une notification sur un topic Pub/Sub à
+//  chaque nouvel email — bien plus rapide que le polling cron (réponse < 1 min).
+//  La surveillance EXPIRE après 7 jours max → la renouveler chaque jour
+//  (cf. /api/cron/renew-gmail-watch).
+//
+//  Pré-requis côté Google Cloud (à configurer une fois) :
+//   1. Activer l'API Cloud Pub/Sub
+//   2. Créer un topic (ex : gmail-leads)
+//   3. Donner au compte `gmail-api-push@system.gserviceaccount.com` le rôle
+//      "Pub/Sub Publisher" sur ce topic
+//   4. Créer une souscription PUSH vers
+//      https://bankkey.ch/api/gmail/push?token=<GMAIL_PUSH_TOKEN>
+//   5. Renseigner GMAIL_PUBSUB_TOPIC + GMAIL_PUSH_TOKEN en variables d'env.
+
+/** Démarre/renouvelle la surveillance temps réel de la boîte. */
+export async function watchInbox(
+  creds: GmailCredentials,
+): Promise<{ historyId: string | null; expiration: string | null }> {
+  const topicName = process.env.GMAIL_PUBSUB_TOPIC
+  if (!topicName) throw new Error('GMAIL_PUBSUB_TOPIC non configuré')
+
+  const auth = authedClient(creds)
+  const gmail = google.gmail({ version: 'v1', auth })
+
+  const { data } = await gmail.users.watch({
+    userId: 'me',
+    requestBody: {
+      topicName,                      // projects/<projet>/topics/<topic>
+      labelIds: ['INBOX'],
+      labelFilterBehavior: 'INCLUDE',
+    },
+  })
+
+  return {
+    historyId:  data.historyId ?? null,
+    expiration: data.expiration ?? null,   // epoch ms (string)
+  }
+}
+
+/** Arrête la surveillance temps réel. */
+export async function stopWatch(creds: GmailCredentials): Promise<void> {
+  const auth = authedClient(creds)
+  const gmail = google.gmail({ version: 'v1', auth })
+  await gmail.users.stop({ userId: 'me' })
 }

@@ -88,6 +88,7 @@ export async function POST(request: NextRequest) {
         profile.id,
         profile.gmail_access_token,
         profile.gmail_refresh_token,
+        profile.gmail_token_expiry,
         (profile.sector as SectorId) ?? 'credit',
         profile.broker_memory ?? null,
       )
@@ -242,12 +243,30 @@ async function processUserEmails(
   userId: string,
   accessToken: string,
   refreshToken: string,
+  tokenExpiry: string | null,
   sector: SectorId,
   brokerMemory: import('@/types').BrokerMemory | null,
 ): Promise<number> {
-  const emails = await getUnreadEmails(accessToken, refreshToken, 20)
+  // Credentials avec expiry + persistance du token rafraîchi.
+  // Corrige le bug où la synchro Gmail cassait ~1h après la connexion.
+  const creds = {
+    accessToken,
+    refreshToken,
+    expiryDate: tokenExpiry ? new Date(tokenExpiry).getTime() : null,
+    onRefresh: async (next: { accessToken: string; expiryDate: number | null }) => {
+      await supabase
+        .from('profiles')
+        .update({
+          gmail_access_token: next.accessToken,
+          gmail_token_expiry: next.expiryDate ? new Date(next.expiryDate).toISOString() : null,
+        })
+        .eq('id', userId)
+    },
+  }
+
+  const emails = await getUnreadEmails(creds, 20)
   return processInbox(supabase, userId, sector, brokerMemory, emails, 'gmail',
-    (id) => markAsRead(accessToken, refreshToken, id))
+    (id) => markAsRead(creds, id))
 }
 
 async function processUserOutlook(

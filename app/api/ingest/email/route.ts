@@ -45,9 +45,18 @@ interface InboundPayload {
 }
 
 export async function POST(request: NextRequest) {
-  // 1. Vérification du secret (si configuré)
+  // 1. Vérification du secret — fail-closed en production.
+  //    Sans secret, n'importe qui pourrait POSTer de faux leads et déclencher
+  //    le pipeline IA (coût LLM + pollution de la base). On exige donc le secret
+  //    en prod ; en dev local on laisse passer pour faciliter les tests.
   const expectedSecret = process.env.WEBHOOK_INBOUND_SECRET
-  if (expectedSecret) {
+  if (!expectedSecret) {
+    if (process.env.NODE_ENV === 'production') {
+      console.error('[inbound] WEBHOOK_INBOUND_SECRET manquant en production — requête refusée')
+      return NextResponse.json({ error: 'Endpoint non configuré' }, { status: 503 })
+    }
+    // dev/local sans secret : toléré
+  } else {
     const auth = request.headers.get('authorization') ?? ''
     const provided = auth.replace(/^Bearer\s+/i, '')
     if (provided !== expectedSecret) {

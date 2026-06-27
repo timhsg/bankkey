@@ -9,7 +9,13 @@
     "app/api/cron/send-monthly-digest/route.ts": {
       "maxDuration": 60
     },
+    "app/api/cron/renew-gmail-watch/route.ts": {
+      "maxDuration": 60
+    },
     "app/api/gmail/process/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/gmail/push/route.ts": {
       "maxDuration": 60
     },
     "app/api/analyze/route.ts": {
