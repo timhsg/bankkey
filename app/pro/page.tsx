@@ -111,6 +111,26 @@ export default function TodayPage() {
 
   useEffect(() => { void load() }, [load])
 
+  // Première synchro AUTOMATIQUE juste après la connexion Gmail (redirige ici
+  // avec ?connected=gmail). Le courtier n'a aucun bouton à presser ; le push
+  // Gmail temps réel + le cron 5 min prennent ensuite le relais.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const p = new URLSearchParams(window.location.search)
+    if (!p.get('connected')) return
+    window.history.replaceState({}, '', '/pro')
+    void (async () => {
+      try {
+        await fetch('/api/gmail/process', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({}),
+        })
+        await load()
+      } catch { /* le cron rattrapera */ }
+    })()
+  }, [load])
+
   // ── Computations ──
 
   const top5 = useMemo(() => {

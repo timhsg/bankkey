@@ -121,6 +121,83 @@ types/index.ts              # Types partagés (QualificationResult, ScoringResul
 
 ## 7. Statut actuel (mettre à jour à chaque session)
 
+### 🆕 Livré le 1er juillet 2026 — Outlook en prod + synchro zéro-clic
+
+**Outlook activé en production**
+- App Azure « BankKey » créée (multitenant + comptes Microsoft perso), redirect
+  `https://bankkey.ch/api/outlook/callback`, permissions Graph déléguées
+  (Mail.Read, Mail.Send, offline_access, openid, email, User.Read), client secret 24 mois.
+- `MICROSOFT_CLIENT_ID` = `8221934b-9c24-4c23-9a65-13ecb72b3b1d` (secret dans Vercel).
+- ✅ Confirmé par Tim : la connexion Outlook fonctionne.
+
+**Synchro automatique « zéro bouton »**
+- Première synchro AUTO déclenchée dès la connexion d'une boîte (Gmail → `/pro`,
+  Outlook/IMAP → `/pro/sources`, via `?connected=`). Plus besoin d'« actualiser ».
+- Récap des mécanismes auto : Gmail = push Pub/Sub temps réel + cron 5 min ;
+  Outlook/IMAP = cron 5 min ; webhook/Zapier = temps réel à la réception.
+- ⚠️ Dépendance : le cron GitHub Actions doit tourner (secret `CRON_SECRET` présent
+  côté GitHub **et** Vercel). À vérifier dans l'onglet Actions du repo.
+- 🔭 Outlook temps réel (Microsoft Graph change notifications) = amélioration future ;
+  le cron 5 min suffit pour le pilote.
+
+**Modèle IA**
+- `prospection.ts` : `claude-sonnet-4-5` → `claude-sonnet-4-6` (évite une panne de
+  dépréciation ; les agents qualif/scoring/relevance restent en `claude-haiku-4-5`).
+
+**Audit complet du site (page/lien/texte)**
+- 🔴 Pages Sécurité + Confidentialité affirmaient « Tokens OAuth chiffrés via Supabase
+  Vault » → **FAUX** (tokens en clair). Reformulé honnêtement (lecture seule, révocable,
+  isolation RLS, chiffrement infra au repos). Risque crédibilité/juridique évité.
+  ⚠️ Le vrai chiffrement colonne (tokens + imap_password) reste à implémenter — à faire
+  avec Tim qui pourra tester (trop risqué à l'aveugle, casse la synchro si raté).
+- Onboarding : ajout du bouton **Connecter Outlook** (avant : Gmail seul) + libellés
+  généralisés (« boîte mail » au lieu de « Gmail »).
+- `EMAIL_FROM` Resend : `hello@` → `contact@bankkey.ch` (cohérence des adresses).
+- Vérifié : 0 lien mort, prix 199 cohérents partout, nav sidebar OK, pas de TODO/lorem,
+  pas de placeholder légal. Landing déjà cohérente (Outlook, sources, « < 5 min »).
+- 🔭 À signaler : `/pro/sources` et `/pro/integrations` se chevauchent (mailboxes+webhook
+  vs site/CSV/email) → envisager de fusionner pour éviter la confusion. Mentions légales
+  (éditeur/hébergeur) absentes des CGU — à ajouter quand l'entité juridique existe.
+
+**À faire côté Tim (Gmail temps réel)** : config Pub/Sub sur le projet `bankkey-gmail`
+(topic `gmail-leads`, rôle Publisher à `gmail-api-push@system.gserviceaccount.com`,
+souscription push vers `/api/gmail/push?token=…`) + variables `GMAIL_PUBSUB_TOPIC`
+et `GMAIL_PUSH_TOKEN` sur Vercel.
+
+### 🆕 Livré le 30 juin 2026 — synchro multi-sources + Outlook réparé
+
+**Outlook : 2 bugs critiques corrigés + activation**
+- 🔴 Token Outlook jamais rafraîchi → la synchro mourait ~1h après connexion
+  (même classe de bug que Gmail). Fix : `getValidOutlookToken()` dans `lib/outlook.ts`
+  (refresh + persistance `outlook_access_token`/`outlook_refresh_token`/`outlook_token_expiry`).
+- 🔴 Un courtier **Outlook-only** n'était jamais synchronisé : le cron `sync-gmail`
+  ne sélectionnait que les profils Gmail. Le cron interroge maintenant Gmail + Outlook + IMAP.
+- `outlook_last_processed_at` ajouté (migration 014) + affiché dans `/pro/sources`.
+- ⚠️ Reste à faire côté Tim : créer l'app Azure + `MICROSOFT_CLIENT_ID`/`MICROSOFT_CLIENT_SECRET`
+  sur Vercel (sans ça, le bouton Outlook renvoie `outlook_not_configured`).
+
+**Nouvelle source : IMAP (Yahoo, iCloud, OVH, Infomaniak, custom)**
+- `lib/imap.ts` (imapflow + mailparser, imports dynamiques) : `withImap()`, `testImapConnection()`.
+- `POST/DELETE /api/imap/connect` (teste la connexion avant d'enregistrer).
+- Intégré au pipeline `process` + cron, marquage `\Seen` sur une connexion unique.
+- Formulaire de connexion dans `/pro/sources` (presets + mot de passe d'app).
+- Migration 015. ⚠️ `imap_password` en clair (comme tokens Gmail) → à chiffrer plus tard.
+- Nouvelle dépendance : `npm install` requis (imapflow, mailparser, @types/mailparser).
+
+**Webhook / API exposé (Zapier, Make, CRM)**
+- `/pro/sources` affiche l'URL `/api/ingest/<ingest_key>` + doc Zapier/Make + exemple cURL.
+  (Le backend `/api/ingest/[key]` existait déjà ; on le rend visible et utilisable.)
+
+**Détection de sources étendue (`lib/sources/detection.ts` + icons)**
+- FR : CAFPI, Vousfinancer, La Centrale de Financement, Ymanci, Cyberprêt, ACE Crédit, Logic-Immo, PAP.
+- CH : Homegate, ImmoScout24.ch, Comparis, MoneyPark, Hypotheke.ch, Newhome, RealAdvisor.
+
+**Gmail temps réel** : code déjà en place (watch + Pub/Sub + `/api/gmail/push`). Reste la
+config Google Cloud (`GMAIL_PUBSUB_TOPIC`, `GMAIL_PUSH_TOKEN`) — procédure fournie à Tim.
+
+> ✅ Vérifié : esbuild OK sur les 8 fichiers touchés. À lancer côté Mac : `npm install`
+> puis `npx tsc --noEmit` et `npm run build` avant push.
+
 ### 🆕 Livré le 27 juin 2026 — audit complet + corrections
 
 **Bug Gmail corrigé (important)**
@@ -260,6 +337,12 @@ L'utilisateur applique les SQL sur Supabase Dashboard → SQL Editor.
 - `007_detected_source.sql` ✅ — colonne detected_source JSONB
 - `008_activity_admin.sql` ✅ — activity JSONB + is_admin flag
 - `009_outcomes.sql` ✅ — table deal_outcomes pour le data moat
+- `010_outlook.sql` ⏳ — colonnes Outlook (à appliquer)
+- `011_webhook_ingest.sql` ⏳ — ingest_key + ingest_metadata (à appliquer)
+- `012_hot_lead_notifications.sql` ⏳ — (à vérifier/appliquer)
+- `013_welcome_email.sql` ⏳ — (à vérifier/appliquer)
+- `014_outlook_last_processed.sql` ⏳ — outlook_last_processed_at (30/06)
+- `015_imap.sql` ⏳ — colonnes IMAP host/port/secure/user/password/email/last_processed (30/06)
 
 **Toujours fournir le SQL inline en chat avec le lien direct vers le SQL editor**, pas juste référencer un fichier — Tim n'arrive pas toujours à les trouver dans Finder.
 

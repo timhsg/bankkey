@@ -251,7 +251,7 @@ function OnboardingContent() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-md mx-auto">
                 {[
                   { n: '1', t: 'Profil', d: 'Cabinet et signature' },
-                  { n: '2', t: 'Source', d: 'Gmail ou transfert' },
+                  { n: '2', t: 'Source', d: 'Gmail, Outlook ou transfert' },
                   { n: '3', t: 'Prêt', d: 'BankKey travaille pour vous' },
                 ].map(s => (
                   <div key={s.n} className="bg-white border border-[#E5E7EB] rounded-xl p-4 text-left hover:shadow-card transition-shadow">
@@ -320,7 +320,7 @@ function OnboardingContent() {
                 <p className="label mb-3">Étape 3 sur 4</p>
                 <h1 className="text-3xl font-extrabold text-navy tracking-tightest mb-2">D&apos;où viennent vos demandes ?</h1>
                 <p className="text-sm text-[#6B7280] max-w-md mx-auto leading-relaxed">
-                  Connectez Gmail pour ingestion automatique, ou utilisez votre adresse BankKey pour transférer depuis d&apos;autres plateformes.
+                  Connectez Gmail ou Outlook pour l&apos;ingestion automatique, ou utilisez votre adresse BankKey pour transférer depuis d&apos;autres plateformes.
                 </p>
               </div>
 
@@ -342,6 +342,26 @@ function OnboardingContent() {
                     <p className="text-xs text-[#6B7280] leading-relaxed">Connexion sécurisée OAuth · Lecture seule</p>
                   </div>
                   <span className="text-xs font-bold text-accent">Recommandé</span>
+                </div>
+              </a>
+
+              <a
+                href="/api/outlook/connect"
+                className="block bg-white border border-[#E5E7EB] rounded-xl p-5 hover:border-navy hover:shadow-card transition-all"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-[#F7F8FA] rounded-xl flex items-center justify-center shrink-0">
+                    <svg className="w-6 h-6" viewBox="0 0 24 24">
+                      <path fill="#0078D4" d="M21.66 4H10.34A2.34 2.34 0 0 0 8 6.34v.66H2v11.32A1.68 1.68 0 0 0 3.68 20H17v-3h6.34A2.34 2.34 0 0 0 24 14.66v-8.32A2.34 2.34 0 0 0 21.66 4z"/>
+                      <path fill="#fff" d="M21.5 8h-7v8h7a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.5-.5zm-1.5 6h-4v-4h4v4z"/>
+                      <circle fill="#0078D4" cx="6.5" cy="13.5" r="3"/>
+                      <circle fill="#fff" cx="6.5" cy="13.5" r="1.3"/>
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-navy mb-0.5">Connecter Outlook</p>
+                    <p className="text-xs text-[#6B7280] leading-relaxed">Microsoft 365 / Outlook.com · Lecture seule</p>
+                  </div>
                 </div>
               </a>
 
@@ -426,7 +446,7 @@ function OnboardingContent() {
                   </svg>
                 </Link>
                 <Link href="/pro/sources" className="btn-ghost text-sm py-2.5 justify-center">
-                  Connecter Gmail
+                  Connecter ma boîte mail
                 </Link>
               </div>
             </div>

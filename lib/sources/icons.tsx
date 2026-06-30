@@ -175,4 +175,25 @@ export const SOURCE_ICONS: Record<string, (props: IconProps) => JSX.Element> = {
   whatsapp:             WhatsAppIcon,
   webhook:              WebhookIcon,
   forwarding:           ForwardingIcon,
+
+  // ── Réseaux / enseignes de courtage FR ──
+  cafpi:                ({ className }: IconProps) => <Monogram className={className} letter="C"   bg="linear-gradient(135deg, #E2001A 0%, #a8001a 100%)" />,
+  vousfinancer:         ({ className }: IconProps) => <Monogram className={className} letter="VF"  bg="linear-gradient(135deg, #F39200 0%, #c2740a 100%)" size="small" />,
+  lacentrale_financement: ({ className }: IconProps) => <Monogram className={className} letter="LCF" bg="linear-gradient(135deg, #1B2A4A 0%, #0f172a 100%)" size="small" />,
+  ymanci:               ({ className }: IconProps) => <Monogram className={className} letter="Y"   bg="linear-gradient(135deg, #6D28D9 0%, #4c1d95 100%)" />,
+  cyberpret:            ({ className }: IconProps) => <Monogram className={className} letter="CP"  bg="linear-gradient(135deg, #0EA5A4 0%, #0b7a79 100%)" size="small" />,
+  acecredit:            ({ className }: IconProps) => <Monogram className={className} letter="ACE" bg="linear-gradient(135deg, #1D4ED8 0%, #1e3a8a 100%)" size="small" />,
+
+  // ── Portails FR additionnels ──
+  logicimmo:            ({ className }: IconProps) => <Monogram className={className} letter="LI"  bg="linear-gradient(135deg, #E2007A 0%, #a8005c 100%)" size="small" />,
+  pap:                  ({ className }: IconProps) => <Monogram className={className} letter="PAP" bg="linear-gradient(135deg, #334155 0%, #0f172a 100%)" size="small" />,
+
+  // ── Suisse ──
+  homegate:             ({ className }: IconProps) => <Monogram className={className} letter="HG"  bg="linear-gradient(135deg, #E30613 0%, #a8001a 100%)" size="small" />,
+  immoscout24ch:        ({ className }: IconProps) => <Monogram className={className} letter="IS"  bg="linear-gradient(135deg, #D40000 0%, #990000 100%)" size="small" />,
+  comparis:             ({ className }: IconProps) => <Monogram className={className} letter="C"   bg="linear-gradient(135deg, #00A0E1 0%, #007bb0 100%)" />,
+  moneypark:            ({ className }: IconProps) => <Monogram className={className} letter="MP"  bg="linear-gradient(135deg, #003B71 0%, #0f172a 100%)" size="small" />,
+  hypotheke:            ({ className }: IconProps) => <Monogram className={className} letter="H"   bg="linear-gradient(135deg, #0F766E 0%, #115e59 100%)" />,
+  newhome:              ({ className }: IconProps) => <Monogram className={className} letter="NH"  bg="linear-gradient(135deg, #E2001A 0%, #a8001a 100%)" size="small" />,
+  realadvisor:          ({ className }: IconProps) => <Monogram className={className} letter="RA"  bg="linear-gradient(135deg, #2563EB 0%, #1e3a8a 100%)" size="small" />,
 }

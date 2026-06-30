@@ -3,11 +3,13 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { isCronAuthorized } from '@/lib/cron-auth'
 
 // ════════════════════════════════════════════════════════════════════════
-//  Cron Vercel — synchronisation Gmail automatique
-//  Appelé chaque jour à 08h00 UTC via la config vercel.json
+//  Cron — synchronisation automatique des boîtes mail (Gmail + Outlook + IMAP)
+//  Déclenché par GitHub Actions (.github/workflows/cron.yml) toutes les 5 min.
+//  (Nom de route historique « sync-gmail » conservé pour ne pas casser le cron,
+//   mais traite désormais toutes les sources.)
 //
-//  Sécurité : Vercel envoie un header `Authorization: Bearer ${CRON_SECRET}`
-//  Si CRON_SECRET n'est pas défini, on accepte (utile en dev) mais on log
+//  Sécurité : header `Authorization: Bearer ${CRON_SECRET}` vérifié par
+//  isCronAuthorized() (strict en production).
 // ════════════════════════════════════════════════════════════════════════
 
 export const runtime = 'nodejs'
@@ -29,17 +31,52 @@ export async function GET(request: NextRequest) {
 
   const admin = createAdminClient()
 
-  // 2. Récupérer tous les profils avec Gmail connecté ET abonnement actif
-  const { data: profiles, error } = await admin
-    .from('profiles')
-    .select('id, email, gmail_access_token, gmail_refresh_token, subscription_plan, subscription_status, trial_ends_at')
-    .not('gmail_access_token', 'is', null)
-    .not('gmail_refresh_token', 'is', null)
+  // 2. Récupérer tous les profils avec AU MOINS UNE source connectée
+  //    (Gmail, Outlook ou IMAP), puis fusionner par id.
+  //    ⚠️ Avant, on filtrait uniquement sur `gmail_access_token not null` :
+  //    un courtier connecté UNIQUEMENT en Outlook (ou IMAP) n'était JAMAIS
+  //    synchronisé automatiquement. On interroge donc chaque source à part.
+  type LiteProfile = {
+    id: string
+    email: string
+    subscription_plan: string | null
+    subscription_status: string | null
+    trial_ends_at: string | null
+  }
+  const SUBS_COLS = 'id, email, subscription_plan, subscription_status, trial_ends_at'
+  const byId = new Map<string, LiteProfile>()
 
-  if (error || !profiles?.length) {
+  // Gmail
+  {
+    const { data } = await admin
+      .from('profiles')
+      .select(SUBS_COLS)
+      .not('gmail_access_token', 'is', null)
+      .not('gmail_refresh_token', 'is', null)
+    for (const p of data ?? []) byId.set(p.id, p as LiteProfile)
+  }
+  // Outlook (silencieux si la colonne n'existe pas — migration 010 non appliquée)
+  {
+    const { data } = await admin
+      .from('profiles')
+      .select(SUBS_COLS)
+      .not('outlook_access_token', 'is', null)
+    for (const p of data ?? []) byId.set(p.id, p as LiteProfile)
+  }
+  // IMAP (silencieux si la colonne n'existe pas — migration IMAP non appliquée)
+  {
+    const { data } = await admin
+      .from('profiles')
+      .select(SUBS_COLS)
+      .not('imap_password', 'is', null)
+    for (const p of data ?? []) byId.set(p.id, p as LiteProfile)
+  }
+
+  const profiles = Array.from(byId.values())
+  if (!profiles.length) {
     return NextResponse.json({
       ok: true,
-      message: 'Aucun compte Gmail à synchroniser',
+      message: 'Aucun compte à synchroniser',
       count: 0,
     })
   }

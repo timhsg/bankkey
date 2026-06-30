@@ -88,8 +88,64 @@ export async function refreshOutlookToken(refreshToken: string): Promise<TokenRe
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body,
   })
-  if (!res.ok) throw new Error(`Outlook token refresh: ${res.status}`)
+  if (!res.ok) throw new Error(`Outlook token refresh: ${res.status} ${await res.text()}`)
   return res.json() as Promise<TokenResponse>
+}
+
+// ── Client valide avec refresh automatique ──────────────────────────────────────
+//
+//  ⚠️ Même bug que celui corrigé sur Gmail :
+//  l'access_token Microsoft expire en ~1h. Avant, `processUserOutlook` l'utilisait
+//  brut, sans jamais le rafraîchir → la synchro Outlook tombait en 401 après 1h.
+//
+//  `getValidOutlookToken()` regarde l'expiration : si le token est encore bon, on
+//  le renvoie tel quel ; sinon on le rafraîchit ET on persiste le nouveau token
+//  (+ le nouveau refresh_token, car Azure le fait tourner) via `onRefresh`.
+
+export interface OutlookCredentials {
+  accessToken: string
+  refreshToken: string | null
+  /** Timestamp ms d'expiration (depuis profiles.outlook_token_expiry). */
+  expiryDate?: number | null
+  /** Appelé quand le token est rafraîchi → à persister en base. */
+  onRefresh?: (tokens: {
+    accessToken: string
+    refreshToken: string | null
+    expiryDate: number
+  }) => void | Promise<void>
+}
+
+/**
+ * Renvoie un access_token Outlook valide, en le rafraîchissant si nécessaire.
+ * Marge de sécurité de 2 min pour ne pas envoyer un token qui expire pendant l'appel.
+ */
+export async function getValidOutlookToken(creds: OutlookCredentials): Promise<string> {
+  const SKEW_MS = 2 * 60_000
+  const stillValid = creds.expiryDate && creds.expiryDate - SKEW_MS > Date.now()
+  if (stillValid) return creds.accessToken
+
+  // Token expiré (ou expiration inconnue) → on tente un refresh.
+  if (!creds.refreshToken) {
+    // Pas de refresh_token : on renvoie l'access token tel quel (échouera
+    // proprement en 401 et le courtier devra reconnecter Outlook).
+    return creds.accessToken
+  }
+
+  const refreshed = await refreshOutlookToken(creds.refreshToken)
+  const newExpiry = Date.now() + (refreshed.expires_in ?? 3600) * 1000
+
+  if (creds.onRefresh) {
+    // Persistance best-effort — ne doit jamais faire planter la synchro.
+    await Promise.resolve(
+      creds.onRefresh({
+        accessToken:  refreshed.access_token,
+        refreshToken: refreshed.refresh_token ?? creds.refreshToken,
+        expiryDate:   newExpiry,
+      }),
+    ).catch((e) => console.error('[outlook] échec persistance token rafraîchi', e))
+  }
+
+  return refreshed.access_token
 }
 
 /** Email du compte Microsoft connecté */

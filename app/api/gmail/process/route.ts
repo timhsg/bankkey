@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { getUnreadEmails, markAsRead, type GmailMessage } from '@/lib/gmail'
-import { outlookConfigured, getOutlookUnread, markOutlookRead } from '@/lib/outlook'
+import { outlookConfigured, getOutlookUnread, markOutlookRead, getValidOutlookToken } from '@/lib/outlook'
+import { withImap, type ImapConfig } from '@/lib/imap'
 import { runQualificationAgent } from '@/lib/agents/qualification'
 import { runScoringAgent } from '@/lib/agents/scoring'
 import { runProspectionAgent } from '@/lib/agents/prospection'
@@ -108,7 +109,7 @@ export async function POST(request: NextRequest) {
     try {
       let oQuery = supabase
         .from('profiles')
-        .select('id, sector, broker_memory, outlook_access_token, outlook_refresh_token')
+        .select('id, sector, broker_memory, outlook_access_token, outlook_refresh_token, outlook_token_expiry')
         .not('outlook_access_token', 'is', null)
       if (targetUserId) oQuery = oQuery.eq('id', targetUserId) as typeof oQuery
 
@@ -119,9 +120,15 @@ export async function POST(request: NextRequest) {
             supabase,
             profile.id,
             profile.outlook_access_token,
+            profile.outlook_refresh_token,
+            profile.outlook_token_expiry,
             (profile.sector as SectorId) ?? 'credit',
             profile.broker_memory ?? null,
           )
+          await supabase
+            .from('profiles')
+            .update({ outlook_last_processed_at: new Date().toISOString() })
+            .eq('id', profile.id)
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err)
           console.error(`[process] outlook userId=${profile.id}`, msg)
@@ -130,6 +137,47 @@ export async function POST(request: NextRequest) {
       }
     } catch {
       // Colonnes outlook_* absentes (migration 010 non appliquée) → on ignore.
+    }
+  }
+
+  // ── Comptes IMAP (Yahoo, iCloud, OVH, custom…) ──
+  {
+    let iQuery = supabase
+      .from('profiles')
+      .select('id, sector, broker_memory, imap_host, imap_port, imap_secure, imap_user, imap_password')
+      .not('imap_password', 'is', null)
+    if (targetUserId) iQuery = iQuery.eq('id', targetUserId) as typeof iQuery
+
+    const { data: iProfiles, error: iErr } = await iQuery
+    // Si la colonne imap_* n'existe pas (migration 015 non appliquée), iErr est
+    // renseigné et iProfiles est null → on saute proprement.
+    if (!iErr) {
+      for (const profile of iProfiles ?? []) {
+        if (!profile.imap_host || !profile.imap_user || !profile.imap_password) continue
+        try {
+          totalProcessed += await processUserImap(
+            supabase,
+            profile.id,
+            {
+              host:     profile.imap_host,
+              port:     profile.imap_port ?? 993,
+              secure:   profile.imap_secure ?? true,
+              user:     profile.imap_user,
+              password: profile.imap_password,
+            },
+            (profile.sector as SectorId) ?? 'credit',
+            profile.broker_memory ?? null,
+          )
+          await supabase
+            .from('profiles')
+            .update({ imap_last_processed_at: new Date().toISOString() })
+            .eq('id', profile.id)
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err)
+          console.error(`[process] imap userId=${profile.id}`, msg)
+          errors.push(`imap ${profile.id}: ${msg}`)
+        }
+      }
     }
   }
 
@@ -148,7 +196,7 @@ async function processInbox(
   sector: SectorId,
   brokerMemory: import('@/types').BrokerMemory | null,
   emails: GmailMessage[],
-  source: 'gmail' | 'outlook',
+  source: 'gmail' | 'outlook' | 'imap',
   markRead: (messageId: string) => Promise<void>,
 ): Promise<number> {
   let count = 0
@@ -273,10 +321,45 @@ async function processUserOutlook(
   supabase: ReturnType<typeof createAdminClient>,
   userId: string,
   accessToken: string,
+  refreshToken: string | null,
+  tokenExpiry: string | null,
   sector: SectorId,
   brokerMemory: import('@/types').BrokerMemory | null,
 ): Promise<number> {
-  const emails = await getOutlookUnread(accessToken, 20)
+  // Récupère un token valide (refresh + persistance si expiré).
+  // Corrige le bug où la synchro Outlook cassait ~1h après la connexion.
+  const validToken = await getValidOutlookToken({
+    accessToken,
+    refreshToken,
+    expiryDate: tokenExpiry ? new Date(tokenExpiry).getTime() : null,
+    onRefresh: async (next) => {
+      await supabase
+        .from('profiles')
+        .update({
+          outlook_access_token:  next.accessToken,
+          outlook_refresh_token: next.refreshToken,
+          outlook_token_expiry:  new Date(next.expiryDate).toISOString(),
+        })
+        .eq('id', userId)
+    },
+  })
+
+  const emails = await getOutlookUnread(validToken, 20)
   return processInbox(supabase, userId, sector, brokerMemory, emails, 'outlook',
-    (id) => markOutlookRead(accessToken, id))
+    (id) => markOutlookRead(validToken, id))
+}
+
+async function processUserImap(
+  supabase: ReturnType<typeof createAdminClient>,
+  userId: string,
+  cfg: ImapConfig,
+  sector: SectorId,
+  brokerMemory: import('@/types').BrokerMemory | null,
+): Promise<number> {
+  // Une seule connexion IMAP est tenue pour toute la session (lecture + marquage).
+  return withImap(cfg, async (api) => {
+    const emails = await api.getUnread(20)
+    return processInbox(supabase, userId, sector, brokerMemory, emails, 'imap',
+      (id) => api.markSeen(id))
+  })
 }

@@ -15,7 +15,7 @@ export function getResend(): Resend {
 }
 
 // Adresse d'envoi par défaut
-export const EMAIL_FROM = process.env.RESEND_FROM_EMAIL ?? 'BankKey <hello@bankkey.ch>'
+export const EMAIL_FROM = process.env.RESEND_FROM_EMAIL ?? 'BankKey <contact@bankkey.ch>'
 export const EMAIL_REPLY_TO = process.env.RESEND_REPLY_TO ?? 'contact@bankkey.ch'
 
 /**

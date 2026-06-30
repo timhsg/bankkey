@@ -113,6 +113,91 @@ const SOURCE_PATTERNS: SourcePattern[] = [
     ],
   },
 
+  // ─── Réseaux / enseignes de courtage FR (envoient des leads aux agences) ───
+  {
+    id: 'cafpi',
+    name: 'CAFPI',
+    emailPatterns: [/@cafpi\.fr$/i, /@cafpi\.com$/i, /noreply.*cafpi/i, /lead.*cafpi/i],
+    keywordPatterns: [/CAFPI\s*[-–]\s*Nouvelle\s+demande/i, /votre\s+lead\s+CAFPI/i],
+  },
+  {
+    id: 'vousfinancer',
+    name: 'Vousfinancer',
+    emailPatterns: [/@vousfinancer\.com$/i, /@vousfinancer\.fr$/i],
+  },
+  {
+    id: 'lacentrale_financement',
+    name: 'La Centrale de Financement',
+    emailPatterns: [/@lacentraledefinancement\.fr$/i, /@lcf\.fr$/i],
+    keywordPatterns: [/Centrale\s+de\s+Financement/i],
+  },
+  {
+    id: 'ymanci',
+    name: 'Ymanci',
+    emailPatterns: [/@ymanci\.fr$/i, /@ymanci\.com$/i, /@solutis\.fr$/i],
+  },
+  {
+    id: 'cyberpret',
+    name: 'Cyberprêt',
+    emailPatterns: [/@cyberpret\.com$/i, /@cyberpret\.fr$/i],
+  },
+  {
+    id: 'acecredit',
+    name: 'ACE Crédit',
+    emailPatterns: [/@ace-credit\.fr$/i, /@acecredit\.fr$/i],
+  },
+
+  // ─── Portails immobiliers FR additionnels ───
+  {
+    id: 'logicimmo',
+    name: 'Logic-Immo',
+    emailPatterns: [/@logic-immo\.com$/i, /@logicimmo\.com$/i, /noreply.*logic-immo/i],
+  },
+  {
+    id: 'pap',
+    name: 'PAP',
+    emailPatterns: [/@pap\.fr$/i, /@notif\.pap\.fr$/i],
+  },
+
+  // ─── Suisse — portails & courtiers hypothécaires ───
+  {
+    id: 'homegate',
+    name: 'Homegate',
+    emailPatterns: [/@homegate\.ch$/i, /noreply.*homegate/i, /@email\.homegate\.ch$/i],
+    keywordPatterns: [/Homegate\s*[-–]\s*Nouvelle\s+demande/i, /votre\s+message\s+Homegate/i],
+  },
+  {
+    id: 'immoscout24ch',
+    name: 'ImmoScout24',
+    emailPatterns: [/@immoscout24\.ch$/i, /noreply.*immoscout24\.ch/i],
+    keywordPatterns: [/ImmoScout24/i],
+  },
+  {
+    id: 'comparis',
+    name: 'Comparis',
+    emailPatterns: [/@comparis\.ch$/i, /noreply.*comparis/i],
+  },
+  {
+    id: 'moneypark',
+    name: 'MoneyPark',
+    emailPatterns: [/@moneypark\.ch$/i, /noreply.*moneypark/i],
+  },
+  {
+    id: 'hypotheke',
+    name: 'Hypotheke.ch',
+    emailPatterns: [/@hypotheke\.ch$/i],
+  },
+  {
+    id: 'newhome',
+    name: 'Newhome',
+    emailPatterns: [/@newhome\.ch$/i],
+  },
+  {
+    id: 'realadvisor',
+    name: 'RealAdvisor',
+    emailPatterns: [/@realadvisor\.ch$/i, /@realadvisor\.com$/i],
+  },
+
   // ─── CRM courtage ───
   {
     id: 'aprico',

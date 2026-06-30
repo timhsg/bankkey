@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { SOURCE_ICONS } from '@/lib/sources/icons'
@@ -17,6 +17,10 @@ interface Profile {
   gmail_connected_email: string | null
   gmail_last_processed_at: string | null
   outlook_connected_email?: string | null
+  outlook_last_processed_at?: string | null
+  imap_connected_email?: string | null
+  imap_last_processed_at?: string | null
+  ingest_key?: string | null
 }
 
 interface Prospect {
@@ -51,9 +55,14 @@ export default function SourcesPage() {
     if (p.get('connected') === 'outlook')  setBanner({ type: 'ok', text: 'Outlook connecté. La première synchronisation est en cours.' })
     const err = p.get('error')
     if (err) setBanner({ type: 'error', text: ERROR_MESSAGES[err] ?? 'Une erreur est survenue.' })
+    // Première synchro AUTOMATIQUE juste après connexion : le courtier n'a aucun
+    // bouton à presser, les premiers leads sont scorés immédiatement. Le cron
+    // (toutes les 5 min) et le push Gmail prennent ensuite le relais.
+    if (p.get('connected')) void syncGmail()
     if (p.get('connected') || err) {
       window.history.replaceState({}, '', '/pro/sources')
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -63,7 +72,7 @@ export default function SourcesPage() {
 
       const [{ data: profileData }, { data: prospectsData }] = await Promise.all([
         supabase.from('profiles')
-          .select('forwarding_address, gmail_connected_email, gmail_last_processed_at, outlook_connected_email')
+          .select('forwarding_address, gmail_connected_email, gmail_last_processed_at, outlook_connected_email, outlook_last_processed_at, imap_connected_email, imap_last_processed_at, ingest_key')
           .single(),
         supabase.from('prospects')
           .select('detected_source, scoring, received_at, created_at')
@@ -108,7 +117,8 @@ export default function SourcesPage() {
 
   const gmailConnected   = !!profile?.gmail_connected_email
   const outlookConnected = !!profile?.outlook_connected_email
-  const anyConnected     = gmailConnected || outlookConnected
+  const imapConnected    = !!profile?.imap_connected_email
+  const anyConnected     = gmailConnected || outlookConnected || imapConnected
 
   return (
     <div className="min-h-screen bg-[#F7F8FA]">
@@ -125,7 +135,7 @@ export default function SourcesPage() {
                 : 'Connectez une boîte en 1 clic — ça prend 30 secondes'}
             </p>
           </div>
-          {gmailConnected && (
+          {anyConnected && (
             <button
               onClick={syncGmail}
               disabled={syncing}
@@ -172,7 +182,16 @@ export default function SourcesPage() {
           <MailboxConnected
             provider="Outlook"
             email={profile!.outlook_connected_email!}
-            lastSync={null}
+            lastSync={profile!.outlook_last_processed_at ?? null}
+            totalLeads={totalLeads}
+            totalHot={totalHot}
+          />
+        )}
+        {imapConnected && (
+          <MailboxConnected
+            provider="IMAP"
+            email={profile!.imap_connected_email!}
+            lastSync={profile!.imap_last_processed_at ?? null}
             totalLeads={totalLeads}
             totalHot={totalHot}
           />
@@ -205,6 +224,9 @@ export default function SourcesPage() {
               logo={<OutlookLogo />}
             />
           </div>
+
+          {/* Autre boîte via IMAP (Yahoo, iCloud, OVH, custom…) */}
+          <ImapConnect connected={imapConnected} email={profile?.imap_connected_email ?? null} />
         </section>
 
         {/* ── Étape 2 : transfert universel ── */}
@@ -219,14 +241,26 @@ export default function SourcesPage() {
           <ForwardingBlock address={profile?.forwarding_address ?? null} />
         </section>
 
+        {/* ── Étape 3 : Webhook / API (Zapier, Make, CRM, formulaire) ── */}
+        <section>
+          <div className="flex items-center gap-2.5 mb-3">
+            <span className="w-6 h-6 rounded-full bg-[#E5E7EB] text-[#374151] text-xs font-bold flex items-center justify-center shrink-0">3</span>
+            <div>
+              <h2 className="text-sm font-extrabold text-navy">Ou branchez un outil (Zapier, Make, CRM, formulaire)</h2>
+              <p className="text-xs text-[#6B7280]">Pour les leads qui n&apos;arrivent pas par email : envoyez-les sur votre URL privée.</p>
+            </div>
+          </div>
+          <WebhookBlock ingestKey={profile?.ingest_key ?? null} />
+        </section>
+
         {/* Autres canaux — discret */}
         <details className="group">
           <summary className="cursor-pointer list-none text-xs font-semibold text-[#9CA3AF] hover:text-navy transition-colors flex items-center gap-1.5">
             <svg className="w-3 h-3 group-open:rotate-90 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-            Autres canaux (IMAP, Zapier, API…) — bientôt
+            Autres canaux — bientôt
           </summary>
           <p className="text-xs text-[#9CA3AF] mt-3 pl-4 leading-relaxed">
-            Yahoo, iCloud, OVH, ProtonMail (IMAP), Zapier, Make et un webhook API REST arrivent prochainement.
+            WhatsApp Business et un connecteur natif n8n arrivent prochainement.
             Besoin de l&apos;un d&apos;eux maintenant ? Écrivez à <a href="mailto:contact@bankkey.ch" className="text-accent hover:underline">contact@bankkey.ch</a>.
           </p>
         </details>
@@ -313,6 +347,217 @@ function ForwardingBlock({ address }: { address: string | null }) {
         </p>
       </div>
     </div>
+  )
+}
+
+// ── Bloc webhook / API (Zapier, Make, CRM, formulaire) ──────────────────
+
+function WebhookBlock({ ingestKey }: { ingestKey: string | null }) {
+  const [origin, setOrigin] = useState('https://bankkey.ch')
+  const [copied, setCopied] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') setOrigin(window.location.origin)
+  }, [])
+
+  if (!ingestKey) {
+    return (
+      <div className="bg-white border border-[#E5E7EB] rounded-xl p-5">
+        <p className="text-sm text-[#6B7280]">
+          Votre clé d&apos;ingestion est générée automatiquement à la création du compte.
+          Si elle n&apos;apparaît pas, écrivez à <a href="mailto:contact@bankkey.ch" className="text-accent hover:underline">contact@bankkey.ch</a>.
+        </p>
+      </div>
+    )
+  }
+
+  const url = `${origin}/api/ingest/${ingestKey}`
+  const curl =
+`curl -X POST "${url}" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "name": "Marie Dupont",
+    "email": "marie.dupont@email.com",
+    "phone": "+33 6 12 34 56 78",
+    "message": "Achat appartement 320000, apport 60000, CDI, revenus 4200/mois"
+  }'`
+
+  const copy = (text: string, id: string) => {
+    navigator.clipboard.writeText(text)
+    setCopied(id)
+    setTimeout(() => setCopied(null), 2000)
+  }
+
+  const stepDot = 'w-5 h-5 rounded-full bg-[#F7F8FA] border border-[#E5E7EB] text-[11px] font-bold text-navy flex items-center justify-center shrink-0'
+
+  return (
+    <div className="bg-white border border-[#E5E7EB] rounded-xl overflow-hidden">
+      {/* URL privée */}
+      <div className="p-5 bg-brand-gradient text-white">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-blue-200 mb-2">Votre URL d&apos;ingestion (privée)</p>
+        <div className="flex items-center gap-2 flex-wrap">
+          <code className="text-xs font-mono font-bold bg-white/10 px-3 py-2 rounded-lg break-all">{url}</code>
+          <button
+            onClick={() => copy(url, 'url')}
+            className="text-xs font-bold bg-white text-navy hover:bg-slate-100 px-3 py-2 rounded-lg transition-colors shrink-0"
+          >
+            {copied === 'url' ? '✓ Copié' : 'Copier'}
+          </button>
+        </div>
+        <p className="text-[11px] text-blue-100 mt-2">Gardez-la secrète : elle suffit à créer des prospects dans votre compte.</p>
+      </div>
+
+      {/* Modes d'emploi */}
+      <div className="p-5 space-y-5">
+        <div>
+          <p className="text-xs font-bold text-navy mb-3">Avec Zapier ou Make (sans code) :</p>
+          <ol className="space-y-3 text-sm text-[#374151]">
+            <li className="flex gap-3"><span className={stepDot}>1</span><span>Ajoutez une action <strong className="text-navy">Webhooks → POST</strong>.</span></li>
+            <li className="flex gap-3"><span className={stepDot}>2</span><span>Collez l&apos;URL ci-dessus, type de données <strong className="text-navy">JSON</strong>.</span></li>
+            <li className="flex gap-3"><span className={stepDot}>3</span><span>Mappez vos champs (nom, email, téléphone, message, budget…). BankKey reconnaît automatiquement les noms courants, en français comme en anglais.</span></li>
+          </ol>
+        </div>
+
+        <div>
+          <div className="flex items-center justify-between mb-2 gap-2">
+            <p className="text-xs font-bold text-navy">Avec un CRM ou un script (exemple) :</p>
+            <button
+              onClick={() => copy(curl, 'curl')}
+              className="text-[11px] font-semibold bg-white border border-[#D1D5DB] hover:border-navy text-[#374151] hover:text-navy px-2.5 py-1 rounded-md transition-all shrink-0"
+            >
+              {copied === 'curl' ? '✓ Copié' : 'Copier'}
+            </button>
+          </div>
+          <pre className="text-[11px] bg-[#0f172a] text-[#e2e8f0] rounded-lg p-3 overflow-x-auto font-mono leading-relaxed whitespace-pre">{curl}</pre>
+        </div>
+
+        <p className="text-[11px] text-[#9CA3AF] leading-relaxed">
+          Réponse <code className="text-[#6B7280]">200</code> : l&apos;id du prospect et son score. Le lead est qualifié, scoré et préparé automatiquement, comme un email. Limite anti-abus : 100 leads/heure.
+        </p>
+      </div>
+    </div>
+  )
+}
+
+// ── Connexion IMAP (Yahoo, iCloud, OVH, boîte custom…) ──────────────────
+
+const IMAP_PRESETS: Record<string, { host: string; port: number; label: string; note?: string }> = {
+  yahoo:      { host: 'imap.mail.yahoo.com',  port: 993, label: 'Yahoo',      note: 'Yahoo exige un « mot de passe d\'application » (Compte → Sécurité), pas votre mot de passe habituel.' },
+  icloud:     { host: 'imap.mail.me.com',     port: 993, label: 'iCloud',     note: 'iCloud exige un « mot de passe pour app » (appleid.apple.com → Connexion et sécurité).' },
+  ovh:        { host: 'ssl0.ovh.net',         port: 993, label: 'OVH' },
+  infomaniak: { host: 'mail.infomaniak.com',  port: 993, label: 'Infomaniak' },
+  gandi:      { host: 'mail.gandi.net',       port: 993, label: 'Gandi' },
+  proton:     { host: '127.0.0.1',            port: 1143, label: 'ProtonMail (Bridge)', note: 'ProtonMail nécessite l\'app Bridge installée sur la machine — peu adapté à une connexion serveur. Préférez le transfert email.' },
+  custom:     { host: '',                     port: 993, label: 'Autre / serveur custom' },
+}
+
+function ImapConnect({ connected, email }: { connected: boolean; email: string | null }) {
+  const [preset, setPreset]     = useState('')
+  const [host, setHost]         = useState('')
+  const [port, setPort]         = useState(993)
+  const [user, setUser]         = useState('')
+  const [password, setPassword] = useState('')
+  const [busy, setBusy]         = useState(false)
+  const [msg, setMsg]           = useState<{ type: 'ok' | 'error'; text: string } | null>(null)
+
+  function applyPreset(key: string) {
+    setPreset(key)
+    const p = IMAP_PRESETS[key]
+    if (p) { setHost(p.host); setPort(p.port) }
+  }
+
+  async function disconnect() {
+    if (!confirm('Déconnecter cette boîte IMAP ?')) return
+    setBusy(true)
+    try {
+      await fetch('/api/imap/connect', { method: 'DELETE' })
+      window.location.reload()
+    } finally { setBusy(false) }
+  }
+
+  async function submit(e: FormEvent) {
+    e.preventDefault()
+    setBusy(true); setMsg(null)
+    try {
+      const res = await fetch('/api/imap/connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ host, port, secure: true, user, password }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (res.ok) {
+        setMsg({ type: 'ok', text: 'Boîte connectée. La première synchro démarre.' })
+        setTimeout(() => window.location.reload(), 1200)
+      } else {
+        setMsg({ type: 'error', text: data.error ?? 'Connexion impossible.' })
+      }
+    } catch {
+      setMsg({ type: 'error', text: 'Erreur réseau, réessayez.' })
+    } finally { setBusy(false) }
+  }
+
+  if (connected) {
+    return (
+      <div className="mt-3 flex items-center justify-between gap-3 bg-white border border-[#E5E7EB] rounded-lg px-4 py-2.5">
+        <p className="text-xs text-[#374151]">Boîte IMAP connectée : <strong className="text-navy">{email}</strong></p>
+        <button onClick={disconnect} disabled={busy} className="text-xs font-semibold text-[#9CA3AF] hover:text-red-600 transition-colors disabled:opacity-50">Déconnecter</button>
+      </div>
+    )
+  }
+
+  const inputCls = 'w-full text-sm border border-[#D1D5DB] rounded-lg px-3 py-2 focus:outline-none focus:border-navy'
+  const activeNote = IMAP_PRESETS[preset]?.note
+
+  return (
+    <details className="group mt-3">
+      <summary className="cursor-pointer list-none text-xs font-semibold text-[#6B7280] hover:text-navy transition-colors flex items-center gap-1.5">
+        <svg className="w-3 h-3 group-open:rotate-90 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        Autre boîte (Yahoo, iCloud, OVH, Infomaniak…) via IMAP
+      </summary>
+
+      <form onSubmit={submit} className="mt-3 bg-white border border-[#E5E7EB] rounded-xl p-4 space-y-3">
+        <div>
+          <label className="block text-[11px] font-bold text-[#6B7280] uppercase tracking-widest mb-1">Fournisseur</label>
+          <select value={preset} onChange={(e) => applyPreset(e.target.value)} className={inputCls}>
+            <option value="">— Choisir —</option>
+            {Object.entries(IMAP_PRESETS).map(([k, p]) => <option key={k} value={k}>{p.label}</option>)}
+          </select>
+        </div>
+
+        {activeNote && (
+          <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">{activeNote}</p>
+        )}
+
+        <div className="grid grid-cols-3 gap-2">
+          <div className="col-span-2">
+            <label className="block text-[11px] font-bold text-[#6B7280] uppercase tracking-widest mb-1">Serveur IMAP</label>
+            <input value={host} onChange={(e) => setHost(e.target.value)} placeholder="imap.exemple.com" className={inputCls} required />
+          </div>
+          <div>
+            <label className="block text-[11px] font-bold text-[#6B7280] uppercase tracking-widest mb-1">Port</label>
+            <input type="number" value={port} onChange={(e) => setPort(Number(e.target.value))} className={inputCls} required />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-[11px] font-bold text-[#6B7280] uppercase tracking-widest mb-1">Adresse / identifiant</label>
+          <input value={user} onChange={(e) => setUser(e.target.value)} placeholder="vous@exemple.com" className={inputCls} required />
+        </div>
+        <div>
+          <label className="block text-[11px] font-bold text-[#6B7280] uppercase tracking-widest mb-1">Mot de passe</label>
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className={inputCls} required />
+          <p className="text-[11px] text-[#9CA3AF] mt-1">Connexion en lecture seule (TLS). Pour Yahoo, iCloud et Gmail, utilisez un mot de passe d&apos;application.</p>
+        </div>
+
+        {msg && (
+          <p className={`text-xs rounded-lg px-3 py-2 ${msg.type === 'ok' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>{msg.text}</p>
+        )}
+
+        <button type="submit" disabled={busy} className="w-full text-sm font-bold bg-navy text-white rounded-lg py-2.5 hover:bg-navy/90 transition-colors disabled:opacity-50">
+          {busy ? 'Connexion…' : 'Tester et connecter'}
+        </button>
+      </form>
+    </details>
   )
 }
 

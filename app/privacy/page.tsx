@@ -55,10 +55,10 @@ export default function PrivacyPage() {
               <li>Vos notes internes sur le prospect</li>
             </ul>
 
-            <h4>2.3 Données de connexion Gmail (optionnel)</h4>
+            <h4>2.3 Données de connexion à votre boîte mail (optionnel)</h4>
             <ul>
-              <li>Tokens OAuth chiffrés (accès en lecture aux emails entrants)</li>
-              <li>Email Gmail connecté</li>
+              <li>Jetons OAuth d&apos;accès en lecture seule aux emails entrants (Gmail, Outlook), isolés par cabinet et révocables à tout moment</li>
+              <li>Adresse email connectée</li>
               <li>Nous ne stockons <strong>jamais</strong> l&apos;intégralité de votre boîte mail — seulement les emails que vous nous demandez de traiter</li>
             </ul>
           </Section>
@@ -118,11 +118,11 @@ export default function PrivacyPage() {
 
           <Section title="8. Sécurité">
             <ul>
-              <li>Chiffrement TLS 1.3 en transit, AES-256 au repos</li>
-              <li>Tokens OAuth chiffrés via Supabase Vault</li>
+              <li>Chiffrement TLS 1.3 en transit, base de données chiffrée au repos (AES-256)</li>
+              <li>Jetons d&apos;accès à la boîte mail en lecture seule, révocables à tout moment</li>
               <li>Row Level Security PostgreSQL : isolation stricte par cabinet</li>
-              <li>Politique de mot de passe forte + 2FA disponible</li>
-              <li>Audit logs des accès aux données sensibles</li>
+              <li>Authentification gérée par Supabase Auth (2FA disponible)</li>
+              <li>Journalisation des actions (envois, modifications) sur chaque dossier</li>
             </ul>
           </Section>
 

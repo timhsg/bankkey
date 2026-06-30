@@ -17,8 +17,8 @@ const PRINCIPLES = [
     desc: 'Infrastructure dans l\'Union européenne (Francfort). Aucune réplication ou backup hors UE. Conforme à l\'article 44 du RGPD.',
   },
   {
-    title: 'Chiffrement systématique',
-    desc: 'TLS 1.3 en transit. AES-256 au repos sur la base de données. Tokens OAuth chiffrés via Supabase Vault avec rotation automatique.',
+    title: 'Chiffrement et accès en lecture seule',
+    desc: 'TLS 1.3 en transit, base de données chiffrée au repos (AES-256, hébergement UE). L\'accès à votre boîte mail est en lecture seule et révocable à tout moment depuis votre compte Google ou Microsoft.',
   },
   {
     title: 'Isolation par cabinet',
@@ -50,10 +50,10 @@ const COMPLIANCE = [
 ]
 
 const FLOW = [
-  { step: '1', title: 'Réception',  desc: 'BankKey lit votre email Gmail via OAuth (lecture seule). Aucun email n\'est dupliqué.' },
+  { step: '1', title: 'Réception',  desc: 'BankKey lit votre boîte mail (Gmail, Outlook…) via OAuth en lecture seule. Aucun email n\'est dupliqué.' },
   { step: '2', title: 'Analyse',    desc: 'Le texte est envoyé pour analyse à notre prestataire de traitement du langage. Aucun email n\'est conservé chez lui au-delà de la requête.' },
   { step: '3', title: 'Stockage',   desc: 'Seul le profil structuré (revenus, apport, type de bien…) est stocké dans votre instance Supabase isolée.' },
-  { step: '4', title: 'Affichage',  desc: 'Vous accédez aux résultats via une session sécurisée (Supabase Auth). Tokens chiffrés.' },
+  { step: '4', title: 'Affichage',  desc: 'Vous accédez aux résultats via une session sécurisée (Supabase Auth), isolée par cabinet.' },
   { step: '5', title: 'Action',     desc: 'Vous validez la réponse pré-rédigée. L\'envoi se fait depuis votre compte Gmail directement, jamais en notre nom.' },
 ]
 
