@@ -138,8 +138,14 @@ types/index.ts              # Types partagés (QualificationResult, ScoringResul
 - **Règles d'octroi CH/FR** : déjà présentes et injectées dans le scoring
   (`lib/agents/expertise.ts` + `scoring.ts` via `buildExpertiseContext`). ✅ Vérifié à jour.
   ⚠️ Le seuil « 27 ans » = **10 %** de travaux (le 25 % est l'ancien seuil, abaissé).
-- 🔭 Restent proposés (comptes externes requis) : **Widget web** (formulaire embarquable →
-  `/api/ingest`, base déjà là) et **WhatsApp Business** (API Meta/Twilio + numéro vérifié).
+- **Widget web flottant livré** : `public/widget.js` (vanilla + Shadow DOM, isolé, une
+  ligne `<script src=".../widget.js" data-key="ik_…" defer>`). Bulle « Estimer mon
+  financement » → poste sur `/api/ingest/<clé>` (CORS déjà ouvert), scoré en tâche de fond.
+  Snippet copiable ajouté dans `/pro/sources` (composant WebhookBlock). Marche sur tout site.
+- **Démo simplifiée** : `/demo/access` refaite en page minimale (accroche + 1 bouton + note),
+  identifiants et murs d'infos retirés (retour Tim « trop d'infos »). Auto-login `?enter=1` conservé.
+- 🔭 Reste proposé (compte externe requis) : **WhatsApp Business** (API Meta/Twilio + numéro
+  vérifié) — je branche l'envoi « lead chaud → WhatsApp » dès que Tim a les identifiants API.
 
 ### 🆕 Livré le 1er juillet 2026 — Outlook en prod + synchro zéro-clic
 

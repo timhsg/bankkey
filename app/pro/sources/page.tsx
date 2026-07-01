@@ -385,6 +385,8 @@ function WebhookBlock({ ingestKey }: { ingestKey: string | null }) {
     "message": "Achat appartement 320000, apport 60000, CDI, revenus 4200/mois"
   }'`
 
+  const widgetSnippet = `<script src="${origin}/widget.js" data-key="${ingestKey}" defer></script>`
+
   const copy = (text: string, id: string) => {
     navigator.clipboard.writeText(text)
     setCopied(id)
@@ -432,6 +434,22 @@ function WebhookBlock({ ingestKey }: { ingestKey: string | null }) {
             </button>
           </div>
           <pre className="text-[11px] bg-[#0f172a] text-[#e2e8f0] rounded-lg p-3 overflow-x-auto font-mono leading-relaxed whitespace-pre">{curl}</pre>
+        </div>
+
+        <div>
+          <div className="flex items-center justify-between mb-2 gap-2">
+            <p className="text-xs font-bold text-navy">Ou posez le widget flottant sur votre site :</p>
+            <button
+              onClick={() => copy(widgetSnippet, 'widget')}
+              className="text-[11px] font-semibold bg-white border border-[#D1D5DB] hover:border-navy text-[#374151] hover:text-navy px-2.5 py-1 rounded-md transition-all shrink-0"
+            >
+              {copied === 'widget' ? '✓ Copié' : 'Copier'}
+            </button>
+          </div>
+          <pre className="text-[11px] bg-[#0f172a] text-[#e2e8f0] rounded-lg p-3 overflow-x-auto font-mono leading-relaxed whitespace-pre">{widgetSnippet}</pre>
+          <p className="text-[11px] text-[#9CA3AF] mt-1.5 leading-relaxed">
+            Une bulle « Estimer mon financement » apparaît en bas de vos pages. Chaque demande est qualifiée et scorée automatiquement. Marche sur n&apos;importe quel site (WordPress, Wix, Webflow, HTML…).
+          </p>
         </div>
 
         <p className="text-[11px] text-[#9CA3AF] leading-relaxed">
