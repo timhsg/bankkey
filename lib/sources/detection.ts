@@ -197,6 +197,17 @@ const SOURCE_PATTERNS: SourcePattern[] = [
     name: 'RealAdvisor',
     emailPatterns: [/@realadvisor\.ch$/i, /@realadvisor\.com$/i],
   },
+  {
+    id: 'anibis',
+    name: 'Anibis',
+    emailPatterns: [/@anibis\.ch$/i, /noreply.*anibis/i, /@mail\.anibis\.ch$/i],
+    keywordPatterns: [/anibis\.ch/i, /souhaite\s+visiter\s+ce\s+bien/i],
+  },
+  {
+    id: 'immomig',
+    name: 'Immomig',
+    emailPatterns: [/@immomig\.com$/i, /@immomig\.ch$/i, /noreply.*immomig/i],
+  },
 
   // ─── CRM courtage ───
   {

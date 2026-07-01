@@ -276,6 +276,10 @@ Marque-le pertinent UNIQUEMENT s'il contient une demande EXPLICITE de l'une des 
 - Renégociation / rachat de crédit immobilier en cours
 - Compromis signé cherchant un financement
 - Capacité d'emprunt / simulation de prêt
+- Notification d'un PORTAIL IMMOBILIER signalant un acheteur intéressé par un bien
+  (demande de visite, prise de contact, formulaire acheteur) — SeLoger, Leboncoin,
+  BienIci, Logic-Immo, Anibis, Homegate, ImmoScout24, Comparis, RealAdvisor, Newhome,
+  Immomig, etc. Un acheteur potentiel = futur besoin de financement → PERTINENT.
 
 EXEMPLES À REJETER (non pertinent) :
 - Notifications GitHub/Vercel/AWS/Netlify
@@ -297,6 +301,7 @@ EXEMPLES À ACCEPTER (pertinent) :
 - "Nous avons signé un compromis, pouvez-vous nous accompagner ?"
 - "Renégociation de mon prêt en cours"
 - Forward d'Empruntis/Meilleurtaux/Pretto/SeLoger
+- "Un utilisateur souhaite visiter ce bien / vous a contacté" (notification portail : Anibis, Homegate, ImmoScout24, RealAdvisor…) — en extraire nom, téléphone, bien visé
 
 Réponds UNIQUEMENT avec ce JSON (sans markdown) :
 {

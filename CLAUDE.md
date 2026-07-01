@@ -128,6 +128,19 @@ types/index.ts              # Types partagés (QualificationResult, ScoringResul
 
 ## 7. Statut actuel (mettre à jour à chaque session)
 
+### 🆕 Livré le 1er juillet 2026 (2) — démo cold-email + portails + règles à jour
+
+- **Démo zéro-clic pour cold emails** : lien `bankkey.ch/demo/access?enter=1` connecte
+  automatiquement au compte démo (auto-login au chargement). Le bouton 1-clic existant reste.
+- **Portails immobiliers captés comme leads** : le classifieur de pertinence accepte
+  désormais les notifications de portails (« un utilisateur souhaite visiter ce bien »,
+  contact acheteur) comme leads pertinents. Détection étendue : **Anibis, Immomig** (+ icons).
+- **Règles d'octroi CH/FR** : déjà présentes et injectées dans le scoring
+  (`lib/agents/expertise.ts` + `scoring.ts` via `buildExpertiseContext`). ✅ Vérifié à jour.
+  ⚠️ Le seuil « 27 ans » = **10 %** de travaux (le 25 % est l'ancien seuil, abaissé).
+- 🔭 Restent proposés (comptes externes requis) : **Widget web** (formulaire embarquable →
+  `/api/ingest`, base déjà là) et **WhatsApp Business** (API Meta/Twilio + numéro vérifié).
+
 ### 🆕 Livré le 1er juillet 2026 — Outlook en prod + synchro zéro-clic
 
 **Outlook activé en production**

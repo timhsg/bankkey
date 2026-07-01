@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { LogoMark } from '@/app/_components/Logo'
 import { createClient } from '@/lib/supabase/client'
@@ -52,7 +52,7 @@ export default function DemoAccessPage() {
   const [loginError, setLoginError] = useState<string | null>(null)
   const supabase = createClient()
 
-  async function autoLogin() {
+  const autoLogin = useCallback(async () => {
     setLoggingIn(true)
     setLoginError(null)
     const { error } = await supabase.auth.signInWithPassword({
@@ -65,7 +65,16 @@ export default function DemoAccessPage() {
     } else {
       router.push('/pro')
     }
-  }
+  }, [supabase, router])
+
+  // Lien « zéro clic » pour les cold emails : bankkey.ch/demo/access?enter=1
+  // → connecte automatiquement au compte démo dès l'ouverture du lien.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (new URLSearchParams(window.location.search).get('enter') === '1') {
+      void autoLogin()
+    }
+  }, [autoLogin])
 
   return (
     <div className="min-h-screen bg-slate-50">

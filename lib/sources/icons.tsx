@@ -196,4 +196,6 @@ export const SOURCE_ICONS: Record<string, (props: IconProps) => JSX.Element> = {
   hypotheke:            ({ className }: IconProps) => <Monogram className={className} letter="H"   bg="linear-gradient(135deg, #0F766E 0%, #115e59 100%)" />,
   newhome:              ({ className }: IconProps) => <Monogram className={className} letter="NH"  bg="linear-gradient(135deg, #E2001A 0%, #a8001a 100%)" size="small" />,
   realadvisor:          ({ className }: IconProps) => <Monogram className={className} letter="RA"  bg="linear-gradient(135deg, #2563EB 0%, #1e3a8a 100%)" size="small" />,
+  anibis:               ({ className }: IconProps) => <Monogram className={className} letter="A"   bg="linear-gradient(135deg, #7AB800 0%, #4d7a00 100%)" />,
+  immomig:              ({ className }: IconProps) => <Monogram className={className} letter="IM"  bg="linear-gradient(135deg, #0EA5E9 0%, #0369a1 100%)" size="small" />,
 }
