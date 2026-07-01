@@ -3,6 +3,7 @@ import { LogoMark, Wordmark } from './_components/Logo'
 import ROICalculator from './_components/ROICalculator'
 import { AnimateIn } from './_components/AnimateIn'
 import PricingTiers from './_components/PricingTiers'
+import MobileNav from './_components/MobileNav'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // BankKey — Landing CRO v1
@@ -217,12 +218,15 @@ export default function LandingPage() {
             <a href="#faq" className="hover:text-navy transition-colors">FAQ</a>
           </nav>
           <div className="flex items-center gap-3">
-            <Link href="/pro/login" className="hidden sm:inline text-sm font-medium text-[#374151] hover:text-navy transition-colors px-3 py-2">
-              Connexion
-            </Link>
-            <Link href="/book" className="btn-primary text-sm py-2.5 px-5">
-              Réserver une démonstration
-            </Link>
+            <div className="hidden md:flex items-center gap-3">
+              <Link href="/pro/login" className="text-sm font-medium text-[#374151] hover:text-navy transition-colors px-3 py-2">
+                Connexion
+              </Link>
+              <Link href="/book" className="btn-primary text-sm py-2.5 px-5">
+                Réserver une démonstration
+              </Link>
+            </div>
+            <MobileNav />
           </div>
         </div>
       </header>
@@ -326,7 +330,7 @@ export default function LandingPage() {
         <div className="wrap">
           <p className="text-center text-xs font-semibold text-[#9CA3AF] uppercase tracking-widest mb-4">Sources de prospects gérées par BankKey</p>
           <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
-            {['Empruntis', 'SeLoger', 'Pretto', 'Meilleurtaux', 'Formulaire web', 'Transfert email'].map((src) => (
+            {['Gmail', 'Outlook', 'Empruntis', 'SeLoger', 'Pretto', 'Meilleurtaux', 'Formulaire web', 'Transfert email'].map((src) => (
               <span key={src} className="text-sm font-semibold text-[#9CA3AF]">{src}</span>
             ))}
           </div>

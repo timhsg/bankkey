@@ -141,7 +141,6 @@ const NAV_GROUPS: NavGroup[] = [
     label: 'Configuration',
     items: [
       { href: '/pro/sources',      label: 'Sources',     icon: Icons.Inbox },
-      { href: '/pro/integrations', label: 'Intégrations',icon: Icons.Webhook },
       { href: '/pro/settings',     label: 'Profil',      icon: Icons.Settings },
       { href: '/pro/billing',      label: 'Abonnement',  icon: Icons.Card },
     ],

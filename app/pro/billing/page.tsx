@@ -25,6 +25,7 @@ function BillingContent() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const success  = searchParams.get('success') === 'true'
   const canceled = searchParams.get('canceled') === 'true'
@@ -46,24 +47,28 @@ function BillingContent() {
   }, [supabase, router])
 
   async function startCheckout() {
-    setSubmitting(true)
+    setSubmitting(true); setError(null)
     try {
       const res = await fetch('/api/checkout', { method: 'POST' })
       const data = await res.json()
       if (data.url) window.location.href = data.url
-      else alert(data.error ?? 'Erreur de redirection')
+      else setError(data.error ?? 'La redirection vers le paiement a échoué. Réessayez.')
+    } catch {
+      setError('Erreur réseau. Réessayez dans un instant.')
     } finally {
       setSubmitting(false)
     }
   }
 
   async function openPortal() {
-    setSubmitting(true)
+    setSubmitting(true); setError(null)
     try {
       const res = await fetch('/api/portal', { method: 'POST' })
       const data = await res.json()
       if (data.url) window.location.href = data.url
-      else alert(data.error ?? 'Erreur')
+      else setError(data.error ?? 'Impossible d\'ouvrir le portail de facturation. Réessayez.')
+    } catch {
+      setError('Erreur réseau. Réessayez dans un instant.')
     } finally {
       setSubmitting(false)
     }
@@ -99,6 +104,16 @@ function BillingContent() {
       </header>
 
       <main className="max-w-3xl mx-auto px-5 py-10 space-y-6">
+
+        {/* Erreur */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-xl px-5 py-4 flex items-start gap-3">
+            <svg className="w-5 h-5 text-red-600 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
+        )}
 
         {/* Confirmation paiement */}
         {success && (

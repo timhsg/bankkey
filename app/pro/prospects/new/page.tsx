@@ -37,6 +37,7 @@ export default function NewProspectPage() {
   const supabase = createClient()
 
   const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const [form, setForm] = useState({
     source:           'referral',
@@ -95,7 +96,7 @@ export default function NewProspectPage() {
       urgencySignals: [],
     }
 
-    const { data: inserted, error } = await supabase
+    const { data: inserted, error: insertError } = await supabase
       .from('prospects')
       .insert({
         user_id: user.id,
@@ -119,8 +120,8 @@ export default function NewProspectPage() {
 
     setSubmitting(false)
 
-    if (error || !inserted) {
-      alert(`Erreur : ${error?.message ?? 'inconnue'}`)
+    if (insertError || !inserted) {
+      setError(`La création a échoué : ${insertError?.message ?? 'erreur inconnue'}. Réessayez.`)
       return
     }
 
@@ -150,6 +151,15 @@ export default function NewProspectPage() {
             Pour les prospects qui ne viennent pas d&apos;un email : recommandation, agence partenaire, téléphone, ancien client. Vous pourrez ensuite suivre les banques sollicitées et enregistrer la décision finale comme pour un prospect qualifié par l&apos;IA.
           </p>
         </div>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex items-start gap-2.5">
+            <svg className="w-4 h-4 text-red-600 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
+        )}
 
         <form onSubmit={submit} className="space-y-5">
 

@@ -129,7 +129,7 @@ export default function BookPage() {
                 {formatSlot(slot)}
               </p>
               <p className="text-sm text-[#6B7280] mb-8 max-w-md mx-auto">
-                Vous serez recontacté{form.firstName?.endsWith('e') ? 'e' : ''} sous 24 h ouvrées au{' '}
+                Vous serez recontacté·e sous 24 h ouvrées au{' '}
                 <span className="font-semibold text-[#0A0F1E] tabular-nums">{form.phone}</span> pour confirmer.
               </p>
               <div className="flex items-center justify-center gap-3">
@@ -264,7 +264,8 @@ export default function BookPage() {
                   )}
 
                   <p className="text-[10px] text-[#9CA3AF] text-center leading-relaxed">
-                    En soumettant ce formulaire, vous acceptez d&apos;être contacté{form.firstName?.endsWith('e') ? 'e' : ''} par notre équipe.
+                    En soumettant ce formulaire, vous acceptez d&apos;être contacté·e par notre équipe et la{' '}
+                    <Link href="/privacy" className="underline hover:text-navy">politique de confidentialité</Link>.
                   </p>
                 </div>
 

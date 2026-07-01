@@ -260,6 +260,9 @@ export default function SourcesPage() {
             Autres canaux — bientôt
           </summary>
           <p className="text-xs text-[#9CA3AF] mt-3 pl-4 leading-relaxed">
+            Importer un fichier CSV ou intégrer un widget sur votre site :{' '}
+            <a href="/pro/integrations" className="text-accent hover:underline">ouvrir les intégrations avancées</a>.
+            <br />
             WhatsApp Business et un connecteur natif n8n arrivent prochainement.
             Besoin de l&apos;un d&apos;eux maintenant ? Écrivez à <a href="mailto:contact@bankkey.ch" className="text-accent hover:underline">contact@bankkey.ch</a>.
           </p>

@@ -186,9 +186,18 @@ types/index.ts              # Types partagés (QualificationResult, ScoringResul
 - `EMAIL_FROM` Resend : `hello@` → `contact@bankkey.ch` (cohérence des adresses).
 - Vérifié : 0 lien mort, prix 199 cohérents partout, nav sidebar OK, pas de TODO/lorem,
   pas de placeholder légal. Landing déjà cohérente (Outlook, sources, « < 5 min »).
-- 🔭 À signaler : `/pro/sources` et `/pro/integrations` se chevauchent (mailboxes+webhook
-  vs site/CSV/email) → envisager de fusionner pour éviter la confusion. Mentions légales
-  (éditeur/hébergeur) absentes des CGU — à ajouter quand l'entité juridique existe.
+- Mentions légales (éditeur/hébergeur) absentes des CGU — à ajouter quand l'entité
+  juridique existe (raison individuelle suisse en cours).
+
+**Polish UX (2e passe)**
+- Nav unifiée : entrée « Intégrations » retirée du Sidebar (doublon avec Sources) ;
+  l'import CSV/widget reste accessible via un lien dans `/pro/sources`.
+- Landing : Gmail + Outlook ajoutés à la barre de logos sources.
+- `alert()` remplacés par des bandeaux d'erreur inline sur `/pro/billing` et
+  `/pro/prospects/new` (plus pro).
+- `/book` : « recontacté·e » neutre + lien politique de confidentialité (RGPD).
+- Menu mobile (burger) ajouté sur la landing (`app/_components/MobileNav.tsx`).
+- Reste proposé, non fait (avis Tim) : preuve sociale (témoignages/cas chiffré).
 
 **À faire côté Tim (Gmail temps réel)** : config Pub/Sub sur le projet `bankkey-gmail`
 (topic `gmail-leads`, rôle Publisher à `gmail-api-push@system.gserviceaccount.com`,
