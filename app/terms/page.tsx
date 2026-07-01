@@ -56,8 +56,10 @@ export default function TermsPage() {
           <Section title="5. Tarifs et facturation">
             <ul>
               <li><strong>Essai gratuit</strong> : 30 jours, accès complet, sans carte bancaire requise</li>
-              <li><strong>Abonnement Pro</strong> : 199 € HT / mois (France) ou 199 CHF HT / mois (Suisse) — tarif lancement programme pilote</li>
-              <li>Facturation mensuelle automatique via Stripe</li>
+              <li><strong>Solo</strong> : 249 € HT / mois (France) ou 249 CHF HT / mois (Suisse) — 1 courtier, jusqu&apos;à 60 leads/mois</li>
+              <li><strong>Cabinet</strong> : 449 € HT / mois (France) ou 449 CHF HT / mois (Suisse) — leads illimités, jusqu&apos;à 5 courtiers</li>
+              <li><strong>Réseau</strong> : sur devis (multi-agences, API)</li>
+              <li>Facturation mensuelle ou annuelle (2 mois offerts en annuel) via Stripe</li>
               <li>Annulation possible à tout moment depuis votre espace facturation</li>
               <li>Aucun remboursement au prorata du mois en cours</li>
               <li>Tout dépassement d&apos;usage fera l&apos;objet d&apos;un échange préalable, jamais d&apos;une facturation surprise</li>

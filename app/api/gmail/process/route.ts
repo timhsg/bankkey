@@ -3,6 +3,7 @@ import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { getUnreadEmails, markAsRead, type GmailMessage } from '@/lib/gmail'
 import { outlookConfigured, getOutlookUnread, markOutlookRead, getValidOutlookToken } from '@/lib/outlook'
 import { withImap, type ImapConfig } from '@/lib/imap'
+import { encryptSecret, decryptSecret } from '@/lib/crypto'
 import { runQualificationAgent } from '@/lib/agents/qualification'
 import { runScoringAgent } from '@/lib/agents/scoring'
 import { runProspectionAgent } from '@/lib/agents/prospection'
@@ -163,7 +164,7 @@ export async function POST(request: NextRequest) {
               port:     profile.imap_port ?? 993,
               secure:   profile.imap_secure ?? true,
               user:     profile.imap_user,
-              password: profile.imap_password,
+              password: decryptSecret(profile.imap_password)!,
             },
             (profile.sector as SectorId) ?? 'credit',
             profile.broker_memory ?? null,
@@ -298,14 +299,14 @@ async function processUserEmails(
   // Credentials avec expiry + persistance du token rafraîchi.
   // Corrige le bug où la synchro Gmail cassait ~1h après la connexion.
   const creds = {
-    accessToken,
-    refreshToken,
+    accessToken: decryptSecret(accessToken)!,
+    refreshToken: decryptSecret(refreshToken)!,
     expiryDate: tokenExpiry ? new Date(tokenExpiry).getTime() : null,
     onRefresh: async (next: { accessToken: string; expiryDate: number | null }) => {
       await supabase
         .from('profiles')
         .update({
-          gmail_access_token: next.accessToken,
+          gmail_access_token: encryptSecret(next.accessToken),
           gmail_token_expiry: next.expiryDate ? new Date(next.expiryDate).toISOString() : null,
         })
         .eq('id', userId)
@@ -329,15 +330,15 @@ async function processUserOutlook(
   // Récupère un token valide (refresh + persistance si expiré).
   // Corrige le bug où la synchro Outlook cassait ~1h après la connexion.
   const validToken = await getValidOutlookToken({
-    accessToken,
-    refreshToken,
+    accessToken: decryptSecret(accessToken)!,
+    refreshToken: decryptSecret(refreshToken),
     expiryDate: tokenExpiry ? new Date(tokenExpiry).getTime() : null,
     onRefresh: async (next) => {
       await supabase
         .from('profiles')
         .update({
-          outlook_access_token:  next.accessToken,
-          outlook_refresh_token: next.refreshToken,
+          outlook_access_token:  encryptSecret(next.accessToken),
+          outlook_refresh_token: encryptSecret(next.refreshToken),
           outlook_token_expiry:  new Date(next.expiryDate).toISOString(),
         })
         .eq('id', userId)

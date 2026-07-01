@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { isCronAuthorized } from '@/lib/cron-auth'
 import { watchInbox } from '@/lib/gmail'
+import { encryptSecret, decryptSecret } from '@/lib/crypto'
 
 // ════════════════════════════════════════════════════════════════════════
 //  Cron — renouvellement de la surveillance Gmail (Pub/Sub watch)
@@ -35,14 +36,14 @@ export async function GET(request: NextRequest) {
   for (const p of profiles ?? []) {
     try {
       await watchInbox({
-        accessToken:  p.gmail_access_token,
-        refreshToken: p.gmail_refresh_token,
+        accessToken:  decryptSecret(p.gmail_access_token)!,
+        refreshToken: decryptSecret(p.gmail_refresh_token)!,
         expiryDate:   p.gmail_token_expiry ? new Date(p.gmail_token_expiry).getTime() : null,
         onRefresh: async (next) => {
           await admin
             .from('profiles')
             .update({
-              gmail_access_token: next.accessToken,
+              gmail_access_token: encryptSecret(next.accessToken),
               gmail_token_expiry: next.expiryDate ? new Date(next.expiryDate).toISOString() : null,
             })
             .eq('id', p.id)

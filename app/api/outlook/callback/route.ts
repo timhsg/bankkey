@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { exchangeOutlookCode, getOutlookEmail } from '@/lib/outlook'
+import { encryptSecret } from '@/lib/crypto'
 
 /**
  * Callback OAuth Microsoft.
@@ -38,8 +39,8 @@ export async function GET(request: NextRequest) {
       .from('profiles')
       .update({
         outlook_connected_email: email,
-        outlook_access_token:    tokens.access_token,
-        outlook_refresh_token:   tokens.refresh_token ?? null,
+        outlook_access_token:    encryptSecret(tokens.access_token),
+        outlook_refresh_token:   encryptSecret(tokens.refresh_token ?? null),
         outlook_token_expiry:    expiry,
         updated_at: new Date().toISOString(),
       })

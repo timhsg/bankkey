@@ -15,9 +15,16 @@ BankKey est un SaaS qui qualifie automatiquement les emails de demande de financ
 
 **Cible** : cabinets de courtage en crédit (1-5 personnes), 60-120 leads/mois, commission moyenne 2 500 CHF/dossier.
 
-**Tarif lancement programme pilote** : Essai gratuit 30 jours · Pro **199 €/mois** (et 199 CHF/mois pour la Suisse).
-- Stripe Price ID actuel : `price_1TfyJw0reUrQKljH2Z3oIAKX` (199 EUR/mois)
-- Ancien Price ID (349 EUR, archivé) : `price_1TffPa0reUrQKljHZBVtkXHM`
+**Tarifs (grille 3 paliers, décidée le 01/07/2026)** — EUR = CHF affiché :
+- **Solo** 249 €/mois — 1 courtier, ~60 leads/mois.
+- **Cabinet** 449 €/mois — leads illimités, jusqu'à 5 courtiers, scoring sur-mesure, support prioritaire.
+- **Réseau** sur devis (dès ~890 €) — multi-agences, API.
+- **Annuel** : 2 mois offerts (= 10 mois payés). **Fondateurs (20 premiers)** : 3 mois offerts (via coupon Stripe).
+- Essai standard 30 jours sans carte.
+- ⚠️ Stripe : créer 4 Price (Solo/Cabinet × mensuel/annuel) + coupon « FONDATEUR » 3 mois → variables
+  `STRIPE_PRICE_SOLO_MONTH/YEAR`, `STRIPE_PRICE_CABINET_MONTH/YEAR` sur Vercel. `STRIPE_PRICE_ID_PRO`
+  reste le fallback. Source de vérité prix : `lib/currency.ts` (`PLAN_PRICING`).
+- Ancien : 199€ (`price_1TfyJw…`), 349€ archivé (`price_1TffPa…`).
 - **Resend** (emails transactionnels + digest mensuel) : compte créé, clé API dans `.env.local` (jamais dans ce fichier — il est commité). ⚠️ L'ancienne clé a fuité dans l'historique git le 11/06/2026 et doit être révoquée + régénérée sur resend.com/api-keys. Domaine `bankkey.ch` à vérifier via DNS pour envoyer depuis @bankkey.ch.
 - **Sentry** : setup en cours par Tim (compte gratuit Developer + projet Next.js)
 
@@ -143,6 +150,30 @@ types/index.ts              # Types partagés (QualificationResult, ScoringResul
 **Modèle IA**
 - `prospection.ts` : `claude-sonnet-4-5` → `claude-sonnet-4-6` (évite une panne de
   dépréciation ; les agents qualif/scoring/relevance restent en `claude-haiku-4-5`).
+
+**Pricing refondu (grille 3 paliers)**
+- `lib/currency.ts` : `PLAN_PRICING` (Solo 249 / Cabinet 449, EUR=CHF) + helpers mensuel/annuel.
+  `getDisplayPrice('pro')` renvoie désormais 249 (compat billing/ROI). Ancien 199 supprimé.
+- Landing : nouveau composant `app/_components/PricingTiers.tsx` (grille Solo/Cabinet/Réseau,
+  devise dynamique, toggle mensuel/annuel −2 mois, bandeau fondateurs 3 mois). Remplace la
+  carte unique inline dans `page.tsx`. (Ancien `PricingSection.tsx` = code mort, non importé.)
+- `lib/stripe.ts` : `resolveStripePrice(plan, interval)` → env `STRIPE_PRICE_{SOLO,CABINET}_{MONTH,YEAR}`,
+  fallback `STRIPE_PRICE_ID_PRO`. `/api/checkout` accepte `{plan, interval}` (défaut solo/mensuel).
+- CGU mises à jour (3 paliers + annuel). ⚠️ Reste à faire côté Tim : créer les 4 Price + coupon
+  fondateur dans Stripe, poser les 4 variables sur Vercel.
+
+**Chiffrement des secrets en base (lib/crypto.ts)**
+- AES-256-GCM, clé dans `BANKKEY_ENC_KEY` (Vercel). Chiffre tokens Gmail/Outlook
+  (access+refresh) + `imap_password` à chaque écriture, déchiffre à chaque lecture.
+- 2 garde-fous anti-casse : **no-op si la clé absente** (déploiement neutre), et
+  **tolérance legacy clair** (decryptSecret renvoie tel quel une valeur non préfixée
+  `enc:v1:`). Round-trip testé (y compris tokens avec `:` `/` `+`).
+- Activation : poser `BANKKEY_ENC_KEY` (= `openssl rand -base64 32`) sur Vercel + redeploy.
+  Les tokens Gmail/Outlook se chiffrent au 1er refresh (~1 h). L'`imap_password` ne se
+  rafraîchit pas → reconnecter la boîte IMAP une fois, ou backfill manuel.
+- ⚠️ NE JAMAIS changer/supprimer la clé après activation (secrets chiffrés = illisibles).
+- Touché : lib/crypto.ts (neuf) + gmail/callback, outlook/callback, imap/connect,
+  gmail/reply, gmail/process, cron/renew-gmail-watch.
 
 **Audit complet du site (page/lien/texte)**
 - 🔴 Pages Sécurité + Confidentialité affirmaient « Tokens OAuth chiffrés via Supabase

@@ -1,9 +1,14 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
-import { stripe, STRIPE_PRICE_ID_PRO, getAppUrl } from '@/lib/stripe'
+import { stripe, resolveStripePrice, getAppUrl, type CheckoutPlan, type CheckoutInterval } from '@/lib/stripe'
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
+    // Plan + intervalle (optionnels). Défaut : Solo mensuel — rétrocompatible
+    // avec l'ancien appel sans corps.
+    const body = await request.json().catch(() => ({})) as { plan?: CheckoutPlan; interval?: CheckoutInterval }
+    const plan: CheckoutPlan = body.plan === 'cabinet' ? 'cabinet' : 'solo'
+    const interval: CheckoutInterval = body.interval === 'year' ? 'year' : 'month'
     // 1. Vérifier l'authentification utilisateur
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -44,9 +49,10 @@ export async function POST() {
     }
 
     // 3. Créer la session de checkout
-    if (!STRIPE_PRICE_ID_PRO) {
+    const priceId = resolveStripePrice(plan, interval)
+    if (!priceId) {
       return NextResponse.json(
-        { error: 'STRIPE_PRICE_ID_PRO non configuré' },
+        { error: 'Aucun tarif Stripe configuré pour ce plan' },
         { status: 500 }
       )
     }
@@ -56,10 +62,10 @@ export async function POST() {
       customer: customerId,
       mode: 'subscription',
       payment_method_types: ['card'],
-      line_items: [{ price: STRIPE_PRICE_ID_PRO, quantity: 1 }],
+      line_items: [{ price: priceId, quantity: 1 }],
       subscription_data: {
-        trial_period_days: 30,  // Essai gratuit aligné avec la promesse marketing
-        metadata: { user_id: user.id },
+        trial_period_days: 30,  // Essai standard. Fondateurs : 3 mois via code promo (coupon Stripe).
+        metadata: { user_id: user.id, plan, interval },
       },
       success_url: `${appUrl}/pro/billing?success=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url:  `${appUrl}/pro/billing?canceled=true`,

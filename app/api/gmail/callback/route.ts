@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { exchangeCode, getConnectedEmail, watchInbox } from '@/lib/gmail'
+import { encryptSecret } from '@/lib/crypto'
 
 /**
  * Callback OAuth Google.
@@ -51,8 +52,8 @@ export async function GET(request: NextRequest) {
       .from('profiles')
       .update({
         gmail_connected_email:   gmailEmail,
-        gmail_access_token:      tokens.access_token,
-        gmail_refresh_token:     tokens.refresh_token,
+        gmail_access_token:      encryptSecret(tokens.access_token),
+        gmail_refresh_token:     encryptSecret(tokens.refresh_token),
         gmail_token_expiry:      tokens.expiry_date
           ? new Date(tokens.expiry_date).toISOString()
           : null,

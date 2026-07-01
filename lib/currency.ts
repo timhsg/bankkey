@@ -81,20 +81,45 @@ export function formatPrice(amount: number, currency: CurrencyCode): string {
 }
 
 /**
- * Tarification produit (devise de référence : EUR)
- * Tarif lancement programme pilote
+ * Tarification produit (paliers).
+ * EUR = CHF en valeur affichée (le Suisse paie ~5% de plus en réel — simplicité assumée).
+ *
+ *  - Solo    : 1 courtier, jusqu'à ~60 leads/mois.
+ *  - Cabinet : leads illimités, scoring sur-mesure, support prioritaire.
+ *  - Réseau  : sur devis (multi-agences, API) — pas de prix public.
  */
-export const PRICING_EUR = {
-  trial: 0,
-  pro: 199,
+export type PlanId = 'solo' | 'cabinet'
+
+export const PLAN_PRICING: Record<PlanId, { EUR: number; CHF: number; name: string }> = {
+  solo:    { EUR: 249, CHF: 249, name: 'Solo' },
+  cabinet: { EUR: 449, CHF: 449, name: 'Cabinet' },
+}
+
+/** Prix mensuel d'un plan dans la devise donnée. */
+export function getPlanMonthly(plan: PlanId, currency: CurrencyCode): number {
+  return currency === 'CHF' ? PLAN_PRICING[plan].CHF : PLAN_PRICING[plan].EUR
+}
+
+/** Facturation annuelle = 10 mois payés (2 offerts). Total facturé sur l'année. */
+export function getPlanAnnualTotal(plan: PlanId, currency: CurrencyCode): number {
+  return getPlanMonthly(plan, currency) * 10
+}
+
+/** Équivalent mensuel en facturation annuelle (pour l'affichage « X €/mois facturé annuellement »). */
+export function getPlanAnnualMonthly(plan: PlanId, currency: CurrencyCode): number {
+  return Math.round(getPlanAnnualTotal(plan, currency) / 12)
 }
 
 /**
- * Tarif lancement : même montant en EUR et CHF.
- * Le Suisse paie ~5% de plus en valeur réelle, acceptable pour la simplicité.
- * Sera réévalué après 30 cabinets pilotes signés.
+ * Compat ascendante avec l'ancien modèle `subscription_plan = 'trial' | 'pro'`
+ * stocké en base. `'pro'` correspond désormais au plan d'entrée (Solo).
  */
-export function getDisplayPrice(plan: 'trial' | 'pro', _currency: CurrencyCode): number {
+export const PRICING_EUR = {
+  trial: 0,
+  pro: PLAN_PRICING.solo.EUR,
+}
+
+export function getDisplayPrice(plan: 'trial' | 'pro', currency: CurrencyCode): number {
   if (plan === 'trial') return 0
-  return 199
+  return getPlanMonthly('solo', currency)
 }

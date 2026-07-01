@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { LogoMark, Wordmark } from './_components/Logo'
 import ROICalculator from './_components/ROICalculator'
 import { AnimateIn } from './_components/AnimateIn'
+import PricingTiers from './_components/PricingTiers'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // BankKey — Landing CRO v1
@@ -511,58 +512,16 @@ export default function LandingPage() {
           <AnimateIn className="text-center mb-14">
             <p className="label mb-3">Tarif</p>
             <h2 className="text-4xl md:text-5xl font-extrabold tracking-tightest mb-4">
-              Un dossier signé<br />
-              <span className="text-gradient">rembourse 12 mois.</span>
+              Rentabilisé dès<br />
+              <span className="text-gradient">le premier dossier.</span>
             </h2>
             <p className="text-[#6B7280] text-lg max-w-lg mx-auto">
-              La commission moyenne sur un dossier immobilier est de 2 500 €. BankKey coûte 199 € par mois.
+              Une commission moyenne, c&apos;est 2 500 € par dossier. BankKey démarre à 249 € par mois.
             </p>
           </AnimateIn>
 
-          <AnimateIn className="max-w-md mx-auto">
-            <div className="rounded-2xl border-2 border-accent p-8 shadow-[0_8px_40px_rgba(59,95,224,0.12)] bg-white">
-              <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-5xl font-extrabold text-navy tracking-tightest">199</span>
-                <span className="text-2xl font-bold text-[#9CA3AF]">€</span>
-                <span className="text-[#6B7280] font-medium">/ mois</span>
-              </div>
-              <p className="text-sm text-[#9CA3AF] mb-6">199 CHF / mois pour la Suisse</p>
-
-              <ul className="space-y-3 mb-8">
-                {[
-                  'Demandes illimitées, toutes sources',
-                  'Qualification et score de finançabilité',
-                  'Réponse initiale rédigée pour chaque prospect',
-                  'Briefing d\'appel structuré',
-                  'Checklist documents FR / CH',
-                  'Relances automatiques',
-                  'Tableau de bord prospects',
-                  'Export CSV inclus',
-                  'Support direct avec le fondateur',
-                ].map((f) => (
-                  <li key={f} className="flex items-center gap-3 text-sm text-[#374151]">
-                    <span className="w-5 h-5 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
-                      <Check className="w-3 h-3 text-emerald-600" />
-                    </span>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-
-              <Link href="/book" className="btn-primary w-full justify-center py-3.5">
-                Réserver une démonstration
-                <ArrowRight />
-              </Link>
-              <p className="text-center text-xs text-[#9CA3AF] mt-3">
-                30 jours d&apos;essai gratuit · Sans carte bancaire · Annulable à tout moment
-              </p>
-            </div>
-          </AnimateIn>
-
-          <AnimateIn delay={100} className="mt-8 text-center">
-            <p className="text-sm text-[#9CA3AF]">
-              Programme fondateur — 50 cabinets pilotes · Tarif bloqué à vie · France & Suisse
-            </p>
+          <AnimateIn>
+            <PricingTiers />
           </AnimateIn>
         </div>
       </section>

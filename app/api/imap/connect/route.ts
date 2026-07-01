@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { testImapConnection, type ImapConfig } from '@/lib/imap'
+import { encryptSecret } from '@/lib/crypto'
 
 // ════════════════════════════════════════════════════════════════════════
 //  POST /api/imap/connect — Connexion d'une boîte IMAP
@@ -70,7 +71,7 @@ export async function POST(request: NextRequest) {
       imap_port:            cfg.port,
       imap_secure:          cfg.secure,
       imap_user:            cfg.user,
-      imap_password:        cfg.password,
+      imap_password:        encryptSecret(cfg.password),
       imap_connected_email: test.email ?? cfg.user,
       updated_at:           new Date().toISOString(),
     })

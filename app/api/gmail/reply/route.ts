@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { sendReply } from '@/lib/gmail'
+import { encryptSecret, decryptSecret } from '@/lib/crypto'
 
 /** Envoie la réponse pré-rédigée depuis le compte Gmail de l'agence */
 export async function POST(request: NextRequest) {
@@ -34,14 +35,14 @@ export async function POST(request: NextRequest) {
   try {
     await sendReply(
       {
-        accessToken:  profile.gmail_access_token,
-        refreshToken: profile.gmail_refresh_token,
+        accessToken:  decryptSecret(profile.gmail_access_token)!,
+        refreshToken: decryptSecret(profile.gmail_refresh_token)!,
         expiryDate:   profile.gmail_token_expiry ? new Date(profile.gmail_token_expiry).getTime() : null,
         onRefresh: async (next) => {
           await admin
             .from('profiles')
             .update({
-              gmail_access_token: next.accessToken,
+              gmail_access_token: encryptSecret(next.accessToken),
               gmail_token_expiry: next.expiryDate ? new Date(next.expiryDate).toISOString() : null,
             })
             .eq('id', user.id)
