@@ -58,7 +58,7 @@ export default function ForWhoSection() {
             Conçu pour les courtiers qui veulent grandir
           </h2>
           <p className="text-slate-600 max-w-xl mx-auto">
-            Du courtier solo au cabinet structuré — BankKey s&apos;adapte à votre échelle.
+            Du courtier solo au cabinet structuré : BankKey s&apos;adapte à votre échelle.
           </p>
         </div>
 

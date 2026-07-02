@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { LogoMark, Wordmark } from '@/app/_components/Logo'
+import SiteHeader from '@/app/_components/SiteHeader'
+import SiteFooter from '@/app/_components/SiteFooter'
 import { BookingCalendar } from '@/app/_components/BookingCalendar'
 
 // ─────────────────────────────────────────────────────────────
@@ -95,17 +96,13 @@ export default function BookPage() {
   return (
     <div className="min-h-screen bg-white text-[#0A0F1E] antialiased">
 
-      {/* Header */}
-      <header className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b border-[#E5E7EB]">
-        <div className="wrap h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <Wordmark size={24} />
-          </Link>
+      <SiteHeader
+        right={
           <Link href="/" className="text-sm font-medium text-[#374151] hover:text-navy transition-colors">
             ← Retour à l&apos;accueil
           </Link>
-        </div>
-      </header>
+        }
+      />
 
       <main className="relative overflow-hidden">
         <div className="absolute inset-x-0 top-0 h-[500px] hero-glow pointer-events-none" />
@@ -157,7 +154,7 @@ export default function BookPage() {
                 <span className="text-gradient">BankKey en direct.</span>
               </h1>
               <p className="text-lg text-[#6B7280] max-w-xl mx-auto leading-relaxed">
-                On analyse en live 2 ou 3 de vos demandes réelles. Échange direct avec le fondateur — pas de discours commercial.
+                On analyse en live 2 ou 3 de vos demandes réelles. Échange direct avec le fondateur, pas de discours commercial.
               </p>
             </div>
 
@@ -296,6 +293,8 @@ export default function BookPage() {
         )}
 
       </main>
+
+      <SiteFooter />
     </div>
   )
 }

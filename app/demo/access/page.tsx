@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { LogoMark } from '@/app/_components/Logo'
+import SiteHeader from '@/app/_components/SiteHeader'
 import { createClient } from '@/lib/supabase/client'
 
 // ════════════════════════════════════════════════════════════════════════
@@ -45,33 +45,29 @@ export default function DemoAccessPage() {
   }, [enter])
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      <header className="bg-white border-b border-slate-100">
-        <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <LogoMark size={26} />
-            <span className="font-semibold text-slate-900 tracking-tight">BankKey</span>
-          </Link>
-          <Link href="/demo" className="text-xs text-slate-500 hover:text-slate-900 transition-colors">
+    <div className="min-h-screen bg-[#F7F8FA] flex flex-col">
+      <SiteHeader
+        right={
+          <Link href="/demo" className="text-sm font-medium text-[#374151] hover:text-navy transition-colors">
             Voir la démo guidée →
           </Link>
-        </div>
-      </header>
+        }
+      />
 
       <main className="flex-1 flex items-center justify-center px-5 py-16">
         <div className="w-full max-w-md text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Compte de démonstration</p>
-          <h1 className="text-3xl md:text-4xl font-semibold text-slate-900 tracking-tight leading-tight mb-4">
+          <p className="label mb-3">Compte de démonstration</p>
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tightest text-[#0A0F1E] leading-tight mb-4">
             Entrez dans un cabinet réel.
           </h1>
-          <p className="text-slate-600 leading-relaxed mb-8">
-            90 dossiers sur six mois, suivi banques, statistiques. Aucun identifiant, aucune inscription — vous êtes dedans en deux secondes.
+          <p className="text-[#6B7280] leading-relaxed mb-8">
+            90 dossiers sur six mois, suivi banques, statistiques. Aucun identifiant, aucune inscription : vous êtes dedans en deux secondes.
           </p>
 
           <button
             onClick={enter}
             disabled={loggingIn}
-            className="w-full inline-flex items-center justify-center gap-2 bg-blue-900 hover:bg-blue-800 disabled:bg-slate-300 text-white font-semibold px-7 py-3.5 rounded-xl transition-colors text-base"
+            className="btn-primary w-full justify-center px-7 py-3.5 text-base disabled:opacity-60 disabled:pointer-events-none"
           >
             {loggingIn ? (
               <>
@@ -100,7 +96,7 @@ export default function DemoAccessPage() {
               <Link href="/pro/login?mode=signup" className="text-sm font-medium bg-white border border-slate-200 hover:border-slate-300 text-slate-700 px-5 py-2.5 rounded-lg transition-colors w-full sm:w-auto">
                 Créer mon compte (essai 30 j)
               </Link>
-              <Link href="/book" className="text-sm font-medium text-blue-900 hover:underline px-2 py-2.5 w-full sm:w-auto">
+              <Link href="/book" className="text-sm font-medium text-navy hover:underline px-2 py-2.5 w-full sm:w-auto">
                 Réserver une démo avec Tim
               </Link>
             </div>

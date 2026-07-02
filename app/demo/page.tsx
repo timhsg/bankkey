@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
-import { LogoMark } from '@/app/_components/Logo';
+import { Wordmark } from '@/app/_components/Logo';
 import { generateDocumentChecklist } from '@/lib/documents/checklist';
 import { MOCK_PROSPECTS, NEW_PROSPECT_ID, type MockProspect } from './_data';
 import BanksKanban from './_BanksKanban';
 import BilanSnapshot from './_BilanSnapshot';
+import ManualDemo from './_ManualDemo';
 import type { QualificationResult, ScoringResult } from '@/types';
 
 // ════════════════════════════════════════════════════════════════════════
@@ -135,6 +136,7 @@ function IntroProgress({ stage }: { stage: Stage }) {
 }
 
 export default function InteractiveDemo() {
+  const [mode, setMode] = useState<'guided' | 'manual'>('guided');
   const [selectedId, setSelectedId] = useState<string>(MOCK_PROSPECTS[1].id); // Sophie par défaut
   const [stage, setStage] = useState<Stage>('intro');
   const [tab, setTab] = useState<Tab>('email_sent');
@@ -202,21 +204,26 @@ export default function InteractiveDemo() {
     <div className="min-h-screen bg-slate-50">
 
       {/* ── Header avec toggle 2 modes ── */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-slate-100 sticky top-0 z-30">
+      <header className="bg-white/95 backdrop-blur-sm border-b border-[#E5E7EB] sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-5 h-14 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <LogoMark size={24} />
-            <span className="font-semibold text-slate-900 tracking-tight">BankKey</span>
+          <Link href="/" className="flex items-center" aria-label="BankKey, retour à l'accueil">
+            <Wordmark size={22} />
           </Link>
 
-          {/* Toggle de mode démo */}
+          {/* Toggle de mode démo (in-page) */}
           <div className="inline-flex items-center bg-slate-100 rounded-full p-0.5">
-            <span className="px-3 py-1 text-[11px] font-semibold rounded-full bg-white text-slate-900 shadow-sm">
+            <button
+              onClick={() => setMode('guided')}
+              className={`px-3 py-1 text-[11px] rounded-full transition-colors ${mode === 'guided' ? 'font-semibold bg-white text-slate-900 shadow-sm' : 'font-medium text-slate-500 hover:text-slate-700'}`}
+            >
               Démo guidée
-            </span>
-            <Link href="/demo/manual" className="px-3 py-1 text-[11px] font-medium text-slate-500 hover:text-slate-700 transition-colors">
+            </button>
+            <button
+              onClick={() => setMode('manual')}
+              className={`px-3 py-1 text-[11px] rounded-full transition-colors ${mode === 'manual' ? 'font-semibold bg-white text-slate-900 shadow-sm' : 'font-medium text-slate-500 hover:text-slate-700'}`}
+            >
               Testez avec votre email
-            </Link>
+            </button>
           </div>
 
           <Link href="/pro/login" className="text-xs font-medium bg-blue-900 hover:bg-blue-800 text-white px-3 py-1.5 rounded-lg transition-colors">
@@ -225,8 +232,12 @@ export default function InteractiveDemo() {
         </div>
 
         {/* Barre de progression discrète pendant l'intro */}
-        {!introPlayed && <IntroProgress stage={stage} />}
+        {mode === 'guided' && !introPlayed && <IntroProgress stage={stage} />}
       </header>
+
+      {mode === 'manual' && <ManualDemo />}
+      {mode === 'guided' && (<>
+
 
       {/* ── Intro ── */}
       <div className="max-w-7xl mx-auto px-5 pt-10 pb-6 text-center">
@@ -380,9 +391,9 @@ export default function InteractiveDemo() {
                 <p className="text-sm text-slate-400">Reste à le faire tourner sur vos vrais emails.</p>
               </div>
               <div className="flex items-center gap-3">
-                <Link href="/demo/manual" className="text-sm text-slate-300 hover:text-white transition-colors">
+                <button onClick={() => setMode('manual')} className="text-sm text-slate-300 hover:text-white transition-colors">
                   Tester avec votre email →
-                </Link>
+                </button>
                 <Link href="/pro/login?mode=signup" className="bg-white hover:bg-slate-100 text-slate-900 text-sm font-medium px-4 py-2 rounded-lg transition-colors">
                   Commencer l&apos;essai 30 jours
                 </Link>
@@ -391,6 +402,7 @@ export default function InteractiveDemo() {
           </>
         )}
       </main>
+      </>)}
 
       <style jsx>{`
         @keyframes slideInTop {
@@ -704,7 +716,7 @@ function ProspectDetail({
                     {documents.urgency === 'urgent' && (
                       <span className="flex items-center gap-1 text-amber-700 font-medium">
                         <I.Spark />
-                        Compromis signé — priorité haute
+                        Compromis signé, priorité haute
                       </span>
                     )}
                   </div>

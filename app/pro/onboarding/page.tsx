@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { LogoMark } from '@/app/_components/Logo'
+import { Wordmark } from '@/app/_components/Logo'
 import { createClient } from '@/lib/supabase/client'
 import type { BrokerMemory } from '@/types'
 
@@ -120,12 +120,12 @@ function OnboardingContent() {
       monthly_income: 5800, down_payment: 170000, existing_debts_monthly: 0,
       employment_status: 'cdi', is_couple: true,
       sell_timeline: null, purchase_timeline: 'less_3_months', financing_status: 'in_progress',
-      description: 'EXEMPLE — Couple CDI Genève, compromis signé, recherche financement urgent',
+      description: 'EXEMPLE : Couple CDI Genève, compromis signé, recherche financement urgent',
       motivationSignals: ['compromis signé'], urgencySignals: ['compromis signé', 'délai serré'],
     }
     const scoring = {
       score: 87, temperature: 'hot',
-      explanation: 'EXEMPLE — Profil très solide : couple CDI à Genève, apport de 20%, compromis déjà signé.',
+      explanation: 'EXEMPLE : Profil très solide : couple CDI à Genève, apport de 20%, compromis déjà signé.',
       keyFactors: [
         { factor: 'CDI stable', impact: 'positive', points: 25 },
         { factor: 'Apport ≥ 20%', impact: 'positive', points: 25 },
@@ -151,7 +151,7 @@ function OnboardingContent() {
       sector: 'credit',
       email_from_name: 'Camille Martin',
       email_from: 'camille.martin@exemple.fr',
-      email_subject: 'EXEMPLE — Demande financement Genève',
+      email_subject: 'EXEMPLE : Demande financement Genève',
       email_body: 'Bonjour,\n\nMon mari et moi venons de signer un compromis pour un appartement à Genève centre (850 000 CHF). Nous disposons de 170 000 CHF d\'apport et sommes tous les deux en CDI (revenus combinés 5800 CHF/mois).\n\nPouvez-vous nous accompagner dans la recherche de financement ?\n\nBonne journée,\nCamille',
       qualification, scoring, prospection,
       detected_source: { sourceId: 'demo', sourceName: 'Exemple', confidence: 'high', method: 'manual' },
@@ -176,9 +176,8 @@ function OnboardingContent() {
       {/* ── Header progress ── */}
       <header className="bg-white border-b border-[#E5E7EB]">
         <div className="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/pro" className="flex items-center gap-2.5">
-            <LogoMark size={24} />
-            <span className="font-bold text-navy tracking-tight text-sm">BankKey</span>
+          <Link href="/pro" className="flex items-center" aria-label="BankKey">
+            <Wordmark size={22} />
           </Link>
           <Link href="/pro" className="text-xs text-[#9CA3AF] hover:text-navy transition-colors font-medium">
             Passer pour l&apos;instant

@@ -130,7 +130,7 @@ export default function IntegrationsPage() {
                 <polyline points="9 18 15 12 9 6"/>
               </svg>
               <div>
-                <p className="font-semibold text-slate-900">Options avancées — Webhook API</p>
+                <p className="font-semibold text-slate-900">Options avancées · Webhook API</p>
                 <p className="text-xs text-slate-500 mt-0.5">Pour Zapier, Make, CRM avec intégration sortante</p>
               </div>
             </div>
@@ -152,7 +152,7 @@ export default function IntegrationsPage() {
 
 function WebsiteEmbedPath({ appUrl, ingestKey }: { appUrl: string; ingestKey: string }) {
   const [copied, setCopied] = useState(false)
-  const code = `<script src="${appUrl}/embed.js" data-key="${ingestKey}"></script>`
+  const code = `<script src="${appUrl}/widget.js" data-key="${ingestKey}" defer></script>`
 
   return (
     <div className="space-y-5">
@@ -273,7 +273,7 @@ function CsvImportPath() {
   }
 
   const BANKKEY_FIELDS = [
-    { value: '',          label: '— Ne pas importer —' },
+    { value: '',          label: 'Ne pas importer' },
     { value: 'firstName', label: 'Prénom' },
     { value: 'lastName',  label: 'Nom' },
     { value: 'fullName',  label: 'Nom complet (sera divisé)' },
@@ -375,7 +375,7 @@ function CsvImportPath() {
               <div>
                 <p className="text-sm font-medium text-slate-900">Calculer le score de bancabilité pour chaque ligne</p>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Active l&apos;analyse IA — recommandé pour identifier les prospects prioritaires.
+                  Active l&apos;analyse IA, recommandé pour identifier les prospects prioritaires.
                   Désactivez pour un import rapide sans coût IA.
                 </p>
               </div>
@@ -447,7 +447,7 @@ function EmailPath() {
         <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Comment ça marche</p>
         <ol className="space-y-2 text-sm text-slate-700 list-decimal list-inside">
           <li>Vous cliquez sur "Connecter Gmail" ci-dessous</li>
-          <li>Google vous demande l&apos;autorisation — vous validez</li>
+          <li>Google vous demande l&apos;autorisation, vous validez</li>
           <li>BankKey scanne vos derniers emails automatiquement (toutes les 24h)</li>
           <li>Les leads Empruntis, SeLoger, Pretto et messages directs sont reconnus automatiquement</li>
           <li>Spams, newsletters et notifications sont filtrés</li>

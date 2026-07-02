@@ -1,9 +1,10 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { LogoMark } from '@/app/_components/Logo'
+import SiteHeader from '@/app/_components/SiteHeader'
+import SiteFooter from '@/app/_components/SiteFooter'
 
 export const metadata: Metadata = {
-  title: 'Conditions générales d\'utilisation — BankKey',
+  title: 'Conditions générales d\'utilisation · BankKey',
   description: 'CGU et CGV de BankKey, service SaaS de qualification de leads pour courtiers en crédit.',
 }
 
@@ -11,17 +12,13 @@ export default function TermsPage() {
   return (
     <div className="min-h-screen bg-white text-slate-900">
 
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
-        <div className="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <LogoMark size={28} />
-            <span className="font-bold text-navy tracking-tight">BankKey</span>
+      <SiteHeader
+        right={
+          <Link href="/" className="text-sm font-medium text-[#374151] hover:text-navy transition-colors">
+            ← Retour à l&apos;accueil
           </Link>
-          <Link href="/" className="text-xs text-slate-500 hover:text-slate-900 transition-colors">
-            ← Accueil
-          </Link>
-        </div>
-      </header>
+        }
+      />
 
       <article className="max-w-3xl mx-auto px-6 py-16">
 
@@ -56,8 +53,8 @@ export default function TermsPage() {
           <Section title="5. Tarifs et facturation">
             <ul>
               <li><strong>Essai gratuit</strong> : 30 jours, accès complet, sans carte bancaire requise</li>
-              <li><strong>Solo</strong> : 249 € HT / mois (France) ou 249 CHF HT / mois (Suisse) — 1 courtier, jusqu&apos;à 60 leads/mois</li>
-              <li><strong>Cabinet</strong> : 449 € HT / mois (France) ou 449 CHF HT / mois (Suisse) — leads illimités, jusqu&apos;à 5 courtiers</li>
+              <li><strong>Solo</strong> : 249 € HT / mois (France) ou 249 CHF HT / mois (Suisse) · 1 courtier, jusqu&apos;à 60 leads/mois</li>
+              <li><strong>Cabinet</strong> : 449 € HT / mois (France) ou 449 CHF HT / mois (Suisse) · leads illimités, jusqu&apos;à 5 courtiers</li>
               <li><strong>Réseau</strong> : sur devis (multi-agences, API)</li>
               <li>Facturation mensuelle ou annuelle (2 mois offerts en annuel) via Stripe</li>
               <li>Annulation possible à tout moment depuis votre espace facturation</li>
@@ -120,6 +117,8 @@ export default function TermsPage() {
           <Link href="/security" className="text-slate-700 hover:text-slate-900 transition-colors">→ Page sécurité</Link>
         </div>
       </article>
+
+      <SiteFooter />
     </div>
   )
 }

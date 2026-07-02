@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import Link from 'next/link'
-import { LogoMark } from '@/app/_components/Logo'
+import SiteHeader from '@/app/_components/SiteHeader'
 
 export default function GlobalError({
   error,
@@ -16,15 +16,8 @@ export default function GlobalError({
   }, [error])
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center">
-          <Link href="/" className="flex items-center gap-2">
-            <LogoMark size={28} />
-            <span className="font-semibold text-slate-900 tracking-tight">BankKey</span>
-          </Link>
-        </div>
-      </header>
+    <div className="min-h-screen bg-[#F7F8FA] flex flex-col">
+      <SiteHeader />
 
       <main className="flex-1 flex items-center justify-center px-6">
         <div className="max-w-md w-full text-center">
@@ -35,26 +28,23 @@ export default function GlobalError({
               <line x1="12" y1="17" x2="12.01" y2="17" />
             </svg>
           </div>
-          <h1 className="text-2xl font-semibold text-slate-900 mb-3">Quelque chose s&apos;est mal passé</h1>
-          <p className="text-sm text-slate-600 leading-relaxed mb-8">
+          <h1 className="text-2xl font-extrabold tracking-tightest text-[#0A0F1E] mb-3">Quelque chose s&apos;est mal passé</h1>
+          <p className="text-sm text-[#6B7280] leading-relaxed mb-8">
             La page n&apos;a pas pu se charger. L&apos;incident nous a été remonté automatiquement.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <button
               onClick={() => reset()}
-              className="w-full sm:w-auto bg-blue-900 hover:bg-blue-800 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
+              className="btn-primary w-full sm:w-auto justify-center text-sm"
             >
               Réessayer
             </button>
-            <Link
-              href="/"
-              className="w-full sm:w-auto border border-slate-200 hover:border-slate-300 text-slate-700 text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
-            >
+            <Link href="/" className="btn-ghost w-full sm:w-auto justify-center text-sm">
               Retour à l&apos;accueil
             </Link>
           </div>
           {error.digest && (
-            <p className="text-[11px] text-slate-400 font-mono mt-8">Réf. {error.digest}</p>
+            <p className="text-[11px] text-[#9CA3AF] font-mono mt-8">Réf. {error.digest}</p>
           )}
         </div>
       </main>

@@ -92,7 +92,7 @@ export default function FilteredPage() {
               <p className="text-[11px] font-bold uppercase tracking-widest text-[#9CA3AF] mb-1.5">Activité</p>
               <h1 className="text-2xl font-extrabold text-navy tracking-tightest leading-none">Emails écartés</h1>
               <p className="text-xs text-[#6B7280] mt-1.5 truncate">
-                Spam, perso, promotionnel — récupérables en un clic
+                Spam, perso, promotionnel, récupérables en un clic
               </p>
             </div>
             <Link
@@ -197,7 +197,7 @@ export default function FilteredPage() {
 
         <p className="text-xs text-slate-400 text-center">
           Le pré-filtre utilise l&apos;IA pour écarter les emails non-pertinents (factures Vercel, newsletters LinkedIn, etc.).
-          Aucun email légitime ne devrait être filtré — si c&apos;est le cas, restaurez-le.
+          Aucun email légitime ne devrait être filtré. Si c&apos;est le cas, restaurez-le.
         </p>
       </main>
     </div>

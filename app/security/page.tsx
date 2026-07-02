@@ -1,9 +1,10 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { LogoMark, Wordmark } from '@/app/_components/Logo'
+import SiteHeader from '@/app/_components/SiteHeader'
+import SiteFooter from '@/app/_components/SiteFooter'
 
 export const metadata: Metadata = {
-  title: 'Sécurité & confidentialité — BankKey',
+  title: 'Sécurité & confidentialité · BankKey',
   description: 'Architecture, chiffrement, conformité RGPD et sous-traitants de BankKey. Conçu pour la confidentialité bancaire européenne.',
 }
 
@@ -62,22 +63,21 @@ export default function SecurityPage() {
     <div className="min-h-screen bg-white text-[#0A0F1E] antialiased">
 
       {/* ── Header ── */}
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-[#E5E7EB]">
-        <div className="wrap h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <Wordmark size={24} />
-          </Link>
-          <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-[#374151]">
-            <Link href="/#fonctionnement" className="hover:text-navy transition-colors">Comment ça marche</Link>
-            <Link href="/#tarifs" className="hover:text-navy transition-colors">Tarifs</Link>
-            <Link href="/security" className="text-navy font-bold">Sécurité</Link>
-            <Link href="/#faq" className="hover:text-navy transition-colors">FAQ</Link>
-          </nav>
-          <Link href="/book" className="btn-primary text-sm py-2.5 px-5">
-            Réserver une démonstration
-          </Link>
-        </div>
-      </header>
+      <SiteHeader
+        right={
+          <>
+            <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-[#374151]">
+              <Link href="/#fonctionnement" className="hover:text-navy transition-colors">Comment ça marche</Link>
+              <Link href="/#tarifs" className="hover:text-navy transition-colors">Tarifs</Link>
+              <Link href="/security" className="text-navy font-bold">Sécurité</Link>
+              <Link href="/#faq" className="hover:text-navy transition-colors">FAQ</Link>
+            </nav>
+            <Link href="/book" className="btn-primary text-sm py-2.5 px-5">
+              Réserver une démonstration
+            </Link>
+          </>
+        }
+      />
 
       {/* ── Hero ── */}
       <section className="relative overflow-hidden">
@@ -235,18 +235,7 @@ export default function SecurityPage() {
       </section>
 
       {/* ── Footer ── */}
-      <footer className="bg-navy text-slate-400 py-10 text-xs">
-        <div className="wrap flex flex-col md:flex-row items-center justify-between gap-3">
-          <p>© 2026 BankKey. Tous droits réservés.</p>
-          <div className="flex items-center gap-5">
-            <Link href="/" className="hover:text-white transition-colors">Accueil</Link>
-            <Link href="/book" className="hover:text-white transition-colors">Réserver une démo</Link>
-            <Link href="/privacy" className="hover:text-white transition-colors">Confidentialité</Link>
-            <Link href="/terms" className="hover:text-white transition-colors">CGU</Link>
-            <a href="mailto:dpo@bankkey.ch" className="hover:text-white transition-colors">DPO</a>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   )
 }

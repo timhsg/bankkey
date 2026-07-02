@@ -104,7 +104,7 @@ export default function NewProspectPage() {
         sector: 'credit',
         email_from_name: fullName,
         email_from: form.email || null,
-        email_subject: `Dossier manuel — ${fullName}`,
+        email_subject: `Dossier manuel · ${fullName}`,
         email_body: form.notes || null,
         qualification,
         scoring: null,  // Sera calculé à la demande

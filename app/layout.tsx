@@ -14,8 +14,8 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://bankkey.ch'),
-  title: 'BankKey — le logiciel des courtiers qui répondent en premier',
-  description: 'BankKey centralise vos demandes de financement, les qualifie et prépare vos réponses. Vous ne traitez que les dossiers qui valent un appel — avant votre café.',
+  title: 'BankKey · le logiciel des courtiers qui répondent en premier',
+  description: 'BankKey centralise vos demandes de financement, les qualifie et prépare vos réponses. Vous ne traitez que les dossiers qui valent un appel, avant votre café.',
   openGraph: {
     title: 'Le premier courtier à répondre décroche le dossier.',
     description: 'BankKey centralise, qualifie et prépare vos demandes de financement. Vous gagnez des heures et vous répondez en premier.',

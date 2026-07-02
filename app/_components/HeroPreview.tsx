@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { LogoMark } from './Logo'
+import { Wordmark } from './Logo'
 
 // ════════════════════════════════════════════════════════════════════════
 //  HeroPreview — Mini-dashboard reproduit fidèlement
@@ -88,9 +88,8 @@ export default function HeroPreview() {
 
           {/* Sidebar */}
           <div className="col-span-3 bg-white border-r border-slate-100 p-3">
-            <div className="flex items-center gap-2 mb-5 pb-3 border-b border-slate-100">
-              <LogoMark size={22} />
-              <span className="font-semibold text-slate-900 text-sm">BankKey</span>
+            <div className="flex items-center mb-5 pb-3 border-b border-slate-100">
+              <Wordmark size={18} />
             </div>
 
             <p className="text-[9px] font-semibold uppercase tracking-widest text-slate-400 px-2 mb-1.5">Navigation</p>

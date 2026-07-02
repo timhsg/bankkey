@@ -47,7 +47,7 @@ const STEPS: Step[] = [
     target: '[data-tour="cabinet-badge"]',
     placement: 'right',
     title: 'Votre cabinet',
-    desc: 'Toutes vos données, scopées à votre seul cabinet. Aucun croisement avec un autre courtier — garantie au niveau base de données.',
+    desc: 'Toutes vos données, scopées à votre seul cabinet. Aucun croisement avec un autre courtier, garantie au niveau base de données.',
   },
   {
     route: '/pro',
@@ -61,7 +61,7 @@ const STEPS: Step[] = [
     target: '[data-tour="top-prospects"]',
     placement: 'top',
     title: 'À traiter en priorité',
-    desc: 'Les 5 prospects au score le plus élevé. Vous appelez ceux-là en premier — pas besoin de fouiller dans la masse.',
+    desc: 'Les 5 prospects au score le plus élevé. Vous appelez ceux-là en premier, pas besoin de fouiller dans la masse.',
   },
   {
     route: '/pro/prospects',
@@ -75,7 +75,7 @@ const STEPS: Step[] = [
     target: '[data-tour="prospects-table"]',
     placement: 'top',
     title: 'Table dense bancaire',
-    desc: 'Score · Prospect · Projet · Statut · Priorité · Reçu — tout en un coup d\'œil. Clic sur une ligne pour ouvrir la fiche.',
+    desc: 'Score · Prospect · Projet · Statut · Priorité · Reçu : tout en un coup d\'œil. Clic sur une ligne pour ouvrir la fiche.',
   },
   {
     route: '/pro/banks',
@@ -306,7 +306,7 @@ export function GuidedTour() {
       <div
         role="dialog"
         aria-modal="true"
-        aria-label={`Visite guidée — ${step.title}`}
+        aria-label={`Visite guidée · ${step.title}`}
         className="absolute pointer-events-auto bg-white rounded-2xl shadow-[0_24px_80px_rgba(10,31,92,0.32)] overflow-hidden ease-out"
         style={
           isCentered || !tooltipPos

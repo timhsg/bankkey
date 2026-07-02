@@ -31,7 +31,7 @@ interface Prospect {
 }
 
 const ERROR_MESSAGES: Record<string, string> = {
-  demo_account: 'Le compte démo est partagé — la connexion d\'une boîte mail est désactivée.',
+  demo_account: 'Le compte démo est partagé : la connexion d\'une boîte mail est désactivée.',
   outlook_not_configured: 'La connexion Outlook native arrive bientôt. En attendant, utilisez le transfert email ci-dessous (ça marche pour Outlook aussi).',
   outlook_oauth_failed: 'La connexion Outlook a échoué. Réessayez.',
   outlook_token_save_failed: 'Erreur lors de la sauvegarde Outlook. Réessayez.',
@@ -132,7 +132,7 @@ export default function SourcesPage() {
             <p className="text-xs text-[#6B7280] mt-1.5">
               {anyConnected
                 ? `${totalLeads} leads analysés · ${totalHot} prioritaires`
-                : 'Connectez une boîte en 1 clic — ça prend 30 secondes'}
+                : 'Connectez une boîte en 1 clic, ça prend 30 secondes'}
             </p>
           </div>
           {anyConnected && (
@@ -257,7 +257,7 @@ export default function SourcesPage() {
         <details className="group">
           <summary className="cursor-pointer list-none text-xs font-semibold text-[#9CA3AF] hover:text-navy transition-colors flex items-center gap-1.5">
             <svg className="w-3 h-3 group-open:rotate-90 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-            Autres canaux — bientôt
+            Autres canaux · bientôt
           </summary>
           <p className="text-xs text-[#9CA3AF] mt-3 pl-4 leading-relaxed">
             Importer un fichier CSV ou intégrer un widget sur votre site :{' '}
@@ -468,7 +468,7 @@ const IMAP_PRESETS: Record<string, { host: string; port: number; label: string; 
   ovh:        { host: 'ssl0.ovh.net',         port: 993, label: 'OVH' },
   infomaniak: { host: 'mail.infomaniak.com',  port: 993, label: 'Infomaniak' },
   gandi:      { host: 'mail.gandi.net',       port: 993, label: 'Gandi' },
-  proton:     { host: '127.0.0.1',            port: 1143, label: 'ProtonMail (Bridge)', note: 'ProtonMail nécessite l\'app Bridge installée sur la machine — peu adapté à une connexion serveur. Préférez le transfert email.' },
+  proton:     { host: '127.0.0.1',            port: 1143, label: 'ProtonMail (Bridge)', note: 'ProtonMail nécessite l\'app Bridge installée sur la machine, peu adapté à une connexion serveur. Préférez le transfert email.' },
   custom:     { host: '',                     port: 993, label: 'Autre / serveur custom' },
 }
 
@@ -540,7 +540,7 @@ function ImapConnect({ connected, email }: { connected: boolean; email: string |
         <div>
           <label className="block text-[11px] font-bold text-[#6B7280] uppercase tracking-widest mb-1">Fournisseur</label>
           <select value={preset} onChange={(e) => applyPreset(e.target.value)} className={inputCls}>
-            <option value="">— Choisir —</option>
+            <option value="">Choisir…</option>
             {Object.entries(IMAP_PRESETS).map(([k, p]) => <option key={k} value={k}>{p.label}</option>)}
           </select>
         </div>
@@ -623,7 +623,7 @@ function DetectedSources({ stats }: { stats: SourceStats[] }) {
   return (
     <div>
       <p className="text-xs font-bold text-navy mb-1">Sources détectées automatiquement</p>
-      <p className="text-xs text-[#6B7280] mb-3">BankKey reconnaît la provenance de chaque lead — aucune config.</p>
+      <p className="text-xs text-[#6B7280] mb-3">BankKey reconnaît la provenance de chaque lead, aucune config.</p>
       <div className="bg-white border border-[#E5E7EB] rounded-xl overflow-hidden">
         {stats.map((stat, idx) => {
           const Icon = SOURCE_ICONS[stat.sourceId]

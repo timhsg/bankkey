@@ -384,8 +384,8 @@ export default function SettingsPage() {
                       <p className="text-sm font-semibold text-slate-900">Répartition du score</p>
                       <p className="text-xs text-slate-500 mt-0.5">
                         {isBalanced
-                          ? 'Équilibré. Chaque curseur est indépendant — aucun autre ne bouge quand vous en touchez un.'
-                          : 'Total ≠ 100 — sera normalisé automatiquement à la sauvegarde.'}
+                          ? 'Équilibré. Chaque curseur est indépendant : aucun autre ne bouge quand vous en touchez un.'
+                          : 'Total ≠ 100 : sera normalisé automatiquement à la sauvegarde.'}
                       </p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
@@ -485,7 +485,7 @@ export default function SettingsPage() {
 
         {/* ── Section: Notifications ── */}
         <div id="notifications" className="scroll-mt-20">
-          <Section title="Notifications" desc="Recevez un email quand un prospect chaud arrive — pour rappeler vite et signer plus.">
+          <Section title="Notifications" desc="Recevez un email quand un prospect chaud arrive, pour rappeler vite et signer plus.">
             <div className="flex items-center justify-between p-3 border border-slate-200 rounded-xl">
               <div className="pr-4">
                 <p className="text-sm font-medium text-slate-900">Alerte email lead chaud</p>

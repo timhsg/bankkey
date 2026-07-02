@@ -22,9 +22,9 @@ interface Props {
 
 const TIERS = [
   { threshold: 0,  label: 'Démarrage',        message: 'Ajoutez vos premiers résultats bancaires pour activer les statistiques' },
-  { threshold: 5,  label: 'Aperçu',           message: 'Premières tendances visibles — continuez pour affiner' },
+  { threshold: 5,  label: 'Aperçu',           message: 'Premières tendances visibles, continuez pour affiner' },
   { threshold: 15, label: 'Pilotage',         message: 'Vous avez assez de données pour piloter vos négociations' },
-  { threshold: 30, label: 'Expertise',        message: 'Vos repères sont robustes — vous êtes en avance' },
+  { threshold: 30, label: 'Expertise',        message: 'Vos repères sont robustes, vous êtes en avance' },
   { threshold: 50, label: 'Mémoire complète', message: 'Votre cabinet a une mémoire institutionnelle complète' },
 ]
 

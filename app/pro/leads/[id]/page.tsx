@@ -616,7 +616,7 @@ export default function LeadDetailPage() {
                   </div>
                 ) : (
                   <div className="border border-dashed border-[#D1D5DB] rounded-xl px-4 py-8 text-center">
-                    <p className="text-sm text-[#6B7280]">Prospect ajouté manuellement — pas d&apos;email d&apos;origine.</p>
+                    <p className="text-sm text-[#6B7280]">Prospect ajouté manuellement, pas d&apos;email d&apos;origine.</p>
                   </div>
                 )}
               </div>
@@ -748,7 +748,7 @@ export default function LeadDetailPage() {
                   )}
                   {profile?.gmail_access_token && !prospect.email_from && (
                     <div className="mt-3 bg-[#F7F8FA] border border-[#E5E7EB] rounded-lg px-3 py-2 text-xs text-[#6B7280]">
-                      Pas d&apos;adresse email pour ce prospect — copiez le texte pour l&apos;envoyer manuellement.
+                      Pas d&apos;adresse email pour ce prospect : copiez le texte pour l&apos;envoyer manuellement.
                     </div>
                   )}
                 </div>

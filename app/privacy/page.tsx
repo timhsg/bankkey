@@ -1,9 +1,10 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { LogoMark } from '@/app/_components/Logo'
+import SiteHeader from '@/app/_components/SiteHeader'
+import SiteFooter from '@/app/_components/SiteFooter'
 
 export const metadata: Metadata = {
-  title: 'Politique de confidentialité — BankKey',
+  title: 'Politique de confidentialité · BankKey',
   description: 'Comment BankKey traite vos données personnelles et celles de vos prospects.',
 }
 
@@ -11,17 +12,13 @@ export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-white text-slate-900">
 
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
-        <div className="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <LogoMark size={28} />
-            <span className="font-bold text-navy tracking-tight">BankKey</span>
+      <SiteHeader
+        right={
+          <Link href="/" className="text-sm font-medium text-[#374151] hover:text-navy transition-colors">
+            ← Retour à l&apos;accueil
           </Link>
-          <Link href="/" className="text-xs text-slate-500 hover:text-slate-900 transition-colors">
-            ← Accueil
-          </Link>
-        </div>
-      </header>
+        }
+      />
 
       <article className="max-w-3xl mx-auto px-6 py-16">
 
@@ -45,7 +42,7 @@ export default function PrivacyPage() {
               <li>Email, mot de passe (chiffré bcrypt)</li>
               <li>Informations cabinet : nom, adresse, téléphone, signature email</li>
               <li>Préférences de scoring et de communication</li>
-              <li>Données de facturation (via Stripe — nous ne stockons jamais votre numéro de carte)</li>
+              <li>Données de facturation (via Stripe : nous ne stockons jamais votre numéro de carte)</li>
             </ul>
 
             <h4>2.2 Données du prospect (vos demandeurs de crédit)</h4>
@@ -59,7 +56,7 @@ export default function PrivacyPage() {
             <ul>
               <li>Jetons OAuth d&apos;accès en lecture seule aux emails entrants (Gmail, Outlook), isolés par cabinet et révocables à tout moment</li>
               <li>Adresse email connectée</li>
-              <li>Nous ne stockons <strong>jamais</strong> l&apos;intégralité de votre boîte mail — seulement les emails que vous nous demandez de traiter</li>
+              <li>Nous ne stockons <strong>jamais</strong> l&apos;intégralité de votre boîte mail, seulement les emails que vous nous demandez de traiter</li>
             </ul>
           </Section>
 
@@ -113,7 +110,7 @@ export default function PrivacyPage() {
               <li><strong>Opposition</strong> : refuser tout traitement non strictement nécessaire au service</li>
               <li><strong>Réclamation</strong> auprès de la CNIL (France) ou du PFPDT (Suisse)</li>
             </ul>
-            <p>Pour exercer vos droits : <a href="mailto:dpo@bankkey.ch" className="text-slate-900 underline">dpo@bankkey.ch</a> — réponse sous 30 jours.</p>
+            <p>Pour exercer vos droits : <a href="mailto:dpo@bankkey.ch" className="text-slate-900 underline">dpo@bankkey.ch</a>. Réponse sous 30 jours.</p>
           </Section>
 
           <Section title="8. Sécurité">
@@ -145,6 +142,8 @@ export default function PrivacyPage() {
           <Link href="/security" className="text-slate-700 hover:text-slate-900 transition-colors">→ Page sécurité</Link>
         </div>
       </article>
+
+      <SiteFooter />
     </div>
   )
 }

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LogoMark } from '@/app/_components/Logo'
+import { Wordmark } from '@/app/_components/Logo'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
@@ -246,7 +246,12 @@ export default function Sidebar() {
         ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:translate-x-0
       `}>
-        {/* ── Cabinet badge en haut ── */}
+        {/* ── Marque (lockup officiel, identique au site public) ── */}
+        <Link href="/pro" className="flex items-center px-4 h-12 border-b border-[#E5E7EB] shrink-0">
+          <Wordmark size={20} />
+        </Link>
+
+        {/* ── Cabinet badge ── */}
         <div data-tour="cabinet-badge" className="flex items-center justify-between p-3 border-b border-[#E5E7EB]">
           <div className="flex items-center gap-2.5 flex-1 min-w-0">
             <div className="w-9 h-9 rounded-lg bg-brand-gradient flex items-center justify-center shrink-0 shadow-[0_1px_3px_rgba(10,31,92,0.16)]">

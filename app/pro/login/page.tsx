@@ -142,7 +142,7 @@ function LoginInner() {
               Le premier courtier à répondre décroche le dossier.
             </h2>
             <p className="text-blue-100 leading-relaxed text-base max-w-md">
-              BankKey centralise vos demandes de financement, qualifie chaque prospect et prépare votre réponse — avant même que vous arriviez au bureau.
+              BankKey centralise vos demandes de financement, qualifie chaque prospect et prépare votre réponse, avant même que vous arriviez au bureau.
             </p>
           </div>
 
@@ -167,7 +167,7 @@ function LoginInner() {
             Programme pilote 2026 · 50 places
           </div>
           <p className="text-xs text-blue-200/60 mt-4">
-            © {new Date().getFullYear()} BankKey — France & Suisse
+            © {new Date().getFullYear()} BankKey · France & Suisse
           </p>
         </div>
       </aside>

@@ -19,8 +19,9 @@ const config: Config = {
         'border-base': '#E5E7EB',
       },
       fontFamily: {
-        sans:    ['var(--font-sans)', ...defaultTheme.fontFamily.sans],
-        display: ['var(--font-display)', ...defaultTheme.fontFamily.sans],
+        // Une seule famille sur tout le produit : Inter (var posée dans layout.tsx).
+        // Ne pas réintroduire de police display sans la charger dans layout.
+        sans: ['var(--font-sans)', ...defaultTheme.fontFamily.sans],
       },
       letterSpacing: {
         tight:    '-0.02em',

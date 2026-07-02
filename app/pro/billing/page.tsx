@@ -194,7 +194,7 @@ function BillingContent() {
             <div className="px-6 py-4 bg-slate-50/40 flex items-center justify-between text-xs">
               <span className="text-slate-500">
                 {profile.cancel_at_period_end
-                  ? `Abonnement annulé — accès jusqu'au ${new Date(profile.current_period_end).toLocaleDateString('fr-FR')}`
+                  ? `Abonnement annulé. Accès jusqu'au ${new Date(profile.current_period_end).toLocaleDateString('fr-FR')}`
                   : `Prochain prélèvement le ${new Date(profile.current_period_end).toLocaleDateString('fr-FR')}`}
               </span>
             </div>

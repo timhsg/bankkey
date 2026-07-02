@@ -106,6 +106,10 @@ types/index.ts              # Types partagés (QualificationResult, ScoringResul
 | **"Prospect" universel, "dossier" contextuel** | Cohérence terminologique sans rigidité — courtage parle des 2 |
 | **/admin supprimée** | Prématurée à 0-1 cabinet, on la recréera quand on en aura 10+ |
 | **Cron Gmail tous les jours 8h** | Le produit travaille sans clic — la sync manuelle reste pour debug |
+| **Lockup logo UNIQUE via `Wordmark`** (02/07) | Interdit de recoder `LogoMark + <span>BankKey</span>` à la main. Pages publiques : `SiteHeader`/`SiteFooter` partagés. |
+| **Positionnement une phrase** (02/07) | « BankKey se branche sur la boîte mail du courtier, lit chaque demande de financement, score sa finançabilité et prépare la réponse : les bons dossiers sont rappelés en premier, sans rien changer au CRM existant. » |
+| **widget.js = seul embed officiel** (02/07) | `embed.js` réduit à un shim de compat qui charge widget.js. Deux scripts divergents = dette + incohérence de marque. |
+| **Acquisition OpenClaw en mode `review`** (02/07) | Aucun message sortant sans approbation WhatsApp de Tim. Raison : LCD suisse (art. 3 al. 1 let. o), marché romand minuscule, marque de confiance. Blueprints dans `openclaw/`. |
 
 ## 5. Préférences utilisateur (Tim)
 
@@ -127,6 +131,68 @@ types/index.ts              # Types partagés (QualificationResult, ScoringResul
 - **Email** : pas encore configuré (support@bankkey.ch, dpo@bankkey.ch sont mentionnés mais pas créés)
 
 ## 7. Statut actuel (mettre à jour à chaque session)
+
+### 🆕 Livré le 2 juillet 2026 (2) — marque unifiée + widget v3 + blueprints OpenClaw
+
+**Marque & design system (plus de « vibe-coded »)**
+- **Lockup unifié** : le seul logo texte autorisé est `Wordmark` (Bank navy + Key dégradé,
+  Inter extrabold). Remplacé partout où un `LogoMark + span` était recodé à la main :
+  404, error, /demo, /demo/access, /privacy, /terms, onboarding, HeroPreview (mockup),
+  **Sidebar pro (le produit n'affichait AUCUN logo, ajouté en tête)**.
+- **`SiteHeader` + `SiteFooter` partagés** (`app/_components/`) : chrome identique sur
+  landing, book, security, privacy, terms, demo/access, 404, error. Footer navy compact
+  ajouté sur les pages qui n'en avaient pas.
+- **font-display fantôme supprimée** (tailwind.config) : la var `--font-display` n'était
+  jamais chargée depuis la refonte v3 Inter-only. Le 404 utilisait cette classe morte.
+- **Boutons** : `bg-blue-900` (ancien navy #1e3a8a) remplacés par `btn-primary`/`btn-ghost`
+  du design system sur 404/error/demo-access.
+- **Sweep em-dash terminé sur tout le visible** : pages publiques + app pro (GuidedTour,
+  sources, settings, filtered, leads, statistiques, billing, CompletenessCard…).
+  Il ne reste des em-dash QUE dans les commentaires de code et les placeholders « — »
+  de valeurs vides (usage typographique légitime). Metadata titles passés à « · ».
+- `.claude/launch.json` réparé (pointait vers un projet inexistant d'une autre machine).
+
+**Widget v3 (`public/widget.js`)**
+- Couleurs de marque par défaut (dégradé #0A1F5C→#3b5fe0), `data-color` pour s'accorder
+  au site du courtier. Clé BankKey dans la bulle + l'entête. Powered-by discret
+  « Transmis en sécurité via BankKey » (lien UTM = boucle d'acquisition).
+- **Anti-spam** : honeypot `website` + délai minimal 2 s (succès silencieux pour les bots).
+- Champ **Apport** ajouté (alias parser `down_payment` ✓), bottom-sheet mobile,
+  focus management + rôles ARIA, maxlength partout. API JS inchangée.
+- **`embed.js` = shim de compat** qui mappe les anciens attributs et charge widget.js.
+  Snippet `/pro/integrations` mis à jour vers widget.js. Testé en preview : rendu,
+  prefill, ouverture OK, console propre.
+
+**Acquisition — blueprints OpenClaw (`openclaw/`)**
+- `README.md` (architecture, cron lun/jeu + mar-jeu + 10 min, garde-fous, ordre de build,
+  coûts <50 €/mois), `skills/{scoutclaw,outreachclaw,dealclaw}/SKILL.md`,
+  `knowledge/playbook.md` (ICP, pricing verbatim, séquences T1/T2/T3, objections,
+  cadre légal LCD/CNIL), `sql/sales_crm.sql` (tables `sales_prospects`/`sales_touches`,
+  RLS sans policy = service key only).
+- Principes : sources publiques uniquement (ORIAS, Zefix, ad libraries ; PAS de scraping
+  LinkedIn/Maps), volumes faibles (15/j max), mode `review` (approbation WhatsApp),
+  domaine d'envoi cousin (jamais bankkey.ch), stop-on-reply, zéro tracking pixel.
+- 2 agents bonus proposés : **PulseClaw** (activation des essais = vrai goulot de revenu)
+  et **VeilleClaw** (vigie taux/règles qui nourrit les emails T2 ET `expertise.ts`).
+- ⚠️ Côté Tim pour activer : exécuter `openclaw/sql/sales_crm.sql` dans Supabase,
+  VPS ou Mac allumé + OpenClaw + canal WhatsApp, acheter un domaine cousin
+  (ex. bankkey-app.com) + boîte Google Workspace + SPF/DKIM/DMARC + warm-up 2-3 semaines.
+
+**Vérifié** : `npx tsc --noEmit` ✅ · `npm run build` ✅ · screenshots landing/privacy/404/widget ✅.
+Rien n'est commité (à faire après relecture de Tim).
+
+### 🆕 Livré le 2 juillet 2026 — widget flottant v2 + fusion démo + passe texte
+
+- **Widget flottant v2** (`public/widget.js`) : bulle qui **toggle à tout moment**
+  (clic/Échap), capture auto du contexte (page_url, titre, référent, UTM), et **API JS**
+  `window.BankKey.open()/close()/toggle()/prefill({...})` pour préremplir/ouvrir
+  automatiquement quand un lead est déjà identifié sur le site. Shadow DOM, animations soignées.
+- **Démo fusionnée** : `/demo/manual` extrait en composant partagé `app/demo/_ManualDemo.tsx`,
+  affiché dans `/demo` via un **toggle interne** (guidé ↔ « testez avec votre email »).
+  `/demo/manual` redirige désormais vers `/demo`. Une seule entrée de démo.
+- **Passe texte (humanizer)** : règle « zéro em-dash » appliquée. Landing nettoyée
+  (8 em-dash visibles remplacés par virgule/point/deux-points). ✅ Sweep terminé le
+  02/07 sur toutes les pages publiques ET l'app pro (voir entrée du 02/07 (2)).
 
 ### 🆕 Livré le 1er juillet 2026 (2) — démo cold-email + portails + règles à jour
 

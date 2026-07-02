@@ -250,7 +250,7 @@ export default function InsightsPage() {
 
             <div className="bg-blue-50 border border-blue-100 rounded-xl px-5 py-4">
               <p className="text-sm text-slate-700 leading-relaxed">
-                <span className="font-semibold text-slate-900">Plus vous enregistrez d&apos;outcomes</span>, plus BankKey identifie les patterns qui marchent pour votre cabinet — taux moyens par profil, banques les plus acceptantes selon la région, profils à éviter.
+                <span className="font-semibold text-slate-900">Plus vous enregistrez d&apos;outcomes</span>, plus BankKey identifie les patterns qui marchent pour votre cabinet : taux moyens par profil, banques les plus acceptantes selon la région, profils à éviter.
               </p>
             </div>
           </>

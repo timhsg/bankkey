@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { LogoMark, Wordmark } from './_components/Logo'
+import { Wordmark } from './_components/Logo'
 import ROICalculator from './_components/ROICalculator'
 import { AnimateIn } from './_components/AnimateIn'
 import PricingTiers from './_components/PricingTiers'
@@ -152,7 +152,7 @@ const BEFORE_AFTER = [
   },
   {
     before: 'Relances manuelles, souvent oubliées',
-    after: 'Suivi automatique — aucun prospect ne disparaît',
+    after: 'Suivi automatique, aucun prospect ne disparaît',
   },
   {
     before: 'Dossier non finançable découvert après 3 semaines',
@@ -183,7 +183,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'Est-ce conforme au RGPD ?',
-    a: 'Oui. L\'infrastructure est hébergée à Francfort, dans l\'Union européenne. Les données sont chiffrées en transit et au repos. Chaque cabinet est isolé — aucun croisement de données n\'est possible. Vous pouvez demander la suppression de toutes vos données sous 72 heures.',
+    a: 'Oui. L\'infrastructure est hébergée à Francfort, dans l\'Union européenne. Les données sont chiffrées en transit et au repos. Chaque cabinet est isolé : aucun croisement de données n\'est possible. Vous pouvez demander la suppression de toutes vos données sous 72 heures.',
   },
   {
     q: 'Combien de temps pour démarrer ?',
@@ -191,7 +191,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'Utilisez-vous l\'intelligence artificielle ?',
-    a: 'Certaines fonctions de BankKey sont assistées par des technologies avancées de traitement du langage afin d\'accélérer l\'analyse des demandes et la rédaction des réponses. Vous n\'avez aucune configuration technique à effectuer. Le résultat, c\'est un dossier structuré et une réponse prête — le reste ne vous concerne pas.',
+    a: 'Certaines fonctions de BankKey sont assistées par des technologies avancées de traitement du langage afin d\'accélérer l\'analyse des demandes et la rédaction des réponses. Vous n\'avez aucune configuration technique à effectuer. Le résultat, c\'est un dossier structuré et une réponse prête. Le reste ne vous concerne pas.',
   },
   {
     q: 'Puis-je annuler à tout moment ?',
@@ -250,7 +250,7 @@ export default function LandingPage() {
             </h1>
 
             <p className="text-lg md:text-xl text-[#374151] leading-relaxed mb-10 max-w-2xl mx-auto reveal reveal-delay-2">
-              BankKey centralise toutes vos demandes de financement, qualifie chaque prospect et prépare votre réponse — avant même que vous arriviez au bureau. Vous intervenez uniquement sur les vraies opportunités.
+              BankKey centralise toutes vos demandes de financement, qualifie chaque prospect et prépare votre réponse, avant même que vous arriviez au bureau. Vous intervenez uniquement sur les vraies opportunités.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10 reveal reveal-delay-3">
@@ -276,14 +276,14 @@ export default function LandingPage() {
               <span className="w-3 h-3 rounded-full bg-[#FF5F57]" />
               <span className="w-3 h-3 rounded-full bg-[#FEBC2E]" />
               <span className="w-3 h-3 rounded-full bg-[#28C840]" />
-              <span className="ml-4 text-xs text-[#9CA3AF] font-medium">BankKey — Tableau de bord</span>
+              <span className="ml-4 text-xs text-[#9CA3AF] font-medium">BankKey · Tableau de bord</span>
             </div>
 
             <div className="p-6 md:p-8">
               {/* Mini topbar */}
               <div className="flex items-center justify-between mb-5">
                 <div>
-                  <h3 className="font-bold text-[#0A0F1E]">Lundi 7h32 — 12 demandes reçues cette nuit</h3>
+                  <h3 className="font-bold text-[#0A0F1E]">Lundi 7h32, 12 demandes reçues cette nuit</h3>
                   <p className="text-sm text-[#6B7280] mt-0.5">4 dossiers qualifiés · 8 écartés (non finançables ou hors périmètre)</p>
                 </div>
                 <span className="badge hidden sm:inline-flex">Mise à jour automatique</span>
@@ -417,7 +417,7 @@ export default function LandingPage() {
               </div>
               <div>
                 <p className="font-bold text-[#0A0F1E] text-lg mb-1">Le lundi matin, pendant que vous prenez votre café</p>
-                <p className="text-[#6B7280]">BankKey a déjà analysé les 12 demandes reçues depuis vendredi soir. 4 dossiers qualifiés vous attendent. Vous commencez votre semaine en appelant des prospects finançables — pas en triant vos emails.</p>
+                <p className="text-[#6B7280]">BankKey a déjà analysé les 12 demandes reçues depuis vendredi soir. 4 dossiers qualifiés vous attendent. Vous commencez votre semaine en appelant des prospects finançables, pas en triant vos emails.</p>
               </div>
             </div>
           </AnimateIn>
@@ -597,7 +597,7 @@ export default function LandingPage() {
                 <Wordmark size={22} tone="onDark" />
               </div>
               <p className="text-xs text-slate-400 max-w-xs leading-relaxed">
-                Le logiciel de qualification des demandes de financement pour les courtiers en crédit immobilier — France & Suisse.
+                Le logiciel de qualification des demandes de financement pour les courtiers en crédit immobilier, en France et en Suisse.
               </p>
             </div>
             <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-400">
